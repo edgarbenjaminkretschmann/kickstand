@@ -1,0 +1,209 @@
+---
+// Edgar and his motorcycle journeys: the story behind Kickstand. Photos are pre-converted webp in public/images/touren.
+import Base from "../layouts/Base.astro";
+
+interface Shot {
+  slug: string;
+  alt: string;
+  w: number;
+  h: number;
+}
+
+const trips: { title: string; note?: string; shots: Shot[] }[] = [
+  {
+    title: "Philippinen 2019",
+    note: "21 Orte in 35 Tagen mit dem Motorrad.",
+    shots: [
+      { slug: "philippinen-2019-strasse", alt: "Blick über den Lenker auf eine leere Landstraße, im Hintergrund ein Vulkan", w: 1152, h: 864 },
+      { slug: "philippinen-2019-route", alt: "Karte der Tour vom Oktober 2019 mit allen Stationen auf den Philippinen", w: 1024, h: 768 },
+    ],
+  },
+  {
+    title: "Myanmar 2019",
+    shots: [
+      { slug: "myanmar-2019-strand", alt: "Edgar am Strand zwischen Felsen, im Vordergrund Lenker und Spiegel der Enduro", w: 1021, h: 681 },
+      { slug: "myanmar-2019-bruecke", alt: "Motorrad auf einer langen Brücke über einen Fluss", w: 1021, h: 681 },
+    ],
+  },
+  {
+    title: "Alpen 2018",
+    shots: [
+      { slug: "alpen-2018-pass", alt: "Sporttourer am Straßenrand vor Felswänden und Schneefeldern", w: 1280, h: 622 },
+      { slug: "alpen-2018-tal", alt: "Bepacktes Motorrad über einem grünen Alpental", w: 622, h: 1280 },
+      { slug: "alpen-2018-honda", alt: "Edgar in Motorradjacke neben seiner Honda", w: 622, h: 1280 },
+    ],
+  },
+  {
+    title: "Portugal 2021",
+    shots: [
+      { slug: "portugal-2021-kueste", alt: "Edgar mit seinem Motorrad auf einer Klippe über dem Atlantik", w: 1280, h: 960 },
+      { slug: "portugal-2021-wiese", alt: "Reiseenduro mit Topcase auf einer blühenden Wiese", w: 1280, h: 960 },
+    ],
+  },
+  {
+    title: "Indien 2024",
+    shots: [{ slug: "indien-2024-teeberge", alt: "Motorrad an einer Bergstraße durch Teeplantagen", w: 1280, h: 1082 }],
+  },
+  {
+    title: "Kolumbien, Tatacoa-Wüste",
+    shots: [{ slug: "kolumbien-tatacoa", alt: "Edgar auf dem Motorrad in der kargen Tatacoa-Wüste", w: 1280, h: 960 }],
+  },
+  {
+    title: "Unterwegs",
+    shots: [
+      { slug: "unterwegs-markt", alt: "Geschmückte Royal Enfield auf einer belebten Straße", w: 1280, h: 850 },
+      { slug: "unterwegs-aussicht", alt: "Royal Enfield an einem Aussichtspunkt mit Felsen und Grün", w: 1280, h: 850 },
+      { slug: "unterwegs-werkstatt", alt: "Mechaniker repariert ein Motorrad am Straßenrand", w: 1280, h: 960 },
+      { slug: "unterwegs-weite", alt: "Weite Graslandschaft unter dunklen Wolken", w: 1280, h: 850 },
+      { slug: "unterwegs-pause", alt: "Edgar macht Pause vor einem kleinen Café", w: 1280, h: 857 },
+    ],
+  },
+];
+
+const src = (slug: string, size: 640 | 1280) => `/images/touren/${slug}-${size}.webp`;
+---
+
+<Base title="Edgar & seine Motorradreisen" description="Edgar Kretschmann von Vlogato: Motorradreisen durch die Philippinen, Myanmar, Indien, Kolumbien, Portugal und die Alpen." wide>
+  <section class="intro">
+    <figure class="intro-photo">
+      <div class="oval">
+        <img src="/images/rider-640.webp" alt="Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen" width="640" height="360" />
+      </div>
+    </figure>
+    <div class="intro-text">
+      <p class="eyebrow">Hinter Kickstand</p>
+      <h1>Edgar &amp; seine Motorradreisen</h1>
+      <p class="lead">
+        Ich bin Edgar Kretschmann. Auf <a href="https://vlogato.com" rel="noopener">vlogato.com</a> erzähle ich von meinen Reisen mit dem
+        Motorrad: Philippinen, Myanmar, Indien, Kolumbien, Portugal und immer wieder die Alpen.
+      </p>
+      <p class="lead">
+        Unterwegs habe ich gelernt, wie viel ein geliehenes Motorrad, ein Platz in der Garage oder eine helfende Hand wert sind. Daraus ist
+        Kickstand entstanden.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://vlogato.com" rel="noopener">Zum Blog auf vlogato.com</a>
+        <a class="btn" href="/anzeigen">Anzeigen ansehen</a>
+      </div>
+    </div>
+  </section>
+
+  {
+    trips.map((t) => (
+      <section class="trip" aria-labelledby={`t-${t.shots[0].slug}`}>
+        <div class="trip-head">
+          <h2 id={`t-${t.shots[0].slug}`}>{t.title}</h2>
+          {t.note && <p class="muted">{t.note}</p>}
+        </div>
+        <ul class="shots">
+          {t.shots.map((s) => (
+            <li class:list={{ tall: s.h > s.w }}>
+              <a href={src(s.slug, 1280)} aria-label={`${s.alt}, groß anzeigen`}>
+                <img
+                  src={src(s.slug, 1280)}
+                  srcset={`${src(s.slug, 640)} 640w, ${src(s.slug, 1280)} ${s.w}w`}
+                  sizes="(min-width: 1000px) 380px, (min-width: 560px) 46vw, 92vw"
+                  alt={s.alt}
+                  width={s.w}
+                  height={s.h}
+                  loading="lazy"
+                />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</Base>
+
+<style>
+  .intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 40px;
+    padding-bottom: 16px;
+  }
+  .intro-photo {
+    flex: 1 1 300px;
+    max-width: 420px;
+    margin: 0;
+  }
+  .oval {
+    border-radius: 50% / 46%;
+    overflow: hidden;
+    background: var(--sky);
+    padding: 12px;
+  }
+  .oval img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 50% / 46%;
+  }
+  .intro-text {
+    flex: 1 1 380px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .eyebrow {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--link);
+  }
+  .lead {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text-2);
+    max-width: 38em;
+  }
+  .trip {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .trip-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 16px;
+  }
+  .trip h2 {
+    font-size: clamp(1.4rem, 1.1rem + 1vw, 1.75rem);
+  }
+  .shots {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 14px;
+  }
+  .shots a {
+    display: block;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--sky-wash);
+  }
+  .shots img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .shots .tall img {
+    object-position: center 40%;
+  }
+  .shots a:focus-visible {
+    outline: 3px solid var(--sky);
+    outline-offset: 2px;
+  }
+</style>

@@ -1,0 +1,373 @@
+<title>Leihvertrag VFR 750 F (1.000 €)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* Layout: one narrow column of form sections, phone-first; the vehicle card borrows the pale green and typewriter mono of the Fahrzeugschein. */
+:root{
+  --bg:#f2f5f2; --surface:#ffffff; --fg:#1d2621; --muted:#5d6b63; --line:#cfd9d2;
+  --accent:#2f6b55; --accent-fg:#ffffff; --doc:#e3eee4; --field:#f8faf8; --danger:#a33a2a;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141a17; --surface:#1c2420; --fg:#e4ebe6; --muted:#9aaba1; --line:#33413a;
+  --accent:#6fb898; --accent-fg:#0f1a15; --doc:#22302a; --field:#17201c; --danger:#e08573; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a17; --surface:#1c2420; --fg:#e4ebe6; --muted:#9aaba1; --line:#33413a;
+  --accent:#6fb898; --accent-fg:#0f1a15; --doc:#22302a; --field:#17201c; --danger:#e08573; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.45;padding:0 16px}
+.wrap{max-width:640px;margin:0 auto;padding-block:20px 120px;display:flex;flex-direction:column;gap:18px}
+header h1{font-size:1.5rem;margin:0;text-wrap:balance;letter-spacing:-.01em}
+header p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.vehicle{background:var(--doc);border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:.82rem;display:grid;grid-template-columns:auto 1fr;gap:2px 14px}
+.vehicle span:nth-child(odd){color:var(--muted)}
+section{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px}
+section h2{margin:0;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted);min-width:0}
+input[type=text],input[type=tel],input[type=date],input[type=time],input[type=number],textarea{
+  font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:6px;padding:10px 11px;width:100%;min-width:0}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.row.stack{grid-template-columns:1fr}}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{padding:12px;text-align:center;font-weight:600;cursor:pointer;background:var(--field);font-family:var(--mono)}
+.seg input:checked+span{color:var(--accent-fg)}
+.seg label:has(input:checked){background:var(--accent);color:var(--accent-fg)}
+.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-3px}
+.check{display:flex;align-items:center;gap:10px;font-size:.95rem}
+.check input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.note{font-size:.84rem;color:var(--muted);margin:0}
+.sig{display:flex;flex-direction:column;gap:6px}
+.sig canvas{width:100%;height:130px;background:#ffffff;border:1px dashed var(--line);border-radius:6px;touch-action:none;display:block}
+.sig .bar{display:flex;justify-content:space-between;align-items:center;font-size:.88rem;color:var(--muted)}
+button{font:inherit;cursor:pointer;border-radius:6px}
+.link{background:none;border:none;color:var(--accent);padding:4px 0;font-size:.88rem;font-weight:500}
+details summary{cursor:pointer;font-weight:600;font-size:.95rem}
+details[open] summary{margin-bottom:12px}
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.dock .in{max-width:640px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.primary{flex:1;background:var(--accent);color:var(--accent-fg);border:none;padding:14px;font-weight:600;font-size:1rem}
+.secondary{background:transparent;border:1px solid var(--line);color:var(--fg);padding:13px 14px;font-size:.9rem}
+.secondary.armed{border-color:var(--danger);color:var(--danger)}
+#status{font-size:.88rem;min-height:1.2em;margin:0;color:var(--muted)}
+#status.err{color:var(--danger)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.thumbs:empty{display:none}
+.thumb{position:relative;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;border:none;background:var(--surface);color:var(--fg);font-size:1rem;line-height:1}
+.photoBtn{display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed var(--accent);color:var(--accent);background:transparent;padding:12px;border-radius:6px;font-weight:600;cursor:pointer;font-size:.95rem}
+.photoBtn input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.photoBtn:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.tip{font-size:.8rem;color:var(--muted);margin:-6px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Leihvertrag Motorrad</h1>
+    <p>Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.</p>
+  </header>
+
+  <div class="vehicle" aria-label="Fahrzeugdaten">
+    <span>Fahrzeug</span><span>HONDA VFR 750 F (RC36)</span>
+    <span>Kennz.</span><span>B-IA 708</span>
+    <span>FIN</span><span>HMRC362400700</span>
+    <span>EZ</span><span>23.05.1995 · 74 kW · 748 cm³</span>
+    <span>Verleiher</span><span>Edgar Kretschmann</span>
+  </div>
+
+  <form id="f" autocomplete="off">
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <section>
+      <h2>Haftungsgrenze Entleiher</h2>
+      <div class="vehicle" style="grid-template-columns:1fr;font-size:1.05rem;font-weight:500;text-align:center">höchstens 1.000 € je Schaden</div>
+      <p class="note">Der Entleiher zahlt den tatsächlichen Schaden, höchstens diesen Betrag. Bei Vorsatz, grober Fahrlässigkeit, Alkohol oder Fahren ohne Führerschein haftet er voll.</p>
+    </section>
+
+    <section>
+      <h2>Entleiher</h2>
+      <label class="f">Name, Vorname<input type="text" id="name" autocomplete="name"></label>
+      <label class="f">Straße, Hausnummer<input type="text" id="strasse"></label>
+      <label class="f">PLZ, Ort<input type="text" id="ort"></label>
+      <div class="row stack">
+        <label class="f">Geburtsdatum<input type="date" id="geb"></label>
+        <label class="f">Telefon<input type="tel" id="tel" inputmode="tel"></label>
+      </div>
+      <div class="row stack">
+        <label class="f">Führerschein-Nr.<input type="text" id="fs"></label>
+        <label class="f">Klasse A seit<input type="text" id="fsSeit" placeholder="z. B. 2015"></label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Leihdauer</h2>
+      <div class="row">
+        <label class="f">Beginn Datum<input type="date" id="bDat"></label>
+        <label class="f">Uhrzeit<input type="time" id="bZeit"></label>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Ende der Leihe">
+        <label><input type="radio" name="dauer" id="dOffen" value="offen" checked><span>Offen</span></label>
+        <label><input type="radio" name="dauer" id="dFest" value="fest"><span>Festes Ende</span></label>
+      </div>
+      <p class="note" id="offenNote">Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen, spätestens am <strong>31.07.2027</strong>.</p>
+      <div class="row" id="endRow" hidden>
+        <label class="f">Ende Datum<input type="date" id="eDat" max="2027-07-31"></label>
+        <label class="f">Uhrzeit<input type="time" id="eZeit"></label>
+      </div>
+      <label class="f">Rückgabeort<input type="text" id="rOrt"></label>
+    </section>
+
+    <section>
+      <h2>Mitgegeben</h2>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="mSchl" checked>Schlüssel</label>
+        <label class="f">Anzahl<input type="number" id="mSchlN" min="1" max="9" inputmode="numeric" value="1"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="mZb1" checked>Zulassungsbescheinigung Teil I</label>
+      <label class="f">Sonstiges (z. B. Helm, Schloss)<input type="text" id="mSonst"></label>
+    </section>
+
+    <section>
+      <h2>Übergabe</h2>
+      <div class="row">
+        <label class="f">Kilometerstand<input type="number" id="uKm" inputmode="numeric"></label>
+        <label class="f">Tankstand<input type="text" id="uTank" placeholder="z. B. voll, ½"></label>
+      </div>
+      <label class="f">Vorhandene Schäden / Kratzer<textarea id="uSchaden" placeholder="z. B. Kratzer Tank links, Spiegel rechts lose"></textarea></label>
+      <p class="tip">Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.</p>
+      <div class="thumbs" id="thumbs-u"></div>
+          <label class="photoBtn">+ Fotos aufnehmen oder hochladen<input type="file" accept="image/*" multiple id="file-u"></label>
+      <details>
+        <summary>Rückgabe (später ausfüllen)</summary>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="row">
+            <label class="f">Datum<input type="date" id="rDat"></label>
+            <label class="f">Uhrzeit<input type="time" id="rZeit"></label>
+          </div>
+          <div class="row">
+            <label class="f">Kilometerstand<input type="number" id="rKm" inputmode="numeric"></label>
+            <label class="f">Tankstand<input type="text" id="rTank"></label>
+          </div>
+          <label class="f">Neue Schäden<textarea id="rSchaden"></textarea></label>
+          <p class="tip">Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.</p>
+          <div class="thumbs" id="thumbs-r"></div>
+          <label class="photoBtn">+ Fotos aufnehmen oder hochladen<input type="file" accept="image/*" multiple id="file-r"></label>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <h2>Unterschriften</h2>
+      <label class="f">Ort, Datum<input type="text" id="ortDatum"></label>
+      <div class="sig">
+        <div class="bar"><span>Verleiher (Edgar Kretschmann)</span><button type="button" class="link" data-clear="sigV">Löschen</button></div>
+        <canvas id="sigV" aria-label="Unterschrift Verleiher, mit dem Finger zeichnen"></canvas>
+      </div>
+      <div class="sig">
+        <div class="bar"><span>Entleiher</span><button type="button" class="link" data-clear="sigE">Löschen</button></div>
+        <canvas id="sigE" aria-label="Unterschrift Entleiher, mit dem Finger zeichnen"></canvas>
+      </div>
+      <p class="note">Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.</p>
+    </section>
+    <p id="status" role="status"></p>
+  </div>
+  </form>
+</div>
+
+<div class="dock"><div class="in">
+  <button type="button" class="secondary" id="reset">Leeren</button>
+  <button type="button" class="primary" id="make">PDF erstellen</button>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const FIELDS=["name","strasse","ort","geb","tel","fs","fsSeit","bDat","bZeit","eDat","eZeit","rOrt","mSchl","mSchlN","mZb1","mSonst","uKm","uTank","uSchaden","rDat","rZeit","rKm","rTank","rSchaden","ortDatum"];
+const KEY="leihvertrag-vfr-1000-draft";
+function radio(n){return document.querySelector(`input[name=${n}]:checked`).value}
+function saveDraft(){try{const d={dauer:radio("dauer")};FIELDS.forEach(k=>{const e=$(k);d[k]=e.type==="checkbox"?e.checked:e.value});localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function loadDraft(){let d=null;try{d=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
+  const today=new Date().toISOString().slice(0,10);
+  if(!d){$("bDat").value=today;return}
+  FIELDS.forEach(k=>{if(d[k]===undefined)return;const e=$(k);if(e.type==="checkbox")e.checked=!!d[k];else e.value=d[k]});
+  [["dauer",d.dauer]].forEach(([n,v])=>{const el=document.querySelector(`input[name=${n}][value="${v}"]`);if(el)el.checked=true});
+}
+loadDraft();
+function syncDauer(){const o=radio("dauer")==="offen";$("endRow").hidden=o;$("offenNote").hidden=!o}
+syncDauer();document.querySelectorAll("input[name=dauer]").forEach(r=>r.addEventListener("change",syncDauer));
+$("f").addEventListener("input",saveDraft);$("f").addEventListener("change",saveDraft);
+$("f").addEventListener("submit",e=>e.preventDefault());
+
+/* signatures */
+const pads={};
+function setupPad(id){
+  const c=$(id),ctx=c.getContext("2d");let drawing=false,last=null,dirty=false;
+  function size(){const r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;const img=dirty?c.toDataURL():null;
+    c.width=r.width*dpr;c.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.lineWidth=2.2;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#111";
+    if(img){const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,r.width,r.height);im.src=img}}
+  size();window.addEventListener("resize",size);
+  const pos=e=>{const r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+  c.addEventListener("pointerdown",e=>{drawing=true;last=pos(e);c.setPointerCapture(e.pointerId);ctx.beginPath();ctx.arc(last.x,last.y,1.1,0,Math.PI*2);ctx.fillStyle="#111";ctx.fill();dirty=true});
+  c.addEventListener("pointermove",e=>{if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p});
+  ["pointerup","pointercancel","pointerleave"].forEach(t=>c.addEventListener(t,()=>drawing=false));
+  pads[id]={clear(){ctx.clearRect(0,0,c.width,c.height);dirty=false},get dirty(){return dirty},
+    data(){const r=c.getBoundingClientRect();return{url:c.toDataURL("image/png"),ratio:r.width/r.height}}};
+}
+setupPad("sigV");setupPad("sigE");
+document.querySelectorAll("[data-clear]").forEach(b=>b.addEventListener("click",()=>pads[b.dataset.clear].clear()));
+
+/* reset with in-page confirm */
+let armed=null;
+$("reset").addEventListener("click",()=>{const b=$("reset");
+  if(!armed){b.classList.add("armed");b.textContent="Wirklich?";armed=setTimeout(()=>{b.classList.remove("armed");b.textContent="Leeren";armed=null},3000);return}
+  clearTimeout(armed);armed=null;b.classList.remove("armed");b.textContent="Leeren";
+  try{localStorage.removeItem(KEY)}catch(e){}
+  $("f").reset();pads.sigV.clear();pads.sigE.clear();$("bDat").value=new Date().toISOString().slice(0,10);setStatus("Formular geleert.")});
+
+function setStatus(t,err){const s=$("status");s.textContent=t;s.className=err?"err":""}
+const de=v=>{if(!v)return"";const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v);return m?`${m[3]}.${m[2]}.${m[1]}`:v};
+const dt=(d,t)=>[de(d),t?t+" Uhr":""].filter(Boolean).join(", ");
+
+
+/* photos */
+const photos={u:[],r:[]};
+async function shrink(file){
+  let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:"from-image"})}catch(e){bmp=await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(file)})}
+  const max=1400,sc=Math.min(1,max/Math.max(bmp.width,bmp.height)),w=Math.round(bmp.width*sc),h=Math.round(bmp.height*sc);
+  const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(bmp,0,0,w,h);
+  return{url:c.toDataURL("image/jpeg",0.82),w,h,time:file.lastModified||Date.now()};
+}
+function renderThumbs(set){const box=$("thumbs-"+set);box.textContent="";
+  photos[set].forEach((ph,i)=>{const d=document.createElement("div");d.className="thumb";const im=document.createElement("img");im.src=ph.url;im.alt="Foto "+(i+1);
+    const b=document.createElement("button");b.type="button";b.textContent="×";b.setAttribute("aria-label","Foto "+(i+1)+" entfernen");b.onclick=()=>{photos[set].splice(i,1);renderThumbs(set)};
+    d.append(im,b);box.append(d)})}
+["u","r"].forEach(set=>$("file-"+set).addEventListener("change",async e=>{const files=[...e.target.files];e.target.value="";
+  let bad=0;setStatus("Fotos werden geladen…");
+  for(const f of files){if(!f.type.startsWith("image/")){bad++;continue}try{photos[set].push(await shrink(f));renderThumbs(set)}catch(err){bad++}}
+  setStatus(bad?bad+" Datei(en) übersprungen. Nur Fotos können in das PDF.":photos[set].length+" Foto(s) für das PDF bereit.",!!bad)}));
+
+/* PDF */
+function buildPdf(){
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});
+  const L=20,W=170,BOT=280;let y=18;
+  const cap="1000",capTxt=cap==="1000"?"1.000,00 €":"1.500,00 €",capWords=cap==="1000"?"eintausend":"eintausendfünfhundert";
+  const v=k=>($(k).value||"").trim();
+  const ensure=h=>{if(y+h>BOT){doc.addPage();y=18}};
+  const font=(b,s)=>{doc.setFont("helvetica",b?"bold":"normal");doc.setFontSize(s)};
+  function para(t,o={}){font(o.bold,o.size||9.5);const lh=(o.size||9.5)*0.42+0.4;const lines=doc.splitTextToSize(t,W);
+    lines.forEach(l=>{ensure(lh);doc.text(l,L,y);y+=lh});y+=o.after??1.6}
+  function head(t){ensure(14);y+=2.5;font(true,11);doc.text(t,L,y);y+=5.2}
+  function table(rows,ws,o={}){const lh=4.1;
+    rows.forEach((r,i)=>{font(false,9);const cells=r.map((c,j)=>doc.splitTextToSize(String(c??""),ws[j]-4));
+      const minH=(o.minH&&o.minH[i])||7.5;const h=Math.max(minH,Math.max(...cells.map(c=>c.length))*lh+3.4);ensure(h);
+      let x=L;r.forEach((c,j)=>{const head=j===0||(o.headRow&&i===0);
+        if(head){doc.setFillColor(242,242,242);doc.rect(x,y,ws[j],h,"F")}
+        doc.setDrawColor(150);doc.setLineWidth(0.2);doc.rect(x,y,ws[j],h);
+        font(o.headRow&&i===0,9);doc.text(cells[j],x+2,y+4.6);
+        if(o.images&&o.images[i]&&o.images[i][j]){const im=o.images[i][j];const ih=h-2.5,iw=Math.min(ws[j]-4,ih*im.ratio);doc.addImage(im.url,"PNG",x+2,y+1.2,iw,ih)}
+        x+=ws[j]});y+=h});y+=6.5}
+  // title
+  font(true,17);doc.text("Leihvertrag über ein Motorrad",105,y+2,{align:"center"});y+=8;
+  font(false,9.5);doc.setTextColor(90);doc.text("unentgeltliche Leihe gemäß §§ 598 ff. BGB",105,y,{align:"center"});doc.setTextColor(0);y+=8;
+  para("Zwischen",{after:2.5});
+  const adr=[v("strasse"),v("ort")].filter(Boolean).join(", ");
+  para("Verleiher",{bold:true,size:10.5,after:1.2});
+  table([["Name, Vorname","Kretschmann, Edgar"],["Anschrift","Ansbacher Str. 48, 10777 Berlin"]],[50,120]);
+  para("und",{after:2.5});
+  para("Entleiher",{bold:true,size:10.5,after:1.2});
+  table([["Name, Vorname",v("name")],["Anschrift",adr],
+    ["Geburtsdatum",de(v("geb"))],["Telefon",v("tel")],["Führerschein-Nr.",v("fs")],["Klasse A seit",v("fsSeit")]],[50,120]);
+  para("wird folgender Leihvertrag geschlossen:");
+  head("§ 1 Leihgegenstand");
+  const mit=[];if($("mSchl").checked)mit.push(`Fahrzeugschlüssel (Anzahl: ${v("mSchlN")||"1"})`);if($("mZb1").checked)mit.push("Zulassungsbescheinigung Teil I");if(v("mSonst"))mit.push(v("mSonst"));
+  table([["Fahrzeug","Honda VFR 750 F (Typ RC36), Kraftrad"],["Amtl. Kennzeichen","B-IA 708"],["Fahrzeug-Ident.-Nr.","HMRC362400700"],
+    ["Erstzulassung","23.05.1995"],["Leistung / Hubraum","74 kW / 748 ccm, Benzin"],["Mitgegeben",mit.join("; ")]],[50,120]);
+  head("§ 2 Leihdauer und Rückgabe");
+  const offen=radio("dauer")==="offen";
+  table([["Beginn der Leihe",dt(v("bDat"),v("bZeit"))],["Ende / Rückgabe",offen?"offen (unbefristet), spätestens am 31.07.2027":dt(v("eDat"),v("eZeit"))],["Rückgabeort",v("rOrt")]],[50,120]);
+  if(offen)para("Die Leihe ist unbefristet. Der Verleiher kann das Motorrad jederzeit zurückfordern (§ 604 Abs. 3 BGB); der Entleiher gibt es dann innerhalb von 3 Tagen nach Aufforderung zurück. Die Leihe endet in jedem Fall spätestens am 31.07.2027.");
+  para("Der Entleiher gibt das Motorrad pünktlich, sauber und mit gleichem Tankstand am vereinbarten Rückgabeort zurück. Eine Verlängerung bedarf der Zustimmung des Verleihers.");
+  head("§ 3 Unentgeltlichkeit und Kosten");
+  para("Die Überlassung erfolgt unentgeltlich. Kraftstoff während der Leihzeit trägt der Entleiher. Bußgelder, Verwarnungsgelder, Maut-, Park- und Abschleppkosten, die während der Leihzeit entstehen, trägt der Entleiher in voller Höhe; dies fällt nicht unter die Haftungsbegrenzung nach § 6.");
+  head("§ 4 Nutzung");
+  para("(1) Das Motorrad darf ausschließlich vom Entleiher gefahren werden. Er versichert, eine gültige Fahrerlaubnis der Klasse A zu besitzen, und legt diese bei Übergabe vor. Eine Weitergabe an Dritte ist nicht gestattet.",{after:.6});
+  para("(2) Fahrten unter Einfluss von Alkohol, Drogen oder fahrtüchtigkeitsbeeinträchtigenden Medikamenten sind untersagt, ebenso Rennen, Fahrten auf Rennstrecken, Fahrsicherheitstrainings und Fahrten abseits befestigter Straßen.",{after:.6});
+  para("(3) Ein Beifahrer darf nur mitgenommen werden, wenn die vorgesehenen Fußrasten angebracht sind (Auflage laut Zulassungsbescheinigung). Fahrten ins Ausland nur nach vorheriger Zustimmung des Verleihers.",{after:.6});
+  para("(4) Der Entleiher behandelt das Motorrad pfleglich, sichert es beim Abstellen mit dem Lenkschloss und beachtet die Straßenverkehrsordnung.");
+  head("§ 5 Versicherung");
+  para("Das Motorrad ist bei der WGV haftpflichtversichert, Versicherungsscheinnummer V 90 100 785/988. Die Haftpflichtversicherung deckt Schäden, die Dritten zugefügt werden. Schäden am geliehenen Motorrad selbst sind dadurch nicht abgedeckt.");
+  head("§ 6 Haftung des Entleihers");
+  para("(1) Der Entleiher haftet für alle Schäden am Motorrad sowie für dessen Verlust (auch Diebstahl), die während der Leihzeit entstehen und die er zu vertreten hat, z. B. bei einem Sturz oder Unfall.",{after:.6});
+  para(`(2) Die Haftung nach Absatz 1 ist auf höchstens ${capTxt} (in Worten: ${capWords} Euro) je Schadensfall begrenzt.`,{bold:true,after:.3});
+  para("Ist der Schaden geringer, zahlt der Entleiher nur den tatsächlichen Schaden (Reparaturkosten laut Rechnung oder Kostenvoranschlag einer Fachwerkstatt). Ein Nachteil durch Höherstufung des Schadenfreiheitsrabatts wird ebenfalls auf den Höchstbetrag angerechnet.",{after:.6});
+  para("(3) Die Begrenzung nach Absatz 2 gilt nicht, und der Entleiher haftet in voller Höhe, wenn der Schaden vorsätzlich oder grob fahrlässig verursacht wurde, insbesondere bei Fahrten unter Alkohol- oder Drogeneinfluss, ohne gültige Fahrerlaubnis, bei Überlassung an Dritte, bei Rennen oder Unfallflucht.",{after:.6});
+  para("(4) Für normale Abnutzung bei vertragsgemäßem Gebrauch (§ 602 BGB) haftet der Entleiher nicht.",{after:.6});
+  para("(5) Der Betrag ist innerhalb von 30 Tagen nach Vorlage der Rechnung bzw. des Kostenvoranschlags zu zahlen.");
+  head("§ 7 Verhalten bei Unfall, Panne oder Diebstahl");
+  para("Der Entleiher informiert den Verleiher unverzüglich. Bei Unfällen mit Fremdbeteiligung sowie bei Diebstahl ist die Polizei hinzuzuziehen. Der Entleiher gibt kein Schuldanerkenntnis ab, sichert Namen und Anschriften der Beteiligten und Zeugen und fertigt Fotos an. Reparaturen dürfen nur mit Zustimmung des Verleihers beauftragt werden.");
+  head("§ 8 Haftung des Verleihers");
+  para("Der Verleiher haftet nur für Vorsatz und grobe Fahrlässigkeit (§ 599 BGB). Ihm bekannte Mängel teilt er bei Übergabe mit (siehe Anlage: Übergabe- und Rückgabeprotokoll).");
+  head("§ 9 Schlussbestimmungen");
+  para("Änderungen und Ergänzungen bedürfen der Schriftform. Sollte eine Bestimmung unwirksam sein, bleibt der Vertrag im Übrigen wirksam; an die Stelle der unwirksamen Bestimmung tritt eine Regelung, die ihrem wirtschaftlichen Zweck am nächsten kommt. Jede Partei erhält eine Ausfertigung dieses Vertrags.");
+  // signatures
+  ensure(42);y+=4;const sv=pads.sigV.dirty?pads.sigV.data():null,se=pads.sigE.dirty?pads.sigE.data():null;
+  font(false,9);doc.text("Ort, Datum: "+v("ortDatum"),L,y);doc.text("Ort, Datum: "+v("ortDatum"),L+90,y);y+=3;
+  const sh=20;[[sv,L],[se,L+90]].forEach(([s,x])=>{if(s){const w=Math.min(78,sh*s.ratio);doc.addImage(s.url,"PNG",x,y,w,sh)}});
+  y+=sh+1;doc.setDrawColor(0);doc.setLineWidth(0.3);doc.line(L,y,L+78,y);doc.line(L+90,y,L+168,y);y+=4;
+  font(false,8.5);doc.text("Edgar Kretschmann (Verleiher)",L,y);doc.text("Entleiher"+(v("name")?" ("+v("name")+")":""),L+90,y);
+  // annex
+  doc.addPage();y=18;font(true,15);doc.text("Anlage: Übergabe- und Rückgabeprotokoll",105,y+2,{align:"center"});y+=8;
+  font(false,9.5);doc.setTextColor(90);doc.text("Honda VFR 750 F · B-IA 708 · FIN HMRC362400700",105,y,{align:"center"});doc.setTextColor(0);y+=8;
+  table([["","Übergabe","Rückgabe"],["Datum / Uhrzeit",dt(v("bDat"),v("bZeit")),dt(v("rDat"),v("rZeit"))],
+    ["Kilometerstand",v("uKm")?v("uKm")+" km":"",v("rKm")?v("rKm")+" km":""],["Tankstand",v("uTank"),v("rTank")],
+    ["Vorhandene / neue Schäden",v("uSchaden"),v("rSchaden")],["Unterschrift Verleiher","",""],["Unterschrift Entleiher","",""]],
+    [50,60,60],{headRow:true,minH:[7.5,9,9,9,45,18,18],images:[null,null,null,null,null,[null,sv,null],[null,se,null]]});
+  para("Mit der Unterschrift im Protokoll bestätigen beide Parteien den festgehaltenen Zustand des Motorrads bei Übergabe bzw. Rückgabe.",{size:8.5});
+
+  const fmt=t=>{const d=new Date(t),p=n=>String(n).padStart(2,"0");return`${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}, ${p(d.getHours())}:${p(d.getMinutes())} Uhr`};
+  [["u","Übergabe"],["r","Rückgabe"]].forEach(([set,label])=>{const list=photos[set];if(!list.length)return;
+    const cw=82,ch=64,gap=6;let idx=0;
+    const newPage=()=>{doc.addPage();y=18;font(true,13);doc.text("Fotodokumentation "+label,L,y);y+=4;font(false,8.5);doc.setTextColor(90);
+      doc.text("Honda VFR 750 F · B-IA 708 · Zeitangabe laut Bilddatei",L,y+3);doc.setTextColor(0);y+=9};
+    newPage();
+    list.forEach((ph,i)=>{if(idx%2===0&&idx>0)y+=ch+12;if(idx%2===0&&y+ch+8>BOT){newPage();idx=0}
+      const x=L+(idx%2)*(cw+gap);const r=Math.min(cw/ph.w,ch/ph.h),w=ph.w*r,h=ph.h*r;
+      doc.setDrawColor(200);doc.rect(x,y,cw,ch);doc.addImage(ph.url,"JPEG",x+(cw-w)/2,y+(ch-h)/2,w,h);
+      font(false,8);doc.text(`Foto ${i+1} · ${fmt(ph.time)}`,x,y+ch+4);idx++});
+  });
+  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);font(false,7.5);doc.setTextColor(120);
+    doc.text("Leihvertrag Honda VFR 750 F · B-IA 708",L,289);doc.text(`Seite ${i} von ${n}`,190,289,{align:"right"});doc.setTextColor(0)}
+  return doc;
+}
+let dl=null,dlTried=false;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function getDl(){if(dl||dlTried)return dl;
+  for(let i=0;i<40&&!(window.claude&&window.claude.use);i++)await sleep(250);
+  try{dl=window.claude&&window.claude.use?await window.claude.use("downloads"):null}catch(e){dl=null}
+  dlTried=true;return dl}
+getDl();
+function summary(){const out=["Leihvertrag Honda VFR 750 F – eingegebene Daten"];
+  document.querySelectorAll("#f input, #f textarea").forEach(e=>{if(e.type==="file")return;
+    if(e.type==="radio"){if(!e.checked)return;const g=e.closest("[aria-label]");out.push((g?g.getAttribute("aria-label"):e.name)+": "+e.value);return}
+    const lab=(e.closest("label")?.textContent||e.id).trim();
+    const val=e.type==="checkbox"?(e.checked?"ja":"nein"):e.value.trim();if(val)out.push(lab+": "+val)});
+  return out.join("\n")}
+function showFallback(msg){const s=$("status");s.className="err";s.textContent=msg+" ";
+  const b=document.createElement("button");b.type="button";b.className="link";b.textContent="Daten kopieren";
+  b.onclick=async()=>{const t=summary();try{await navigator.clipboard.writeText(t);b.textContent="Kopiert ✓"}
+    catch(e){const ta=document.createElement("textarea");ta.value=t;ta.style.width="100%";ta.rows=8;s.after(ta);ta.select();b.textContent="Text unten markiert"}};
+  s.append(b)}
+$("make").addEventListener("click",async()=>{
+  if(!window.jspdf){setStatus("Der PDF-Baustein lädt noch. Bitte gleich nochmal tippen.",true);return}
+  setStatus("Einen Moment…");const d=await getDl();if(!d){showFallback("Speichern geht in dieser Ansicht nicht. Öffne den Link in der Claude-App (eingeloggt) oder kopiere die Daten und schick sie Claude im Chat.");return}
+  try{setStatus("PDF wird erstellt…");const doc=buildPdf();
+    const nm=($("name").value.trim().split(/[ ,]+/).pop()||"Entleiher").replace(/[^\wäöüÄÖÜß-]/g,"");
+    const r=await d.save({filename:`Leihvertrag_VFR750F_1000EUR_${nm}_${$("bDat").value||"ohne-Datum"}.pdf`,data:doc.output("blob")});
+    setStatus(r.status==="saved"?"PDF gespeichert.":"PDF übergeben.")}
+  catch(e){const c=e&&e.code;if(c==="declined")setStatus("Speichern abgebrochen.",true);else if(c==="rate_limited")setStatus("Es ist schon ein Speichern-Fenster offen. Kurz warten und nochmal tippen.",true);else showFallback("PDF konnte nicht gespeichert werden ("+(c||(e&&e.message)||"Fehler")+").")}
+});
+</script>

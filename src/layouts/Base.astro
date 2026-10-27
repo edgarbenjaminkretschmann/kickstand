@@ -1,0 +1,185 @@
+---
+import { actions } from "astro:actions";
+import Logo from "../components/Logo.astro";
+import { unreadTotal } from "../lib/data/conversations";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Page has its own fixed bottom bar (loan wizard, return): hides the tab bar and footer. */
+  dock?: boolean;
+  /** Wider content column (search, detail). */
+  wide?: boolean;
+  /** Full-bleed page that lays out its own sections (landing). */
+  bare?: boolean;
+}
+
+const {
+  title,
+  description = "Motorräder kostenlos leihen, Garagen, Werkzeug und Hilfe unter Motorradfahrern. Mit Leihvertrag aus dem Handy.",
+  dock = false,
+  wide = false,
+  bare = false,
+} = Astro.props;
+const user = Astro.locals.user;
+const path = Astro.url.pathname;
+const pageTitle = title ? `${title} · Kickstand` : "Kickstand · Motorräder teilen, Garagen teilen";
+const unread = user ? await unreadTotal(user.id) : 0;
+const initial = (user?.name.trim()[0] ?? "?").toUpperCase();
+
+const is = (prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
+const current = (on: boolean) => (on ? "page" : undefined);
+const tabs = [
+  { href: "/anzeigen", label: "Suchen", icon: "search", on: is("/anzeigen") && !is("/anzeigen/neu") },
+  { href: "/merkliste", label: "Merkliste", icon: "heart", on: is("/merkliste") },
+  { href: "/anzeigen/neu", label: "Aufgeben", icon: "plus", on: is("/anzeigen/neu") },
+  { href: "/nachrichten", label: "Nachrichten", icon: "chat", on: is("/nachrichten"), badge: unread },
+  { href: "/app", label: "Mein Bereich", icon: "user", on: is("/app") || is("/profil") },
+];
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Open+Sans:wght@400;600&family=Roboto+Slab:wght@500;700&display=swap"
+    />
+    <title>{pageTitle}</title>
+    <script is:inline>document.documentElement.classList.add("js");</script>
+  </head>
+  <body class:list={{ "has-dock": dock, "has-tabs": !dock }}>
+    <a href="#main" class="skip">Zum Inhalt</a>
+    <header class="site-header">
+      <div class="bar">
+        <Logo />
+        <nav class="main-nav" aria-label="Hauptnavigation">
+          <a href="/anzeigen" class="nav-link desktop-only" aria-current={current(is("/anzeigen") && !is("/anzeigen/neu"))}>Suchen</a>
+          {
+            user && (
+              <a href="/nachrichten" class="nav-link desktop-only" aria-current={current(is("/nachrichten"))}>
+                Nachrichten
+                {unread > 0 && (
+                  <span class="count count-hot" aria-label={`${unread} ungelesen`}>
+                    {unread}
+                  </span>
+                )}
+              </a>
+            )
+          }
+          <a href="/anzeigen/neu" class="btn btn-primary btn-small desktop-only">Anzeige aufgeben</a>
+          {
+            user ? (
+              <details class="menu">
+                <summary aria-label={`Menü für ${user.name}`}>
+                  <span class="avatar" aria-hidden="true">
+                    {initial}
+                  </span>
+                  {unread > 0 && <span class="dot mobile-only" aria-hidden="true" />}
+                </summary>
+                <div class="menu-pop">
+                  <p class="menu-name">{user.name}</p>
+                  <a href="/app">Mein Bereich</a>
+                  <a href="/app#anzeigen">Meine Anzeigen</a>
+                  <a href="/merkliste">Merkliste</a>
+                  <a href="/profil">Profil</a>
+                  <form method="POST" action={"/" + actions.auth.logout}>
+                    <button type="submit">Abmelden</button>
+                  </form>
+                </div>
+              </details>
+            ) : (
+              <a href={`/login${path === "/" || path === "/login" ? "" : `?next=${encodeURIComponent(path + Astro.url.search)}`}`} class="btn btn-outline btn-small">
+                Anmelden
+              </a>
+            )
+          }
+        </nav>
+      </div>
+    </header>
+
+    {
+      bare ? (
+        <main id="main" class="bare">
+          <slot />
+        </main>
+      ) : (
+        <main id="main" class:list={["wrap", "page", { wide }]}>
+          <slot />
+        </main>
+      )
+    }
+    <slot name="after" />
+
+    {
+      !dock && (
+        <footer class="site-footer">
+          <div class="foot">
+            <span>Kickstand · ein Projekt von Vlogato · Edgar Kretschmann</span>
+            <span class="foot-links">
+              <a href="/so-gehts">So geht's</a>
+              <a href="/touren">Edgars Touren</a>
+              <a href="/impressum">Impressum</a>
+              <a href="/datenschutz">Datenschutz</a>
+            </span>
+          </div>
+        </footer>
+      )
+    }
+
+    {
+      !dock && (
+        <nav class="tabbar" aria-label="Schnellzugriff">
+          {tabs.map((t) => (
+            <a href={t.href} aria-current={current(t.on)} class:list={{ "tab-add": t.icon === "plus" }}>
+              <span class="tab-icon" aria-hidden="true">
+                {t.icon === "search" && (
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="6.5" />
+                    <path d="M16 16l4.5 4.5" />
+                  </svg>
+                )}
+                {t.icon === "heart" && (
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 20s-7-4.4-8.6-8.7C2.3 8.1 4.3 5 7.4 5c1.9 0 3.4 1 4.6 2.8C13.2 6 14.7 5 16.6 5c3.1 0 5.1 3.1 4 6.3C19 15.6 12 20 12 20z" />
+                  </svg>
+                )}
+                {t.icon === "plus" && (
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 6v12M6 12h12" />
+                  </svg>
+                )}
+                {t.icon === "chat" && (
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z" />
+                  </svg>
+                )}
+                {t.icon === "user" && (
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="8.5" r="3.8" />
+                    <path d="M4.5 20c1.2-3.7 4-5.5 7.5-5.5s6.3 1.8 7.5 5.5" />
+                  </svg>
+                )}
+                {t.badge ? <span class="tab-badge">{t.badge > 9 ? "9+" : t.badge}</span> : null}
+              </span>
+              <span class="tab-label">{t.label}</span>
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
+    <script>
+      import "../scripts/inputs";
+    </script>
+  </body>
+</html>

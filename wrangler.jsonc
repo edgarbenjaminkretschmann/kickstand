@@ -1,0 +1,22 @@
+// Cloudflare Workers config for Kickstand. Build first: `npm run build:cf`.
+// Secrets are not stored here: `wrangler secret put BETTER_AUTH_SECRET`, `DATABASE_AUTH_TOKEN`,
+// and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kickstand",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "binding": "ASSETS", "directory": "./dist" },
+  "observability": { "enabled": true },
+  "vars": {
+    // Turso, e.g. libsql://kickstand-<org>.aws-eu-west-1.turso.io
+    "DATABASE_URL": "libsql://kickstand-kickstand.aws-eu-west-1.turso.io",
+    "SITE_URL": "https://kickstand.jolly-wildflower-4370.workers.dev",
+    "BETTER_AUTH_URL": "https://kickstand.jolly-wildflower-4370.workers.dev"
+  },
+  // Photos, bike photos, protocol photos. Private; served only through /media/*.
+  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "kickstand-photos" }],
+  // Resizes uploads (replaces sharp, which does not run on Workers).
+  "images": { "binding": "IMAGES" }
+}

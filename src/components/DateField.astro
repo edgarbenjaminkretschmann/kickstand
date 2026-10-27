@@ -1,0 +1,33 @@
+---
+// Date input as plain text in DD.MM.YYYY. We avoid <input type="date"> because its display
+// format follows the browser locale (e.g. MM/DD/YYYY on an English Android phone).
+import Field from "./Field.astro";
+import { formatDate } from "../lib/dates";
+
+interface Props {
+  label: string;
+  name: string;
+  /** ISO date, or the raw text the person typed if it did not parse. */
+  value?: string | null;
+  error?: string;
+  code?: string;
+  required?: boolean;
+  hint?: string;
+  id?: string;
+}
+
+const { value, ...rest } = Astro.props;
+---
+
+<Field
+  {...rest}
+  value={formatDate(value)}
+  inputmode="numeric"
+  autocomplete="off"
+  placeholder="TT.MM.JJJJ"
+  pattern={"\\d{1,2}\\.\\d{1,2}\\.(\\d{2}|\\d{4})"}
+  title="Datum als TT.MM.JJJJ"
+  maxlength={10}
+  mono
+  data-date
+/>

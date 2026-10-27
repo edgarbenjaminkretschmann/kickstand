@@ -1,0 +1,66 @@
+---
+import { actions } from "astro:actions";
+import Base from "../layouts/Base.astro";
+import Field from "../components/Field.astro";
+import DateField from "../components/DateField.astro";
+import FormAlert from "../components/FormAlert.astro";
+import { getProfile } from "../lib/data/profiles";
+import { fieldErrors, formError } from "../lib/form";
+import { submittedValues } from "../lib/submitted";
+
+const user = Astro.locals.user!;
+const result = Astro.getActionResult(actions.profile.save);
+if (result && !result.error) return Astro.redirect("/profil?gespeichert=1");
+
+const profile = await getProfile(user.id);
+const prev = await submittedValues(Astro.request, !!result?.error);
+const v: Record<string, string | null | undefined> = prev ?? { ...profile, displayName: user.name };
+const errors = fieldErrors(result);
+const message = formError(result);
+const saved = Astro.url.searchParams.has("gespeichert");
+const welcome = Astro.url.searchParams.has("willkommen");
+---
+
+<Base title="Profil">
+  <div class="page-head">
+    <h1>Profil</h1>
+    <p>Dein Anzeigename ist öffentlich. Alles andere bleibt privat und füllt nur deine Leihverträge vor.</p>
+  </div>
+  {welcome && <p class="notice">Willkommen bei Kickstand. Trag hier einmal deine Daten ein, dann geht jeder Leihvertrag schneller. Das geht auch später.</p>}
+  {saved && <p class="notice" role="status">Gespeichert.</p>}
+  <form method="POST" action={actions.profile.save} class="stack" novalidate>
+    <FormAlert message={message} />
+    <section class="card">
+      <h2>Öffentlich</h2>
+      <Field
+        label="Anzeigename"
+        name="displayName"
+        autocomplete="nickname"
+        required
+        value={v.displayName}
+        error={errors.displayName}
+        hint="Andere sehen deinen Vornamen und seit wann du dabei bist."
+      />
+      <Field label="Ort für Anzeigen" name="city" autocomplete="address-level2" value={v.city} hint="Wird in neuen Anzeigen vorgeschlagen." />
+    </section>
+    <section class="card">
+      <h2>Für Leihverträge (privat)</h2>
+      <Field label="Name, Vorname" name="name" autocomplete="name" value={v.name} hint="Wie im Ausweis." />
+      <Field label="Straße, Hausnummer" name="street" autocomplete="street-address" value={v.street} />
+      <Field label="PLZ, Ort" name="zipCity" autocomplete="off" value={v.zipCity} />
+      <div class="row stack-sm">
+        <Field label="Telefon" name="phone" type="tel" inputmode="tel" autocomplete="tel" value={v.phone} />
+        <DateField label="Geburtsdatum" name="birthdate" value={v.birthdate} error={errors.birthdate} />
+      </div>
+      <div class="row stack-sm">
+        <Field label="Führerschein-Nr." name="licenseNumber" mono value={v.licenseNumber} />
+        <Field label="Klasse A seit" name="licenseClassASince" inputmode="numeric" placeholder="z. B. 2015" value={v.licenseClassASince} />
+      </div>
+      <p class="hint">Wenn du dir ein Motorrad leihst und der Verleiher den Vertrag aus eurer Unterhaltung startet, werden diese Angaben dort vorausgefüllt.</p>
+    </section>
+    <div class="actions">
+      <button type="submit" class="btn-primary">Speichern</button>
+      <a href="/app" class="btn">Zurück</a>
+    </div>
+  </form>
+</Base>

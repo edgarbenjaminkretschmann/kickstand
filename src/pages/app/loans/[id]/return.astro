@@ -1,0 +1,121 @@
+---
+import { actions } from "astro:actions";
+import Base from "../../../../layouts/Base.astro";
+import BikeDoc from "../../../../components/BikeDoc.astro";
+import DateField from "../../../../components/DateField.astro";
+import Field from "../../../../components/Field.astro";
+import FormAlert from "../../../../components/FormAlert.astro";
+import TimeField from "../../../../components/TimeField.astro";
+import { getLoanForUser } from "../../../../lib/access";
+import { loadLoanParts } from "../../../../lib/contract-data";
+import { formatDateTime, formatTimestamp, todayIso } from "../../../../lib/dates";
+import { groupThousands } from "../../../../lib/euro-words";
+import { fieldErrors, formError } from "../../../../lib/form";
+import { submittedValues } from "../../../../lib/submitted";
+import { photoUrl } from "../../../../lib/urls";
+
+const user = Astro.locals.user!;
+const access = await getLoanForUser(Astro.params.id!, user.id);
+if (!access || access.role !== "lender") return new Response("Nicht gefunden", { status: 404 });
+const result = Astro.getActionResult(actions.loans.saveReturn);
+if (result && !result.error) return Astro.redirect(`/app/loans/${access.loan.id}?zurueck=1`);
+if (access.loan.status !== "active") return Astro.redirect(`/app/loans/${access.loan.id}`);
+
+const parts = (await loadLoanParts(access.loan.id))!;
+const { loan, bike, handover, ret, returnPhotos } = parts;
+const now = new Date();
+const prev = await submittedValues(Astro.request, !!result?.error);
+const v = prev ?? {
+  returnDate: ret?.datetime?.slice(0, 10) ?? todayIso(now),
+  returnTime: ret?.datetime?.slice(11, 16) ?? `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+  odometerKm: ret?.odometerKm != null ? String(ret.odometerKm) : "",
+  fuelLevel: ret?.fuelLevel ?? "",
+  damages: ret?.damages ?? "",
+};
+const errors = fieldErrors(result);
+---
+
+<Base title="Rückgabe" dock>
+  <div class="page-head">
+    <h1>Rückgabe</h1>
+    <p>{bike.make} {bike.model}, verliehen an {loan.borrowerName}</p>
+  </div>
+
+  <BikeDoc bike={bike} />
+
+  <section class="card">
+    <h2>Bei Übergabe</h2>
+    <p class="small">
+      {formatDateTime(handover?.datetime) || "–"} · <span class="mono">{handover?.odometerKm != null ? `${groupThousands(handover.odometerKm)} km` : "km –"}</span> · Tank {handover?.fuelLevel || "–"}
+    </p>
+    {handover?.damages && <p class="small muted">Schäden: {handover.damages}</p>}
+  </section>
+
+  <form id="return-form" method="POST" action={actions.loans.saveReturn} enctype="multipart/form-data" class="stack" novalidate data-loan={loan.id}>
+    <input type="hidden" name="loanId" value={loan.id} />
+    <FormAlert message={formError(result)} />
+    <section class="card">
+      <h2>Rückgabeprotokoll</h2>
+      <div class="row">
+        <DateField label="Datum" name="returnDate" value={v.returnDate} error={errors.returnDate} required />
+        <TimeField label="Uhrzeit" name="returnTime" value={v.returnTime} error={errors.returnTime} />
+      </div>
+      <div class="row">
+        <Field label="Kilometerstand" name="odometerKm" mono inputmode="numeric" value={v.odometerKm} error={errors.odometerKm} />
+        <Field label="Tankstand" name="fuelLevel" placeholder="z. B. voll, ½" value={v.fuelLevel} />
+      </div>
+      <Field label="Neue Schäden" name="damages" multiline value={v.damages} placeholder="Leer lassen, wenn nichts Neues dazugekommen ist" />
+      <p class="hint">Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.</p>
+      <div class="thumbs" id="thumbs-return">
+        {
+          returnPhotos.map((p, i) => (
+            <div class="thumb" data-photo-id={p.id}>
+              <img src={photoUrl(p.id)} alt={`Foto ${i + 1}, ${formatTimestamp(p.takenAt)}`} loading="lazy" />
+            </div>
+          ))
+        }
+      </div>
+      <label class="photo-btn">
+        + Fotos aufnehmen oder hochladen
+        <input type="file" name="photos" accept="image/*" multiple id="file-return" />
+      </label>
+    </section>
+    <p id="status" role="status" aria-live="polite" class="small muted"></p>
+    <p class="hint">Mit dem Speichern ist die Leihe beendet und das Motorrad wieder frei.</p>
+
+    <div class="dock">
+      <div class="in">
+        <a class="btn" href={`/app/loans/${loan.id}`}>Abbrechen</a>
+        <button type="submit" class="btn-primary">Rückgabe speichern</button>
+      </div>
+    </div>
+  </form>
+</Base>
+
+<style>
+  #status:empty {
+    display: none;
+  }
+  #status.err {
+    color: var(--danger);
+  }
+</style>
+
+<script>
+  import { wirePhotoInput } from "../../../../scripts/photos";
+
+  const form = document.getElementById("return-form") as HTMLFormElement | null;
+  if (form) {
+    const statusEl = document.getElementById("status")!;
+    wirePhotoInput({
+      input: document.getElementById("file-return") as HTMLInputElement,
+      box: document.getElementById("thumbs-return")!,
+      kind: "return",
+      getLoanId: async () => form.dataset.loan ?? null,
+      status: (t, err = false) => {
+        statusEl.textContent = t;
+        statusEl.classList.toggle("err", err);
+      },
+    });
+  }
+</script>

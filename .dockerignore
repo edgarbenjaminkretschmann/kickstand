@@ -1,0 +1,8 @@
+node_modules
+dist
+.astro
+uploads
+data
+.env
+*.db
+reference

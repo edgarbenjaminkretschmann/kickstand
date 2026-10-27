@@ -1,0 +1,51 @@
+---
+import { actions } from "astro:actions";
+import Base from "../layouts/Base.astro";
+import Field from "../components/Field.astro";
+import FormAlert from "../components/FormAlert.astro";
+import GoogleButton from "../components/GoogleButton.astro";
+import { fieldErrors, formError } from "../lib/form";
+import { safeNext, submittedValues } from "../lib/submitted";
+
+const next = safeNext(Astro.url.searchParams.get("next"), "/profil?willkommen=1");
+if (Astro.locals.user) return Astro.redirect("/app");
+
+const google = Astro.getActionResult(actions.auth.google);
+if (google && !google.error) return Astro.redirect(google.data.url);
+
+const result = Astro.getActionResult(actions.auth.register);
+if (result && !result.error) return Astro.redirect(next);
+
+const errors = fieldErrors(result);
+const message = formError(result) ?? formError(google);
+const prev = await submittedValues(Astro.request, !!result?.error);
+---
+
+<Base title="Registrieren">
+  <div class="auth">
+    <div class="page-head">
+      <h1>Registrieren</h1>
+      <p>Schon dabei? <a href={`/login?next=${encodeURIComponent(next)}`}>Anmelden</a></p>
+    </div>
+    <div class="card">
+      <FormAlert message={message} />
+      <GoogleButton next={next} label="Mit Google registrieren" />
+      <form method="POST" action={`${actions.auth.register}&next=${encodeURIComponent(next)}`} class="stack" novalidate>
+        <Field label="Name" name="name" autocomplete="name" required value={prev?.name} error={errors.name} hint="So sehen dich andere Mitglieder." />
+        <Field label="E-Mail" name="email" type="email" autocomplete="email" required value={prev?.email} error={errors.email} />
+        <Field
+          label="Passwort"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          minlength={8}
+          required
+          hint="Mindestens 8 Zeichen."
+          error={errors.password}
+        />
+        <button type="submit" class="btn-primary btn-block">Konto anlegen</button>
+        <p class="hint">Wir speichern nur, was für Anzeigen und Leihverträge nötig ist. Kein Tracking, keine Werbung.</p>
+      </form>
+    </div>
+  </div>
+</Base>

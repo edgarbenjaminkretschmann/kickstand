@@ -1,0 +1,13 @@
+---
+// The old board is now part of the Anzeigen. Keep old links working.
+const KIND_TO_FILTER: Record<string, string> = {
+  garage: "kategorie=garage",
+  tools: "kategorie=werkzeug",
+  help_offered: "kategorie=hilfe&typ=biete",
+  help_wanted: "kategorie=hilfe&typ=suche",
+};
+const kind = Astro.url.searchParams.get("kind") ?? "";
+const city = (Astro.url.searchParams.get("city") ?? "").trim();
+const parts = [KIND_TO_FILTER[kind], city ? `ort=${encodeURIComponent(city)}` : ""].filter(Boolean);
+return Astro.redirect(`/anzeigen${parts.length ? `?${parts.join("&")}` : ""}`, 301);
+---

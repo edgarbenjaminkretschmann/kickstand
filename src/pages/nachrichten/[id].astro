@@ -1,0 +1,186 @@
+---
+import { actions } from "astro:actions";
+import Base from "../../layouts/Base.astro";
+import Field from "../../components/Field.astro";
+import FormAlert from "../../components/FormAlert.astro";
+import TypeChip from "../../components/TypeChip.astro";
+import { getActiveLoan } from "../../lib/data/bikes";
+import { getConversationForUser, listMessages, markRead, MAX_MESSAGE_LENGTH } from "../../lib/data/conversations";
+import { BIKE_CATEGORY } from "../../lib/data/listings";
+import { firstName } from "../../lib/data/profiles";
+import { formatTimestamp } from "../../lib/dates";
+import { fieldErrors, formError } from "../../lib/form";
+import { STATUS_LABEL } from "../../lib/listing-format";
+import { submittedValues } from "../../lib/submitted";
+
+const user = Astro.locals.user!;
+const id = Astro.params.id!;
+
+const sent = Astro.getActionResult(actions.messages.send);
+if (sent && !sent.error) return Astro.redirect(`/nachrichten/${id}#antwort`);
+
+// Only buyer and seller; anyone else gets the same 404 as for a missing id.
+const c = await getConversationForUser(id, user.id);
+if (!c) return new Response("Nicht gefunden", { status: 404 });
+await markRead(c.id, user.id);
+const messages = (await listMessages(c.id, user.id)) ?? [];
+
+const l = c.listing;
+const isBikeOffer = l.categorySlug === BIKE_CATEGORY && l.type === "biete" && !!l.bikeId;
+const activeLoan = isBikeOffer && c.role === "seller" ? await getActiveLoan(l.bikeId!) : null;
+const canStartLoan = isBikeOffer && c.role === "seller" && !activeLoan;
+
+const prev = await submittedValues(Astro.request, !!sent?.error);
+const errors = fieldErrors(sent);
+const message = formError(sent);
+const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
+---
+
+<Base title={`Nachrichten: ${c.other.name}`}>
+  <nav class="crumbs small" aria-label="Pfad">
+    <a href="/nachrichten">Nachrichten</a>
+  </nav>
+
+  <div class="thread-head">
+    <span class="conv-thumb" aria-hidden="true">
+      {l.coverPhotoId && <img src={`/media/listing/${l.coverPhotoId}`} alt="" width="56" height="56" />}
+    </span>
+    <div class="conv-body">
+      <h1 class="thread-title">{c.other.name}</h1>
+      <a href={`/anzeigen/${l.id}`} class="small">{l.title}</a>
+      <div class="chips">
+        <TypeChip type={l.type} category={l.categorySlug} />
+        {l.status !== "aktiv" && <span class="chip chip-outline">{STATUS_LABEL[l.status]}</span>}
+      </div>
+    </div>
+  </div>
+
+  {
+    canStartLoan && (
+      <div class="actions">
+        <a class="btn" href={`/app/loans/new?bike=${l.bikeId}&listing=${l.id}&conversation=${c.id}`}>
+          Leihvertrag mit {firstName(c.other.name) || "Mitglied"} starten
+        </a>
+      </div>
+    )
+  }
+  {
+    activeLoan && (
+      <p class="small muted">
+        Das Motorrad ist gerade verliehen. <a href={`/app/loans/${activeLoan.id}`}>Zum Vertrag</a>
+      </p>
+    )
+  }
+
+  <ol class="thread" id="thread" data-conversation={c.id} data-after={lastAt} aria-live="polite">
+    {
+      messages.map((m) => (
+        <li class:list={["msg", { mine: m.senderId === user.id }]} data-id={m.id}>
+          <span class="visually-hidden">{m.senderId === user.id ? "Du:" : `${c.other.name}:`}</span>
+          <div class="msg-body">{m.body}</div>
+          <time class="msg-time" datetime={m.createdAt.toISOString()}>
+            {formatTimestamp(m.createdAt)}
+          </time>
+        </li>
+      ))
+    }
+  </ol>
+
+  <form method="POST" action={actions.messages.send} class="reply" id="antwort" novalidate>
+    <FormAlert message={message} />
+    <input type="hidden" name="conversationId" value={c.id} />
+    <Field label="Antwort" name="body" multiline rows={3} required maxlength={MAX_MESSAGE_LENGTH} value={prev?.body ?? ""} error={errors.body} />
+    <button type="submit" class="btn-primary">Senden</button>
+  </form>
+</Base>
+
+<style>
+  .thread-title {
+    font-size: 1.15rem;
+    margin: 0;
+  }
+</style>
+
+<script>
+  import { actions, isInputError } from "astro:actions";
+
+  // With JS: send without reloading, and check for new messages every 15 s while the thread is open.
+  const thread = document.getElementById("thread") as HTMLOListElement | null;
+  const form = document.getElementById("antwort") as HTMLFormElement | null;
+  const POLL_MS = 15_000;
+
+  if (thread && form) {
+    const conversationId = thread.dataset.conversation!;
+    let after = Number(thread.dataset.after) || 0;
+    const shown = new Set([...thread.querySelectorAll<HTMLElement>("[data-id]")].map((el) => el.dataset.id!));
+
+    type Msg = { id: string; mine: boolean; body: string; at: number; time: string };
+    const add = (m: Msg) => {
+      if (shown.has(m.id)) return;
+      shown.add(m.id);
+      after = Math.max(after, m.at);
+      const li = document.createElement("li");
+      li.className = m.mine ? "msg mine" : "msg";
+      li.dataset.id = m.id;
+      const body = document.createElement("div");
+      body.className = "msg-body";
+      body.textContent = m.body;
+      const time = document.createElement("time");
+      time.className = "msg-time";
+      time.dateTime = new Date(m.at).toISOString();
+      time.textContent = m.time;
+      li.append(body, time);
+      thread.append(li);
+    };
+
+    const poll = async () => {
+      if (document.hidden) return;
+      try {
+        const res = await fetch(`/api/conversations/${conversationId}/messages.json?after=${after}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { messages: Msg[] };
+        data.messages.forEach(add);
+      } catch {
+        // offline for a moment; try again next round
+      }
+    };
+    setInterval(poll, POLL_MS);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) poll();
+    });
+
+    const textarea = form.querySelector("textarea")!;
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+    const showError = (text: string | null) => {
+      let el = form.querySelector<HTMLElement>(".js-error");
+      if (!text) return el?.remove();
+      if (!el) {
+        el = document.createElement("p");
+        el.className = "alert js-error";
+        el.setAttribute("role", "alert");
+        form.prepend(el);
+      }
+      el.textContent = text;
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!textarea.value.trim()) {
+        showError("Bitte eine Nachricht schreiben.");
+        textarea.focus();
+        return;
+      }
+      button.disabled = true;
+      const { error } = await actions.messages.send(new FormData(form));
+      button.disabled = false;
+      if (error) {
+        showError(isInputError(error) ? (error.fields.body?.[0] ?? error.message) : error.message);
+        return;
+      }
+      showError(null);
+      textarea.value = "";
+      await poll();
+      thread.lastElementChild?.scrollIntoView({ block: "nearest" });
+    });
+  }
+</script>

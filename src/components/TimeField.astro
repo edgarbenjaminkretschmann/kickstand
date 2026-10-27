@@ -1,0 +1,27 @@
+---
+// Time as plain text HH:MM. <input type="time"> shows 12h AM/PM on English phones.
+import Field from "./Field.astro";
+
+interface Props {
+  label: string;
+  name: string;
+  value?: string | null;
+  error?: string;
+  id?: string;
+}
+
+const { value, ...rest } = Astro.props;
+---
+
+<Field
+  {...rest}
+  value={value ?? ""}
+  inputmode="numeric"
+  autocomplete="off"
+  placeholder="HH:MM"
+  pattern={"([01]?\\d|2[0-3])[:.][0-5]\\d"}
+  title="Uhrzeit als HH:MM"
+  maxlength={5}
+  mono
+  data-time
+/>

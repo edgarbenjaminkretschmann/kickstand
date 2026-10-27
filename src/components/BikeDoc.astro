@@ -1,0 +1,47 @@
+---
+// Read-only vehicle data in the Fahrzeugschein look.
+import { formatDate } from "../lib/dates";
+import { groupThousands } from "../lib/euro-words";
+
+interface Props {
+  bike: {
+    make: string;
+    model: string;
+    typeCode: string;
+    plate: string;
+    vin: string;
+    firstRegistration?: string | null;
+    powerKw?: number | null;
+    displacementCcm?: number | null;
+    fuel: string;
+  };
+  extra?: [string, string][];
+}
+
+const { bike, extra = [] } = Astro.props;
+const rows: [string, string][] = [
+  ["Fahrzeug", `${bike.make} ${bike.model}`.toUpperCase() + (bike.typeCode ? ` (${bike.typeCode})` : "")],
+  ["Kennz.", bike.plate],
+  ["FIN", bike.vin],
+  [
+    "EZ",
+    [formatDate(bike.firstRegistration), bike.powerKw ? `${bike.powerKw} kW` : "", bike.displacementCcm ? `${groupThousands(bike.displacementCcm)} cm³` : "", bike.fuel]
+      .filter(Boolean)
+      .join(" · "),
+  ],
+  ...extra,
+];
+---
+
+<dl class="doc" aria-label="Fahrzeugdaten">
+  {
+    rows
+      .filter(([, v]) => v)
+      .map(([k, v]) => (
+        <>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
+        </>
+      ))
+  }
+</dl>

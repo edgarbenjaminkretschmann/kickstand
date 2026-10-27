@@ -1,0 +1,38 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends Omit<HTMLAttributes<"input">, "value"> {
+  label: string;
+  name: string;
+  value?: string | number | null;
+  error?: string;
+  /** Field code from the Zulassungsbescheinigung, e.g. "D.2". */
+  code?: string;
+  hint?: string;
+  mono?: boolean;
+  multiline?: boolean;
+  /** Visible lines for multiline fields. */
+  rows?: number;
+}
+
+const { label, name, value, error, code, hint, mono, multiline, rows, type = "text", class: cls, ...rest } = Astro.props;
+const id = rest.id ?? `f-${name}`;
+const errId = `${id}-err`;
+const hintId = `${id}-hint`;
+const describedBy = [error ? errId : null, hint ? hintId : null].filter(Boolean).join(" ") || undefined;
+---
+
+<label class:list={["field", cls]} for={id}>
+  <span>{code && <span class="code">{code}</span>}{label}</span>
+  {
+    multiline ? (
+      <textarea id={id} name={name} rows={rows} aria-invalid={error ? "true" : undefined} aria-describedby={describedBy} class:list={{ mono }} {...(rest as HTMLAttributes<"textarea">)}>
+        {value ?? ""}
+      </textarea>
+    ) : (
+      <input id={id} name={name} type={type} value={value ?? ""} aria-invalid={error ? "true" : undefined} aria-describedby={describedBy} class:list={{ mono }} {...rest} />
+    )
+  }
+  {hint && <span class="hint" id={hintId}>{hint}</span>}
+  {error && <span class="error" id={errId}>{error}</span>}
+</label>

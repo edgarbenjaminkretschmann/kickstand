@@ -1,0 +1,46 @@
+---
+// One search result: cover photo, type chip, category, title, price, place and age.
+import type { ListingCard } from "../lib/data/listings";
+import { placeLabel, priceLabel, relativeDate, STATUS_LABEL } from "../lib/listing-format";
+import TypeChip from "./TypeChip.astro";
+
+interface Props {
+  listing: ListingCard;
+  /** Show the status chip (own listings, Merkliste). */
+  showStatus?: boolean;
+  /** Dark variant for the landing page. */
+  tone?: "light" | "dark";
+  headingLevel?: 2 | 3;
+}
+
+const { listing: l, showStatus = false, tone = "light", headingLevel = 3 } = Astro.props;
+const H = `h${headingLevel}` as "h2" | "h3";
+const href = `/anzeigen/${l.id}`;
+---
+
+<article class:list={["lcard", `lcard-${tone}`, { "lcard-off": l.status !== "aktiv" }]}>
+  <a href={href} class="lcard-photo" tabindex="-1" aria-hidden="true">
+    {
+      l.coverPhotoId ? (
+        <img src={`/media/listing/${l.coverPhotoId}`} alt="" loading="lazy" width="400" height="300" />
+      ) : (
+        <span class="lcard-nophoto">{l.categoryLabel}</span>
+      )
+    }
+  </a>
+  <div class="lcard-body">
+    <div class="chips">
+      <TypeChip type={l.type} category={l.categorySlug} />
+      <span class="chip chip-outline">{l.categoryLabel}</span>
+      {l.lent && <span class="chip chip-ink">verliehen</span>}
+      {showStatus && l.status !== "aktiv" && <span class="chip chip-outline">{STATUS_LABEL[l.status]}</span>}
+    </div>
+    <H class="lcard-title"><a href={href}>{l.title}</a></H>
+    <p class="lcard-price">{priceLabel(l.priceKind, l.priceCents)}</p>
+    <p class="lcard-meta">
+      <span>{placeLabel(l) || "Ort nicht angegeben"}</span>
+      <span aria-hidden="true">·</span>
+      <time datetime={l.createdAt.toISOString()}>{relativeDate(l.createdAt)}</time>
+    </p>
+  </div>
+</article>

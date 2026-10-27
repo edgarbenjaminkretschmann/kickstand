@@ -1,0 +1,157 @@
+---
+// Bike form laid out like the Zulassungsbescheinigung Teil I: pale green sheet, field codes, monospace values.
+import { actions } from "astro:actions";
+import Field from "./Field.astro";
+import DateField from "./DateField.astro";
+import FormAlert from "./FormAlert.astro";
+
+interface Props {
+  values: Record<string, unknown>;
+  errors: Record<string, string>;
+  message?: string | null;
+  id?: string;
+  photoUrl?: string | null;
+}
+
+const { values: v, errors, message, id, photoUrl } = Astro.props;
+const str = (k: string) => (v[k] == null ? "" : String(v[k]));
+---
+
+<form method="POST" action={actions.bikes.save} enctype="multipart/form-data" class="stack" novalidate>
+  {id && <input type="hidden" name="id" value={id} />}
+  <FormAlert message={message} />
+
+  <section class="zb" aria-labelledby="zb-title">
+    <div class="zb-head">
+      <h2 id="zb-title">Zulassungsbescheinigung Teil I</h2>
+      <p>Abschreiben wie im Fahrzeugschein. Die Codes stehen dort links neben den Feldern. Kennzeichen und FIN bleiben privat und stehen nur im Leihvertrag.</p>
+    </div>
+    <div class="zb-grid">
+      <Field class="span2" code="A" label="Kennzeichen" name="plate" mono value={str("plate")} autocapitalize="characters" placeholder="M-AB 123" />
+      <DateField code="B" label="Erstzulassung" name="firstRegistration" value={str("firstRegistration")} error={errors.firstRegistration} />
+      <Field code="D.1" label="Marke" name="make" required value={str("make")} error={errors.make} placeholder="Honda" />
+      <Field code="D.2" label="Typ" name="typeCode" mono value={str("typeCode")} placeholder="RC36" />
+      <Field class="span2" code="D.3" label="Handelsbezeichnung" name="model" required value={str("model")} error={errors.model} placeholder="VFR 750 F" />
+      <Field class="span2" code="E" label="Fahrzeug-Ident.-Nr." name="vin" mono value={str("vin")} autocapitalize="characters" maxlength={17} />
+      <Field code="P.1" label="Hubraum ccm" name="displacementCcm" mono inputmode="numeric" value={str("displacementCcm")} error={errors.displacementCcm} />
+      <Field code="P.2" label="Leistung kW" name="powerKw" mono inputmode="numeric" value={str("powerKw")} error={errors.powerKw} />
+      <Field code="P.3" label="Kraftstoff" name="fuel" value={str("fuel")} placeholder="Benzin" />
+      <Field
+        class="span2"
+        code="22"
+        label="Bemerkungen und Ausnahmen"
+        name="conditions"
+        multiline
+        value={str("conditions")}
+        placeholder="z. B. Beifahrer nur mit Fußrasten"
+        hint="Kommt als Auflage in den Leihvertrag (§ 4)."
+      />
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Versicherung und Haftung</h2>
+    <div class="row stack-sm">
+      <Field label="Haftpflichtversicherer" name="insurer" value={str("insurer")} />
+      <Field label="Versicherungsschein-Nr." name="policyNumber" mono value={str("policyNumber")} />
+    </div>
+    <Field
+      label="Haftungsgrenze Entleiher in €"
+      name="liabilityCapEur"
+      mono
+      inputmode="decimal"
+      value={str("liabilityCapEur") || "1000"}
+      error={errors.liabilityCapEur}
+      hint="Höchstbetrag je Schaden, den der Entleiher zahlt. Vorschlag für jeden neuen Vertrag."
+    />
+  </section>
+
+  <section class="card">
+    <h2>Foto</h2>
+    {
+      photoUrl && (
+        <>
+          <img src={photoUrl} alt="Aktuelles Foto" class="current" width="320" height="240" loading="lazy" />
+          <label class="check">
+            <input type="checkbox" name="removePhoto" />
+            Foto entfernen
+          </label>
+        </>
+      )
+    }
+    <label class="photo-btn">
+      {photoUrl ? "Anderes Foto wählen" : "+ Foto aufnehmen oder hochladen"}
+      <input type="file" name="photo" accept="image/*" data-preview />
+    </label>
+    <p class="hint">Wird auf max. 1600 px verkleinert. Nur du siehst es. Für eine Anzeige lädst du dort eigene Fotos hoch.</p>
+  </section>
+
+  <div class="actions">
+    <button type="submit" class="btn-primary">Speichern</button>
+    <a href="/app" class="btn">Abbrechen</a>
+  </div>
+</form>
+
+<script>
+  // Show the chosen file name on the photo button (the native input is hidden when JS runs).
+  document.querySelectorAll<HTMLInputElement>("input[data-preview]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const label = input.closest("label");
+      const f = input.files?.[0];
+      if (label?.firstChild && f) label.firstChild.textContent = `Gewählt: ${f.name} `;
+    });
+  });
+</script>
+
+<style>
+  .zb {
+    background: var(--doc);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .zb-head h2 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .zb-head p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .zb-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 10px;
+  }
+  .zb-grid :global(.span2) {
+    grid-column: span 2;
+  }
+  .zb :global(input),
+  .zb :global(textarea) {
+    background: var(--surface);
+  }
+  @media (max-width: 380px) {
+    .zb-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .zb-grid :global(.span2) {
+      grid-column: auto;
+    }
+  }
+  .current {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+</style>

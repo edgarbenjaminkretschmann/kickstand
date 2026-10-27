@@ -1,0 +1,46 @@
+{
+  "name": "kickstand",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "start": "node ./dist/server/entry.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:reset": "node scripts/reset.mjs && npm run db:migrate && npm run db:seed",
+    "db:migrate-legacy": "tsx scripts/migrate-legacy.ts",
+    "test": "vitest run",
+    "check": "astro check",
+    "build:cf": "astro build --config astro.config.cloudflare.mjs",
+    "preview:cf": "npm run build:cf && wrangler dev",
+    "deploy:cf": "npm run build:cf && wrangler deploy",
+    "r2:upload": "node scripts/upload-r2.mjs"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.13",
+    "@astrojs/node": "^9.5.5",
+    "@libsql/client": "^0.18.0",
+    "astro": "^5.18.2",
+    "better-auth": "^1.7.12",
+    "drizzle-orm": "^0.45.4",
+    "jspdf": "^4.2.1",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7",
+    "wrangler": "^4.153.0"
+  },
+  "imports": {
+    "#platform": {
+      "workerd": "./src/platform/cloudflare.ts",
+      "default": "./src/platform/node.ts"
+    }
+  }
+}

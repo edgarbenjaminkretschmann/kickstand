@@ -1,0 +1,308 @@
+---
+import { actions } from "astro:actions";
+import Base from "../../../layouts/Base.astro";
+import Field from "../../../components/Field.astro";
+import FormAlert from "../../../components/FormAlert.astro";
+import TypeChip from "../../../components/TypeChip.astro";
+import { getActiveLoan } from "../../../lib/data/bikes";
+import { findConversation, listConversations } from "../../../lib/data/conversations";
+import { BIKE_CATEGORY, getListingDetail } from "../../../lib/data/listings";
+import { isSaved } from "../../../lib/data/saved";
+import { firstName } from "../../../lib/data/profiles";
+import { formatDate } from "../../../lib/dates";
+import { formatEuro, groupThousands } from "../../../lib/euro-words";
+import { fieldErrors, formError } from "../../../lib/form";
+import { memberSince, placeLabel, priceLabel, relativeDate, STATUS_LABEL } from "../../../lib/listing-format";
+import { submittedValues } from "../../../lib/submitted";
+
+const user = Astro.locals.user;
+const id = Astro.params.id!;
+
+// Owner actions and messaging post back to this page.
+const removed = Astro.getActionResult(actions.listings.remove);
+if (removed && !removed.error) return Astro.redirect("/app?geloescht=1#anzeigen");
+const status = Astro.getActionResult(actions.listings.setStatus);
+if (status && !status.error) return Astro.redirect(`/anzeigen/${id}?status=${status.data.status}`);
+const saveResult = Astro.getActionResult(actions.listings.save);
+if (saveResult && !saveResult.error) return Astro.redirect(`/anzeigen/${id}${saveResult.data.saved ? "?gemerkt=1" : ""}`);
+const started = Astro.getActionResult(actions.messages.start);
+if (started && !started.error) return Astro.redirect(`/nachrichten/${started.data.conversationId}`);
+
+const listing = await getListingDetail(id);
+if (!listing) return new Response("Nicht gefunden", { status: 404 });
+
+const own = user?.id === listing.userId;
+const existingConversation = user && !own ? await findConversation(listing.id, user.id) : null;
+// Inactive listings stay reachable by link (Merkliste, conversations) but say so.
+const inactive = listing.status !== "aktiv";
+const saved = user && !own ? await isSaved(user.id, listing.id) : false;
+const isBikeOffer = listing.categorySlug === BIKE_CATEGORY && listing.type === "biete" && !!listing.bike;
+const activeLoan = isBikeOffer && own ? await getActiveLoan(listing.bike!.id) : null;
+const conversations = own ? await listConversations(user!.id, { listingId: listing.id }) : [];
+const canMessage = !own && !inactive && !listing.lent;
+
+const prev = await submittedValues(Astro.request, !!started?.error);
+const msgErrors = fieldErrors(started);
+const message = formError(started) ?? formError(status) ?? formError(removed) ?? formError(saveResult);
+const confirmDelete = own && Astro.url.searchParams.has("loeschen");
+const bike = listing.bike;
+const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kontakt`)}`;
+---
+
+<Base title={listing.title} description={listing.description.slice(0, 150)} wide>
+  <nav class="crumbs small" aria-label="Pfad">
+    <a href="/anzeigen">Anzeigen</a>
+    <span aria-hidden="true">/</span>
+    <a href={`/anzeigen?kategorie=${listing.categorySlug}`}>{listing.categoryLabel}</a>
+  </nav>
+
+  <FormAlert message={message} />
+  {Astro.url.searchParams.has("gemerkt") && <p class="notice" role="status">Auf deiner <a href="/merkliste">Merkliste</a>.</p>}
+  {Astro.url.searchParams.has("status") && <p class="notice" role="status">Status geändert: {STATUS_LABEL[listing.status]}.</p>}
+  {Astro.url.searchParams.has("neu") && <p class="notice" role="status">Deine Anzeige ist online.</p>}
+  {Astro.url.searchParams.has("gespeichert") && <p class="notice" role="status">Änderungen gespeichert.</p>}
+  {inactive && <p class="notice">Diese Anzeige ist {STATUS_LABEL[listing.status].toLowerCase()} und erscheint nicht mehr in der Suche.</p>}
+
+  <div class="detail">
+    <div class="detail-top">
+      {
+        listing.photos.length > 0 ? (
+          <div class="gallery" aria-label={`${listing.photos.length} Fotos`}>
+            <ul class="gallery-track">
+              {listing.photos.map((p, i) => (
+                <li id={`foto-${i + 1}`}>
+                  <img
+                    src={`/media/listing/${p.id}`}
+                    alt={`${listing.title}, Foto ${i + 1} von ${listing.photos.length}`}
+                    width="960"
+                    height="720"
+                    loading={i === 0 ? "eager" : "lazy"}
+                  />
+                </li>
+              ))}
+            </ul>
+            {listing.photos.length > 1 && (
+              <nav class="gallery-thumbs" aria-label="Fotos">
+                {listing.photos.map((p, i) => (
+                  <a href={`#foto-${i + 1}`} aria-label={`Foto ${i + 1}`}>
+                    <img src={`/media/listing/${p.id}`} alt="" width="80" height="60" loading="lazy" />
+                  </a>
+                ))}
+              </nav>
+            )}
+          </div>
+        ) : (
+          <div class="gallery-empty" aria-hidden="true">
+            <span>{listing.categoryLabel}</span>
+          </div>
+        )
+      }
+
+      <div class="detail-head">
+        <div class="chips">
+          <TypeChip type={listing.type} category={listing.categorySlug} />
+          <span class="chip chip-outline">{listing.categoryLabel}</span>
+          {listing.lent && <span class="chip chip-ink">verliehen</span>}
+          {inactive && <span class="chip chip-outline">{STATUS_LABEL[listing.status]}</span>}
+        </div>
+        <h1>{listing.title}</h1>
+        <p class="detail-price">{priceLabel(listing.priceKind, listing.priceCents)}</p>
+        <p class="muted">
+          {placeLabel(listing) || "Ort nicht angegeben"} · <time datetime={listing.createdAt.toISOString()}>{relativeDate(listing.createdAt)}</time>
+        </p>
+      </div>
+
+    </div>
+
+    <div class="detail-body">
+      {listing.description && <div class="detail-text">{listing.description}</div>}
+
+      {
+        isBikeOffer && bike && (
+          <section class="panel" aria-labelledby="h-bike">
+            <h2 id="h-bike">Das Motorrad</h2>
+            <dl class="facts">
+              <dt>Modell</dt>
+              <dd>
+                {bike.make} {bike.model}
+                {bike.typeCode && ` (${bike.typeCode})`}
+              </dd>
+              {bike.firstRegistration && (
+                <>
+                  <dt>Erstzulassung</dt>
+                  <dd>{formatDate(bike.firstRegistration).slice(3)}</dd>
+                </>
+              )}
+              {(bike.powerKw || bike.displacementCcm) && (
+                <>
+                  <dt>Leistung</dt>
+                  <dd>
+                    {[bike.powerKw ? `${bike.powerKw} kW (${Math.round(bike.powerKw * 1.36)} PS)` : "", bike.displacementCcm ? `${groupThousands(bike.displacementCcm)} cm³` : ""]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </dd>
+                </>
+              )}
+              <dt>Haftung</dt>
+              <dd>höchstens {formatEuro(bike.liabilityCapEur, false)} je Schaden</dd>
+              {bike.conditions && (
+                <>
+                  <dt>Auflage</dt>
+                  <dd>{bike.conditions}</dd>
+                </>
+              )}
+            </dl>
+            <p class="small muted">
+              Kostenlose Leihe nach § 598 BGB mit Leihvertrag, Übergabeprotokoll und Fotos. <a href="/so-gehts">So geht's</a>
+            </p>
+          </section>
+        )
+      }
+    </div>
+
+    <aside class="detail-side">
+      <section class="panel seller" aria-label="Anbieter">
+        <p class="seller-name">{firstName(listing.seller.name) || "Mitglied"}</p>
+        <p class="small muted">{memberSince(listing.seller.memberSince)}</p>
+      </section>
+
+      {
+        !own && (
+          <div class="side-actions" id="kontakt">
+            {user ? (
+              <form method="POST" action={actions.listings.save} class="save-form">
+                <input type="hidden" name="listingId" value={listing.id} />
+                <input type="hidden" name="saved" value={saved ? "0" : "1"} />
+                <button type="submit" class:list={["btn", "btn-heart", { on: saved }]} aria-pressed={saved ? "true" : "false"}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                  </svg>
+                  {saved ? "Gemerkt" : "Merken"}
+                </button>
+              </form>
+            ) : (
+              <a class="btn btn-heart" href={loginHref}>
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
+                </svg>
+                Merken
+              </a>
+            )}
+
+            {existingConversation ? (
+              <a class="btn btn-primary btn-block" href={`/nachrichten/${existingConversation}`}>
+                Zur Unterhaltung
+              </a>
+            ) : !canMessage ? (
+              <p class="small muted">{listing.lent ? "Das Motorrad ist gerade verliehen. Schau später nochmal vorbei." : "Für diese Anzeige sind keine neuen Nachrichten möglich."}</p>
+            ) : user ? (
+              <form method="POST" action={`${actions.messages.start}`} class="stack msg-form" novalidate>
+                <input type="hidden" name="listingId" value={listing.id} />
+                <Field
+                  label="Nachricht schreiben"
+                  name="body"
+                  multiline
+                  required
+                  maxlength={4000}
+                  value={prev?.body ?? ""}
+                  error={msgErrors.body}
+                  placeholder={listing.type === "biete" ? "Hallo, ist das noch zu haben? Wann würde es passen?" : "Hallo, ich kann dir helfen."}
+                />
+                <button type="submit" class="btn-primary btn-block">
+                  Nachricht senden
+                </button>
+              </form>
+            ) : (
+              <a class="btn btn-primary btn-block" href={loginHref}>
+                Nachricht schreiben
+              </a>
+            )}
+            {!user && <p class="small muted">Zum Schreiben bitte anmelden. Kostenlos.</p>}
+          </div>
+        )
+      }
+
+      {
+        own && (
+          <section class="panel owner" aria-labelledby="h-owner">
+            <h2 id="h-owner">Deine Anzeige</h2>
+            <div class="actions">
+              <a class="btn btn-primary" href={`/anzeigen/${listing.id}/bearbeiten`}>
+                Bearbeiten
+              </a>
+            </div>
+            <form method="POST" action={actions.listings.setStatus} class="status-form">
+              <input type="hidden" name="id" value={listing.id} />
+              <p class="small muted">Status</p>
+              <div class="seg seg-3">
+                {(["aktiv", "reserviert", "erledigt"] as const).map((st) => (
+                  <button type="submit" name="status" value={st} class:list={{ on: listing.status === st }} aria-pressed={listing.status === st ? "true" : "false"}>
+                    {STATUS_LABEL[st]}
+                  </button>
+                ))}
+              </div>
+            </form>
+
+            {isBikeOffer &&
+              (activeLoan ? (
+                <p class="small">
+                  Gerade verliehen an {activeLoan.borrowerName}. <a href={`/app/loans/${activeLoan.id}`}>Zum Vertrag</a>
+                </p>
+              ) : (
+                <a class="btn btn-block" href={`/app/loans/new?bike=${bike!.id}&listing=${listing.id}`}>
+                  Leihvertrag starten
+                </a>
+              ))}
+
+            {conversations.length > 0 && (
+              <div class="stack">
+                <p class="small muted">Nachrichten zu dieser Anzeige</p>
+                <ul class="list">
+                  {conversations.map((c) => (
+                    <li class:list={["item", { unread: c.unread > 0 }]}>
+                      <div class="item-head">
+                        <a class="item-title" href={`/nachrichten/${c.id}`}>
+                          {c.other.name}
+                        </a>
+                        {c.unread > 0 && <span class="count count-hot">{c.unread} neu</span>}
+                      </div>
+                      {isBikeOffer && !activeLoan && (
+                        <a class="btn-link" href={`/app/loans/new?bike=${bike!.id}&listing=${listing.id}&conversation=${c.id}`}>
+                          Leihvertrag mit {firstName(c.other.name)} starten
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div id="loeschen">
+              {confirmDelete ? (
+                <form method="POST" action={actions.listings.remove} class="confirm-box">
+                  <input type="hidden" name="id" value={listing.id} />
+                  <input type="hidden" name="confirm" value="ja" />
+                  <p>
+                    <strong>Anzeige wirklich löschen?</strong> Fotos und Nachrichten dazu werden mit gelöscht.
+                  </p>
+                  <div class="actions">
+                    <button type="submit" class="btn-danger">
+                      Ja, löschen
+                    </button>
+                    <a class="btn" href={`/anzeigen/${listing.id}`}>
+                      Abbrechen
+                    </a>
+                  </div>
+                </form>
+              ) : (
+                <a class="btn-link danger-link" href={`/anzeigen/${listing.id}?loeschen=1#loeschen`}>
+                  Anzeige löschen
+                </a>
+              )}
+            </div>
+          </section>
+        )
+      }
+    </aside>
+  </div>
+</Base>

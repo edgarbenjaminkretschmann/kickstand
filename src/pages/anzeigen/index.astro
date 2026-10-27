@@ -1,0 +1,120 @@
+---
+import Base from "../../layouts/Base.astro";
+import ListingCard from "../../components/ListingCard.astro";
+import { listCategories, searchListings } from "../../lib/data/listings";
+
+const q = Astro.url.searchParams;
+const filters = {
+  q: (q.get("q") ?? "").trim().slice(0, 100),
+  type: ["biete", "suche"].includes(q.get("typ") ?? "") ? q.get("typ")! : "",
+  category: q.get("kategorie") ?? "",
+  ort: (q.get("ort") ?? "").trim().slice(0, 80),
+  page: Number(q.get("seite")) || 1,
+};
+const categories = await listCategories();
+if (filters.category && !categories.some((c) => c.slug === filters.category)) filters.category = "";
+const result = await searchListings(filters);
+const activeCategory = categories.find((c) => c.slug === filters.category);
+const filtered = !!(filters.q || filters.type || filters.category || filters.ort);
+
+/** Same filters, other page. */
+const pageHref = (page: number) => {
+  const p = new URLSearchParams();
+  if (filters.q) p.set("q", filters.q);
+  if (filters.type) p.set("typ", filters.type);
+  if (filters.category) p.set("kategorie", filters.category);
+  if (filters.ort) p.set("ort", filters.ort);
+  if (page > 1) p.set("seite", String(page));
+  const s = p.toString();
+  return `/anzeigen${s ? `?${s}` : ""}`;
+};
+const title = activeCategory ? activeCategory.label : "Anzeigen";
+---
+
+<Base title={title} description="Motorräder zum Leihen, Garagen, Werkzeug, Teile, Hilfe beim Schrauben und Tourpartner. Biete und suche unter Motorradfahrern." wide>
+  <div class="page-head">
+    <h1>{title}</h1>
+    <p>Biete und suche unter Motorradfahrern: Motorräder zum Leihen, Garagen, Werkzeug, Teile, Hilfe und Touren.</p>
+  </div>
+
+  <form method="GET" action="/anzeigen" class="search" role="search">
+    <label class="field search-q">
+      <span class="visually-hidden">Suchbegriff</span>
+      <input type="search" name="q" value={filters.q} placeholder="Was suchst du? z. B. Hebebühne" enterkeyhint="search" />
+    </label>
+    <div class="seg seg-3" role="radiogroup" aria-label="Art">
+      <label><input type="radio" name="typ" value="" checked={!filters.type} /><span>Alle</span></label>
+      <label><input type="radio" name="typ" value="biete" checked={filters.type === "biete"} /><span>Biete</span></label>
+      <label><input type="radio" name="typ" value="suche" checked={filters.type === "suche"} /><span>Suche</span></label>
+    </div>
+    <div class="row stack-sm">
+      <label class="field">
+        Kategorie
+        <select name="kategorie">
+          <option value="">Alle Kategorien</option>
+          {
+            categories.map((c) => (
+              <option value={c.slug} selected={c.slug === filters.category}>
+                {c.label}
+              </option>
+            ))
+          }
+        </select>
+      </label>
+      <label class="field">
+        Ort oder PLZ
+        <input type="search" name="ort" value={filters.ort} placeholder="z. B. Leipzig oder 04" autocomplete="address-level2" />
+      </label>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn-primary">Suchen</button>
+      {filtered && <a href="/anzeigen" class="btn-link">Filter zurücksetzen</a>}
+    </div>
+  </form>
+
+  <p class="result-count" role="status">
+    {result.total === 0 ? "Keine Anzeigen gefunden." : result.total === 1 ? "1 Anzeige" : `${result.total} Anzeigen`}
+    {result.pageCount > 1 && <span class="muted"> · Seite {result.page} von {result.pageCount}</span>}
+  </p>
+
+  {
+    result.total === 0 ? (
+      <div class="empty-box">
+        <p>{filtered ? "Mit diesen Filtern gibt es gerade nichts. Versuch es mit weniger Filtern." : "Noch keine Anzeigen. Sei die oder der Erste."}</p>
+        <a class="btn" href="/anzeigen/neu">
+          Anzeige aufgeben
+        </a>
+      </div>
+    ) : (
+      <div class="cards">
+        {result.items.map((l) => (
+          <ListingCard listing={l} headingLevel={2} />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    result.pageCount > 1 && (
+      <nav class="pager" aria-label="Seiten">
+        {result.page > 1 ? (
+          <a class="btn" href={pageHref(result.page - 1)} rel="prev">
+            Zurück
+          </a>
+        ) : (
+          <span />
+        )}
+        <span class="muted small">
+          Seite {result.page} von {result.pageCount}
+        </span>
+        {result.page < result.pageCount ? (
+          <a class="btn" href={pageHref(result.page + 1)} rel="next">
+            Weiter
+          </a>
+        ) : (
+          <span />
+        )}
+      </nav>
+    )
+  }
+</Base>

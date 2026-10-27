@@ -1,0 +1,176 @@
+---
+// Step 2 of "Anzeige aufgeben" (and the edit form). Photos are shrunk in the browser before upload when JS runs.
+import { actions } from "astro:actions";
+import Field from "./Field.astro";
+import FormAlert from "./FormAlert.astro";
+import type { Bike } from "../lib/data/types";
+import { BIKE_CATEGORY, MAX_PHOTOS, type CategoryRecord } from "../lib/data/listings";
+import { COUNTRY_LABEL, PRICE_KIND_LABEL, TYPE_LABEL } from "../lib/listing-format";
+
+interface Props {
+  mode: "create" | "update";
+  id?: string;
+  type: string;
+  category: CategoryRecord;
+  values: Record<string, string>;
+  errors: Record<string, string>;
+  message?: string | null;
+  bikes: Bike[];
+  photoCount: number;
+  /** Link back to step 1. */
+  changeHref: string;
+}
+
+const { mode, id, type, category, values: v, errors, message, bikes, photoCount, changeHref } = Astro.props;
+const isBikeOffer = category.slug === BIKE_CATEGORY && type === "biete";
+const priceKind = v.priceKind || "kostenlos";
+const room = MAX_PHOTOS - photoCount;
+const action = mode === "create" ? actions.listings.create : actions.listings.update;
+const titlePlaceholder: Record<string, string> = {
+  "motorrad-leihen": type === "biete" ? "z. B. Honda VFR 750 F für Touren" : "z. B. Suche Enduro für zwei Wochen",
+  garage: type === "biete" ? "z. B. Stellplatz im Winter frei" : "z. B. Suche Garage für den Winter",
+  werkzeug: type === "biete" ? "z. B. Montageständer zu verleihen" : "z. B. Drehmomentschlüssel fürs Wochenende",
+  teile: "z. B. Original-Auspuff VFR 750",
+  hilfe: type === "biete" ? "z. B. Helfe beim Reifenwechsel" : "z. B. Wer hilft beim Kettenwechsel?",
+  tour: "z. B. Sonntagsrunde Harz",
+};
+---
+
+<form method="POST" action={action} enctype="multipart/form-data" class="stack listing-form" novalidate>
+  {id && <input type="hidden" name="id" value={id} />}
+  <input type="hidden" name="type" value={type} />
+  <input type="hidden" name="categorySlug" value={category.slug} />
+  <FormAlert message={message} />
+
+  <div class="panel chosen">
+    <p>
+      <strong>{TYPE_LABEL[type]}</strong> · {category.label}
+    </p>
+    <a class="btn-link" href={changeHref}>Ändern</a>
+  </div>
+
+  {
+    isBikeOffer && (
+      <section class="panel">
+        <h2>Welches Motorrad?</h2>
+        {bikes.length ? (
+          <>
+            <fieldset class="choice-grid">
+              <legend class="visually-hidden">Motorrad</legend>
+              {bikes.map((b, i) => (
+                <label class="choice">
+                  <input type="radio" name="bikeId" value={b.id} checked={v.bikeId ? v.bikeId === b.id : i === 0} required />
+                  <span class="choice-title">
+                    {b.make} {b.model}
+                  </span>
+                  <span class="choice-hint">{[b.typeCode, b.plate].filter(Boolean).join(" · ")}</span>
+                </label>
+              ))}
+            </fieldset>
+            {errors.bikeId && <span class="error">{errors.bikeId}</span>}
+            <p class="hint">Verliehen wird immer kostenlos, mit Leihvertrag und der Haftungsgrenze aus den Fahrzeugdaten. Kennzeichen und FIN bleiben privat.</p>
+          </>
+        ) : (
+          <p class="notice">
+            Du hast noch kein Motorrad eingetragen. <a href="/app/bikes/new">Erst das Motorrad eintragen</a>, dann die Anzeige aufgeben.
+          </p>
+        )}
+      </section>
+    )
+  }
+
+  <section class="panel">
+    <h2>Anzeige</h2>
+    <Field label="Titel" name="title" required maxlength={120} value={v.title} error={errors.title} placeholder={titlePlaceholder[category.slug] ?? ""} />
+    <Field
+      label="Beschreibung"
+      name="description"
+      multiline
+      rows={6}
+      maxlength={4000}
+      value={v.description}
+      error={errors.description}
+      placeholder="Was genau, wann, unter welchen Bedingungen?"
+    />
+  </section>
+
+  {
+    !isBikeOffer && (
+      <section class="panel">
+        <h2>Preis</h2>
+        <div class="seg seg-4" role="radiogroup" aria-label="Preisart">
+          {Object.entries(PRICE_KIND_LABEL).map(([k, label]) => (
+            <label>
+              <input type="radio" name="priceKind" value={k} checked={priceKind === k} />
+              <span>{k === "vb" ? "VB" : label}</span>
+            </label>
+          ))}
+        </div>
+        <div class="price-field">
+          <Field
+            label="Betrag in €"
+            name="price"
+            inputmode="decimal"
+            value={v.price}
+            error={errors.price}
+            placeholder="z. B. 25"
+            hint="Bei Festpreis Pflicht, bei VB optional."
+          />
+        </div>
+      </section>
+    )
+  }
+
+  <section class="panel">
+    <h2>Ort</h2>
+    <div class="row-zip">
+      <Field label="PLZ" name="zip" inputmode="numeric" autocomplete="postal-code" maxlength={10} value={v.zip} error={errors.zip} />
+      <Field label="Ort" name="city" autocomplete="address-level2" maxlength={80} value={v.city} error={errors.city} />
+    </div>
+    <label class="field">
+      Land
+      <select name="country">
+        {
+          Object.entries(COUNTRY_LABEL).map(([code, label]) => (
+            <option value={code} selected={(v.country || "DE") === code}>
+              {label}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+  </section>
+
+  <section class="panel">
+    <h2>Fotos</h2>
+    {
+      room > 0 ? (
+        <>
+          <div class="thumbs" id="listing-previews" />
+          <label class="photo-btn">
+            + Fotos aufnehmen oder hochladen
+            <input type="file" name="photos" accept="image/*" multiple data-listing-photos data-room={room} />
+          </label>
+          <p class="hint" id="listing-photo-status">
+            Bis zu {room} {room === 1 ? "Foto" : "Fotos"}{photoCount > 0 ? " mehr" : ""}. Das erste ist das Titelbild. Fotos sind öffentlich.
+          </p>
+        </>
+      ) : (
+        <p class="hint">Schon {MAX_PHOTOS} Fotos. Lösch eins, um ein neues hochzuladen.</p>
+      )
+    }
+  </section>
+
+  <div class="actions">
+    <button type="submit" class="btn-primary" disabled={isBikeOffer && !bikes.length}>{mode === "create" ? "Anzeige veröffentlichen" : "Speichern"}</button>
+    <a class="btn" href={id ? `/anzeigen/${id}` : "/app"}>Abbrechen</a>
+  </div>
+</form>
+
+<script>
+  import { wireListingPhotos } from "../scripts/listing-photos";
+
+  document.querySelectorAll<HTMLInputElement>("input[data-listing-photos]").forEach((input) => {
+    wireListingPhotos(input, document.getElementById("listing-previews")!, document.getElementById("listing-photo-status")!);
+  });
+</script>

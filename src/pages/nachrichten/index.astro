@@ -1,0 +1,52 @@
+---
+import Base from "../../layouts/Base.astro";
+import { listConversations } from "../../lib/data/conversations";
+import { relativeDate } from "../../lib/listing-format";
+
+const user = Astro.locals.user!;
+const conversations = await listConversations(user.id);
+---
+
+<Base title="Nachrichten">
+  <div class="page-head">
+    <h1>Nachrichten</h1>
+    <p>Deine Unterhaltungen zu Anzeigen.</p>
+  </div>
+  {
+    conversations.length === 0 ? (
+      <div class="empty-box">
+        <p>Noch keine Nachrichten. Schreib bei einer Anzeige auf „Nachricht schreiben“.</p>
+        <a class="btn" href="/anzeigen">
+          Anzeigen ansehen
+        </a>
+      </div>
+    ) : (
+      <ul class="list convs">
+        {conversations.map((c) => (
+          <li class:list={["item", { unread: c.unread > 0 }]}>
+            <span class="conv-thumb" aria-hidden="true">
+              {c.listing.coverPhotoId && <img src={`/media/listing/${c.listing.coverPhotoId}`} alt="" width="56" height="56" loading="lazy" />}
+            </span>
+            <div class="conv-body">
+              <div class="item-head">
+                <a class="conv-link" href={`/nachrichten/${c.id}`}>
+                  {c.other.name}
+                </a>
+                <time class="small muted" datetime={c.lastMessageAt.toISOString()}>
+                  {relativeDate(c.lastMessageAt)}
+                </time>
+              </div>
+              <span class="small">{c.listing.title}</span>
+              <span class="snippet">{c.lastMessage}</span>
+            </div>
+            {c.unread > 0 && (
+              <span class="count count-hot" aria-label={`${c.unread} ungelesen`}>
+                {c.unread}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</Base>

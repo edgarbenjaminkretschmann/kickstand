@@ -1,0 +1,9 @@
+---
+// Old bike pages point to the bike's listing, if the owner made one.
+import { getBike } from "../../lib/data/bikes";
+import { listingForBike } from "../../lib/data/listings";
+
+const bike = await getBike(Astro.params.id!);
+const listing = bike ? await listingForBike(bike.id, bike.ownerId) : null;
+return Astro.redirect(listing ? `/anzeigen/${listing.id}` : "/anzeigen?kategorie=motorrad-leihen&typ=biete", 301);
+---

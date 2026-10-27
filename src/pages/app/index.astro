@@ -1,0 +1,210 @@
+---
+import Base from "../../layouts/Base.astro";
+import ListingCard from "../../components/ListingCard.astro";
+import { lentBikeIds, listOwnBikes } from "../../lib/data/bikes";
+import { listConversations } from "../../lib/data/conversations";
+import { listOwnListings } from "../../lib/data/listings";
+import { loansForDashboard } from "../../lib/data/loans";
+import { getProfile } from "../../lib/data/profiles";
+import { listSaved } from "../../lib/data/saved";
+import { formatDate } from "../../lib/dates";
+import { LOAN_STATUS } from "../../lib/labels";
+import { relativeDate } from "../../lib/listing-format";
+
+const user = Astro.locals.user!;
+
+const [profile, bikes, listings, { lending, borrowing, past }, conversations, saved] = await Promise.all([
+  getProfile(user.id),
+  listOwnBikes(user.id),
+  listOwnListings(user.id),
+  loansForDashboard(user.id),
+  listConversations(user.id),
+  listSaved(user.id),
+]);
+const lent = await lentBikeIds(bikes.map((b) => b.id));
+const listingByBike = new Map(listings.filter((l) => l.bikeId).map((l) => [l.bikeId!, l]));
+const profileIncomplete = !profile?.street || !profile?.licenseNumber || !profile?.birthdate;
+const unread = conversations.reduce((n, c) => n + c.unread, 0);
+---
+
+<Base title="Mein Bereich">
+  <div class="page-head">
+    <h1>Hallo {user.name.split(/\s+/)[0]}</h1>
+    <p>Deine Anzeigen, Motorräder, Leihen und Nachrichten.</p>
+  </div>
+  {
+    profileIncomplete && (
+      <p class="notice">
+        Dein <a href="/profil">Profil</a> ist noch unvollständig. Mit vollem Namen, Anschrift, Geburtsdatum und Führerschein-Nr. sind Leihverträge schneller
+        ausgefüllt.
+      </p>
+    )
+  }
+
+  <nav class="jump" aria-label="Bereiche">
+    <a href="#anzeigen">Anzeigen <span class="count">{listings.length}</span></a>
+    <a href="#motorraeder">Motorräder <span class="count">{bikes.length}</span></a>
+    <a href="#leihen">Leihen <span class="count">{lending.length + borrowing.length}</span></a>
+    <a href="#nachrichten">Nachrichten {unread > 0 && <span class="count count-hot">{unread}</span>}</a>
+    <a href="#merkliste">Merkliste <span class="count">{saved.length}</span></a>
+  </nav>
+
+  <section class="panel" id="anzeigen" aria-labelledby="h-anzeigen">
+    <div class="panel-head">
+      <h2 id="h-anzeigen">Meine Anzeigen</h2>
+      <a class="btn btn-small" href="/anzeigen/neu">Anzeige aufgeben</a>
+    </div>
+    {listings.length === 0 && <p class="empty">Noch keine Anzeigen. Biete deine Garage an, verleih dein Motorrad oder frag nach Hilfe.</p>}
+    <div class="cards">
+      {listings.map((l) => <ListingCard listing={l} showStatus />)}
+    </div>
+  </section>
+
+  <section class="panel" id="motorraeder" aria-labelledby="h-bikes">
+    <div class="panel-head">
+      <h2 id="h-bikes">Meine Motorräder</h2>
+      <a class="btn btn-small" href="/app/bikes/new">Motorrad eintragen</a>
+    </div>
+    {bikes.length === 0 && <p class="empty">Noch kein Motorrad eingetragen.</p>}
+    <ul class="list">
+      {
+        bikes.map((b) => {
+          const l = listingByBike.get(b.id);
+          return (
+            <li class="item">
+              <div class="item-head">
+                <span class="item-title">
+                  {b.make} {b.model}
+                </span>
+                {lent.has(b.id) ? <span class="chip chip-ink">verliehen</span> : l ? <span class="chip chip-biete">in Anzeige</span> : null}
+              </div>
+              <p class="small mono muted">{[b.plate, b.typeCode].filter(Boolean).join(" · ")}</p>
+              <div class="actions">
+                <a class="btn btn-small" href={`/app/loans/new?bike=${b.id}${l ? `&listing=${l.id}` : ""}`}>
+                  Leihvertrag
+                </a>
+                {l ? (
+                  <a class="btn-link" href={`/anzeigen/${l.id}`}>
+                    Zur Anzeige
+                  </a>
+                ) : (
+                  <a class="btn-link" href={`/anzeigen/neu?typ=biete&kategorie=motorrad-leihen&bike=${b.id}`}>
+                    Zum Leihen anbieten
+                  </a>
+                )}
+                <a class="btn-link" href={`/app/bikes/${b.id}/edit`}>
+                  Bearbeiten
+                </a>
+              </div>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </section>
+
+  <section class="panel" id="leihen" aria-labelledby="h-loans">
+    <h2 id="h-loans">Aktive Leihen</h2>
+    {lending.length === 0 && borrowing.length === 0 && <p class="empty">Gerade nichts verliehen oder geliehen.</p>}
+    <ul class="list">
+      {
+        lending.map(({ loan, bike }) => (
+          <li class="item">
+            <div class="item-head">
+              <a class="item-title" href={loan.status === "draft" ? `/app/loans/new?loan=${loan.id}` : `/app/loans/${loan.id}`}>
+                {bike.make} {bike.model}
+              </a>
+              <span class:list={["chip", loan.status === "active" ? "chip-ink" : "chip-suche"]}>{LOAN_STATUS[loan.status]}</span>
+            </div>
+            <p class="small muted">
+              an {loan.borrowerName || "(noch kein Name)"}
+              {loan.startDate && <> · seit {formatDate(loan.startDate)}</>}
+              {loan.status === "active" && (loan.endMode === "fixed" ? <> · bis {formatDate(loan.endDate)}</> : <> · spätestens {formatDate(loan.latestEndDate)}</>)}
+            </p>
+            {loan.status === "active" && (
+              <div class="actions">
+                <a class="btn btn-small" href={`/app/loans/${loan.id}/return`}>
+                  Rückgabe
+                </a>
+              </div>
+            )}
+          </li>
+        ))
+      }
+      {
+        borrowing.map(({ loan, bike }) => (
+          <li class="item">
+            <div class="item-head">
+              <a class="item-title" href={`/app/loans/${loan.id}`}>
+                {bike.make} {bike.model}
+              </a>
+              <span class="chip chip-biete">Geliehen</span>
+            </div>
+            <p class="small muted">Rückgabe {loan.endMode === "fixed" ? `am ${formatDate(loan.endDate)}` : `spätestens ${formatDate(loan.latestEndDate)}`}</p>
+          </li>
+        ))
+      }
+    </ul>
+    {
+      past.length > 0 && (
+        <details class="past">
+          <summary>Abgeschlossen ({past.length})</summary>
+          <ul class="list">
+            {past.map(({ loan, bike }) => (
+              <li class="item">
+                <div class="item-head">
+                  <a class="item-title" href={`/app/loans/${loan.id}`}>
+                    {bike.make} {bike.model}
+                  </a>
+                  <span class="chip chip-outline">{LOAN_STATUS[loan.status]}</span>
+                </div>
+                <p class="small muted">
+                  an {loan.borrowerName} · ab {formatDate(loan.startDate)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )
+    }
+  </section>
+
+  <section class="panel" id="nachrichten" aria-labelledby="h-msg">
+    <div class="panel-head">
+      <h2 id="h-msg">Nachrichten</h2>
+      <a class="btn-link" href="/nachrichten">Alle</a>
+    </div>
+    {conversations.length === 0 && <p class="empty">Noch keine Nachrichten.</p>}
+    <ul class="list">
+      {
+        conversations.slice(0, 5).map((c) => (
+          <li class:list={["item", { unread: c.unread > 0 }]}>
+            <div class="item-head">
+              <a class="item-title" href={`/nachrichten/${c.id}`}>
+                {c.other.name}
+              </a>
+              <span class="small muted">{relativeDate(c.lastMessageAt)}</span>
+            </div>
+            <p class="small muted">
+              {c.listing.title}
+              {c.unread > 0 && <span class="count count-hot">{c.unread} neu</span>}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="panel" id="merkliste" aria-labelledby="h-saved">
+    <div class="panel-head">
+      <h2 id="h-saved">Merkliste</h2>
+      <a class="btn-link" href="/merkliste">Alle</a>
+    </div>
+    {saved.length === 0 && <p class="empty">Noch nichts gemerkt. Tipp auf das Herz bei einer Anzeige.</p>}
+    <div class="cards">
+      {saved.slice(0, 3).map((l) => <ListingCard listing={l} showStatus />)}
+    </div>
+  </section>
+
+  <p class="small"><a href="/profil">Profil bearbeiten</a></p>
+</Base>

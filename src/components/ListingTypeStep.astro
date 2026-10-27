@@ -1,0 +1,61 @@
+---
+// Step 1 of "Anzeige aufgeben": Biete or Suche, plus a category. A plain GET form, so it works without JS.
+import type { CategoryRecord } from "../lib/data/listings";
+
+interface Props {
+  action: string;
+  categories: CategoryRecord[];
+  type?: string;
+  category?: string;
+  /** Extra query values to keep (e.g. the bike id). */
+  keep?: Record<string, string>;
+}
+
+const { action, categories, type = "", category = "", keep = {} } = Astro.props;
+const HINTS: Record<string, string> = {
+  "motorrad-leihen": "Kostenlos verleihen, mit Leihvertrag",
+  garage: "Stellplatz, Halle, Hebebühne",
+  werkzeug: "Verleihen oder ausleihen",
+  teile: "Ersatzteile, Zubehör, Bekleidung",
+  hilfe: "Gemeinsam schrauben",
+  tour: "Zusammen fahren",
+  sonstiges: "Alles andere",
+};
+---
+
+<form method="GET" action={action} class="stack type-step">
+  {Object.entries(keep).map(([k, v]) => <input type="hidden" name={k} value={v} />)}
+  <input type="hidden" name="schritt" value="2" />
+  <fieldset class="panel">
+    <legend class="step-legend"><span class="step-no" aria-hidden="true">1</span> Bietest du etwas an oder suchst du?</legend>
+    <div class="choice-grid choice-2">
+      <label class="choice">
+        <input type="radio" name="typ" value="biete" checked={type !== "suche"} required />
+        <span class="choice-title">Biete</span>
+        <span class="choice-hint">Ich habe etwas für andere</span>
+      </label>
+      <label class="choice">
+        <input type="radio" name="typ" value="suche" checked={type === "suche"} />
+        <span class="choice-title">Suche</span>
+        <span class="choice-hint">Ich brauche etwas oder jemanden</span>
+      </label>
+    </div>
+  </fieldset>
+  <fieldset class="panel">
+    <legend class="step-legend"><span class="step-no" aria-hidden="true">2</span> Worum geht es?</legend>
+    <div class="choice-grid">
+      {
+        categories.map((c, i) => (
+          <label class="choice">
+            <input type="radio" name="kategorie" value={c.slug} checked={category ? c.slug === category : i === 0} required />
+            <span class="choice-title">{c.label}</span>
+            <span class="choice-hint">{HINTS[c.slug] ?? ""}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+  <div class="actions">
+    <button type="submit" class="btn-primary">Weiter</button>
+  </div>
+</form>

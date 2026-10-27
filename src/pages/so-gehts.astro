@@ -1,0 +1,39 @@
+---
+import { getEntry, render } from "astro:content";
+import Base from "../layouts/Base.astro";
+
+const entry = await getEntry("pages", "so-gehts");
+if (!entry) return new Response("Nicht gefunden", { status: 404 });
+const { Content } = await render(entry);
+---
+
+<Base title={entry.data.title} description={entry.data.description}>
+  <article class="prose">
+    <h1>{entry.data.title}</h1>
+    <Content />
+  </article>
+  <p class="actions">
+    <a class="btn btn-primary" href={Astro.locals.user ? "/anzeigen?kategorie=motorrad-leihen" : "/registrieren"}>{Astro.locals.user ? "Motorräder ansehen" : "Mitmachen"}</a>
+  </p>
+</Base>
+
+<style>
+  .prose {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 62ch;
+  }
+  .prose :global(h2) {
+    margin-top: 16px;
+    font-size: 1.15rem;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0;
+    padding-left: 1.3em;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+</style>

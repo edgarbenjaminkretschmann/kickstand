@@ -1,0 +1,452 @@
+---
+// The contract wizard: one long mobile page, saved as a draft on every change.
+import { actions } from "astro:actions";
+import Base from "../../../layouts/Base.astro";
+import BikeDoc from "../../../components/BikeDoc.astro";
+import DateField from "../../../components/DateField.astro";
+import Field from "../../../components/Field.astro";
+import FormAlert from "../../../components/FormAlert.astro";
+import TimeField from "../../../components/TimeField.astro";
+import { getActiveLoan, getOwnBike } from "../../../lib/access";
+import { loadLoanParts, toItems } from "../../../lib/contract-data";
+import { getConversationForUser } from "../../../lib/data/conversations";
+import { getOwnListing } from "../../../lib/data/listings";
+import { listDrafts } from "../../../lib/data/loans";
+import { getProfile, type ProfileValues } from "../../../lib/data/profiles";
+import { formatDate, formatTimestamp, todayIso } from "../../../lib/dates";
+import { formatEuro } from "../../../lib/euro-words";
+import { formError } from "../../../lib/form";
+import { submittedValues } from "../../../lib/submitted";
+import { photoUrl } from "../../../lib/urls";
+
+const user = Astro.locals.user!;
+const q = Astro.url.searchParams;
+
+const discarded = Astro.getActionResult(actions.loans.discard);
+if (discarded && !discarded.error) return Astro.redirect("/app");
+
+const saved = Astro.getActionResult(actions.loans.save);
+// A no-JS form post replaces the query string, so after an error ids come from the posted fields.
+const prev = await submittedValues(Astro.request, !!saved?.error);
+let problems: string[] = [];
+let loanParam = q.get("loan") || prev?.loanId || null;
+if (saved && !saved.error) {
+  if (saved.data.problems.length) {
+    problems = saved.data.problems;
+    loanParam = saved.data.loanId;
+  } else if (saved.data.status === "active") {
+    return Astro.redirect(`/app/loans/${saved.data.loanId}?neu=1`);
+  } else {
+    return Astro.redirect(`/app/loans/new?loan=${saved.data.loanId}&gespeichert=1`);
+  }
+}
+
+// Existing draft?
+const parts = loanParam ? await loadLoanParts(loanParam) : null;
+if (loanParam && (!parts || parts.loan.lenderId !== user.id)) return new Response("Nicht gefunden", { status: 404 });
+if (parts && parts.loan.status !== "draft") return Astro.redirect(`/app/loans/${parts.loan.id}`);
+
+const bike = await getOwnBike(parts?.bike.id ?? q.get("bike") ?? prev?.bikeId ?? "", user.id);
+if (!bike) return Astro.redirect("/app");
+
+const lenderProfile = await getProfile(user.id);
+const lenderName = lenderProfile?.name || user.name;
+const lenderAddress = [lenderProfile?.street, lenderProfile?.zipCity].filter(Boolean).join(", ");
+
+// Prefill from the other member's profile when started from a listing conversation (only for a new contract).
+let prefill: Partial<ProfileValues> & { borrowerDisplayName?: string } = {};
+let listingId = parts?.loan.listingId ?? null;
+let conversationId = parts?.loan.conversationId ?? null;
+if (!parts) {
+  const conv = q.get("conversation") || prev?.conversationId;
+  const listingParam = q.get("listing") || prev?.listingId;
+  const c = conv ? await getConversationForUser(conv, user.id) : null;
+  if (c && c.role === "seller" && c.listing.bikeId === bike.id) {
+    conversationId = c.id;
+    listingId = c.listing.id;
+    const p = await getProfile(c.other.id);
+    prefill = { ...(p ?? {}), name: p?.name || c.other.name, borrowerDisplayName: c.other.name };
+  } else if (listingParam) {
+    const l = await getOwnListing(listingParam, user.id);
+    if (l?.bikeId === bike.id) listingId = l.id;
+  }
+}
+
+// Other drafts for this bike, so people can resume instead of starting over.
+const otherDrafts = parts ? [] : await listDrafts(bike.id, user.id);
+const active = await getActiveLoan(bike.id);
+
+const L = parts?.loan;
+const items = toItems(L?.handedOverItems);
+const hp = parts?.handover;
+const base = {
+  borrowerName: L?.borrowerName ?? prefill.name ?? "",
+  borrowerStreet: L?.borrowerStreet ?? prefill.street ?? "",
+  borrowerZipCity: L?.borrowerZipCity ?? prefill.zipCity ?? "",
+  borrowerBirthdate: L?.borrowerBirthdate ?? prefill.birthdate ?? "",
+  borrowerPhone: L?.borrowerPhone ?? prefill.phone ?? "",
+  licenseNumber: L?.licenseNumber ?? prefill.licenseNumber ?? "",
+  licenseClassASince: L?.licenseClassASince ?? prefill.licenseClassASince ?? "",
+  startDate: L?.startDate ?? todayIso(),
+  startTime: L?.startTime ?? "",
+  endMode: L?.endMode ?? "open",
+  endDate: L?.endDate ?? "",
+  endTime: L?.endTime ?? "",
+  latestEndDate: L?.latestEndDate ?? "",
+  returnPlace: L?.returnPlace ?? lenderAddress,
+  liabilityCapEur: String(L?.liabilityCapEur ?? bike.liabilityCapEur),
+  keys: items.keys,
+  keyCount: String(items.keyCount),
+  registration: items.registration,
+  otherItems: items.other,
+  odometerKm: hp?.odometerKm != null ? String(hp.odometerKm) : "",
+  fuelLevel: hp?.fuelLevel ?? "",
+  damages: hp?.damages ?? "",
+  placeDate: L?.placeDate ?? [lenderProfile?.city, formatDate(todayIso())].filter(Boolean).join(", "),
+  sigLender: parts?.signatures.lender?.pngDataUrl ?? "",
+  sigBorrower: parts?.signatures.borrower?.pngDataUrl ?? "",
+};
+const v: typeof base = prev
+  ? ({ ...base, ...prev, keys: prev.keys === "on", registration: prev.registration === "on" } as typeof base)
+  : base;
+const capNumber = Number(String(v.liabilityCapEur).replace(/\./g, "").replace(",", ".")) || bike.liabilityCapEur;
+const photos = parts?.handoverPhotos ?? [];
+const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen. Bitte ergänzen: ${problems.join(" ")}` : null);
+---
+
+<Base title="Leihvertrag" dock>
+  <div class="page-head">
+    <h1>Leihvertrag Motorrad</h1>
+    <p>Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.</p>
+  </div>
+
+  {q.has("gespeichert") && !problems.length && <p class="notice nojs-only" role="status">Entwurf gespeichert.</p>}
+  {
+    otherDrafts.length > 0 && (
+      <p class="notice">
+        Es gibt schon einen Entwurf für dieses Motorrad
+        {otherDrafts[0].borrowerName && <> (an {otherDrafts[0].borrowerName})</>}. <a href={`/app/loans/new?loan=${otherDrafts[0].id}`}>Weiter bearbeiten</a>
+      </p>
+    )
+  }
+  {active && <p class="notice">Dieses Motorrad ist gerade an {active.borrowerName} verliehen. Abschließen geht erst nach der Rückgabe.</p>}
+  {prefill.borrowerDisplayName && <p class="notice">Aus dem Profil von {prefill.borrowerDisplayName} vorausgefüllt. Bitte mit Ausweis und Führerschein vergleichen.</p>}
+
+  <BikeDoc bike={bike} extra={[["Verleiher", lenderName]]} />
+
+  <form id="loan-form" method="POST" action={actions.loans.save} enctype="multipart/form-data" class="stack" novalidate autocomplete="off">
+    <!-- Enter in a text field saves the draft rather than finalising. -->
+    <button type="submit" name="intent" value="draft" class="visually-hidden" tabindex="-1" aria-hidden="true">Speichern</button>
+    <input type="hidden" name="loanId" value={parts?.loan.id ?? ""} />
+    <input type="hidden" name="bikeId" value={bike.id} />
+    <input type="hidden" name="listingId" value={listingId ?? ""} />
+    <input type="hidden" name="conversationId" value={conversationId ?? ""} />
+
+    <FormAlert message={message} />
+
+    <section class="card">
+      <h2>Haftungsgrenze Entleiher</h2>
+      <p class="cap mono" id="cap-preview">höchstens {formatEuro(capNumber, false)} je Schaden</p>
+      <Field label="Betrag in €" name="liabilityCapEur" mono inputmode="decimal" value={v.liabilityCapEur} />
+      <p class="hint">
+        Der Entleiher zahlt den tatsächlichen Schaden, höchstens diesen Betrag. Bei Vorsatz, grober Fahrlässigkeit, Alkohol oder Fahren ohne
+        Führerschein haftet er voll.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Entleiher</h2>
+      <p class="hint">Ein Konto braucht der Entleiher nicht. Daten vom Führerschein und Ausweis abschreiben.</p>
+      <Field label="Name, Vorname" name="borrowerName" autocomplete="off" value={v.borrowerName} />
+      <Field label="Straße, Hausnummer" name="borrowerStreet" value={v.borrowerStreet} />
+      <Field label="PLZ, Ort" name="borrowerZipCity" value={v.borrowerZipCity} />
+      <div class="row stack-sm">
+        <DateField label="Geburtsdatum" name="borrowerBirthdate" value={v.borrowerBirthdate} />
+        <Field label="Telefon" name="borrowerPhone" type="tel" inputmode="tel" value={v.borrowerPhone} />
+      </div>
+      <div class="row stack-sm">
+        <Field label="Führerschein-Nr." name="licenseNumber" mono value={v.licenseNumber} />
+        <Field label="Klasse A seit" name="licenseClassASince" inputmode="numeric" placeholder="z. B. 2015" value={v.licenseClassASince} />
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Leihdauer</h2>
+      <div class="row">
+        <DateField label="Beginn Datum" name="startDate" value={v.startDate} />
+        <TimeField label="Uhrzeit" name="startTime" value={v.startTime} />
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Ende der Leihe">
+        <label><input type="radio" name="endMode" value="open" checked={v.endMode !== "fixed"} /><span>Offen</span></label>
+        <label><input type="radio" name="endMode" value="fixed" checked={v.endMode === "fixed"} /><span>Festes Ende</span></label>
+      </div>
+      <div class="open-only stack">
+        <DateField label="Offen (unbefristet), spätestens am" name="latestEndDate" value={v.latestEndDate} required />
+        <p class="hint">
+          Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.
+        </p>
+      </div>
+      <div class="fixed-only row">
+        <DateField label="Ende Datum" name="endDate" value={v.endDate} />
+        <TimeField label="Uhrzeit" name="endTime" value={v.endTime} />
+      </div>
+      <Field label="Rückgabeort" name="returnPlace" value={v.returnPlace} />
+    </section>
+
+    <section class="card">
+      <h2>Mitgegeben</h2>
+      <div class="row">
+        <label class="check"><input type="checkbox" name="keys" checked={v.keys} />Schlüssel</label>
+        <Field label="Anzahl" name="keyCount" type="number" min="1" max="9" inputmode="numeric" value={v.keyCount} />
+      </div>
+      <label class="check"><input type="checkbox" name="registration" checked={v.registration} />Zulassungsbescheinigung Teil I</label>
+      <Field label="Sonstiges (z. B. Helm, Schloss)" name="otherItems" value={v.otherItems} />
+    </section>
+
+    <section class="card">
+      <h2>Übergabe</h2>
+      <div class="row">
+        <Field label="Kilometerstand" name="odometerKm" mono inputmode="numeric" value={v.odometerKm} />
+        <Field label="Tankstand" name="fuelLevel" placeholder="z. B. voll, ½" value={v.fuelLevel} />
+      </div>
+      <Field label="Vorhandene Schäden / Kratzer" name="damages" multiline value={v.damages} placeholder="z. B. Kratzer Tank links, Spiegel rechts lose" />
+      <p class="hint">Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.</p>
+      <div class="thumbs" id="thumbs-handover">
+        {
+          photos.map((p, i) => (
+            <div class="thumb" data-photo-id={p.id}>
+              <img src={photoUrl(p.id)} alt={`Foto ${i + 1}, ${formatTimestamp(p.takenAt)}`} loading="lazy" />
+            </div>
+          ))
+        }
+      </div>
+      <label class="photo-btn">
+        + Fotos aufnehmen oder hochladen
+        <input type="file" name="photos" accept="image/*" multiple id="file-handover" />
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Unterschriften</h2>
+      <Field label="Ort, Datum" name="placeDate" value={v.placeDate} />
+      <div class="sig js-only">
+        <div class="sig-bar"><span>Verleiher ({lenderName})</span><button type="button" class="btn-link" data-clear="lender">Löschen</button></div>
+        <canvas id="pad-lender" aria-label="Unterschrift Verleiher, mit dem Finger zeichnen"></canvas>
+        <input type="hidden" name="sigLender" value={v.sigLender} />
+      </div>
+      <div class="sig js-only">
+        <div class="sig-bar"><span>Entleiher</span><button type="button" class="btn-link" data-clear="borrower">Löschen</button></div>
+        <canvas id="pad-borrower" aria-label="Unterschrift Entleiher, mit dem Finger zeichnen"></canvas>
+        <input type="hidden" name="sigBorrower" value={v.sigBorrower} />
+      </div>
+      <p class="hint">Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.</p>
+    </section>
+
+    <p id="status" role="status" aria-live="polite" class="small muted"></p>
+
+    {
+      parts && (
+        <div class="actions">
+          <button type="submit" formaction={actions.loans.discard} formnovalidate class="btn-link" data-confirm="Wirklich löschen?">
+            Entwurf löschen
+          </button>
+        </div>
+      )
+    }
+
+    <div class="dock">
+      <div class="in">
+        <button type="submit" name="intent" value="finalize" class="btn">Abschließen</button>
+        <button type="submit" name="intent" value="draft" class="btn-primary nojs-only">Speichern</button>
+        <button type="button" id="make-pdf" class="btn-primary js-only">PDF erstellen</button>
+      </div>
+    </div>
+  </form>
+</Base>
+
+<style>
+  .cap {
+    background: var(--doc);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+  /* Segmented toggle drives which end fields show, without JS. */
+  form:has(input[name="endMode"][value="open"]:checked) .fixed-only,
+  form:has(input[name="endMode"][value="fixed"]:checked) .open-only {
+    display: none;
+  }
+  .sig {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .sig canvas {
+    width: 100%;
+    height: 140px;
+    background: #ffffff;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    touch-action: none;
+    display: block;
+  }
+  .sig-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  #status:empty {
+    display: none;
+  }
+  #status.err {
+    color: var(--danger);
+  }
+</style>
+
+<script>
+  import { actions } from "astro:actions";
+  import { setupPad } from "../../../scripts/signature-pad";
+  import { wirePhotoInput } from "../../../scripts/photos";
+  import { downloadContract } from "../../../scripts/pdf";
+  import { formatEuro } from "../../../lib/euro-words";
+
+  const form = document.getElementById("loan-form") as HTMLFormElement | null;
+  if (form) {
+    const idInput = form.elements.namedItem("loanId") as HTMLInputElement;
+    const statusEl = document.getElementById("status")!;
+    const status = (text: string, error = false) => {
+      statusEl.textContent = text;
+      statusEl.classList.toggle("err", error);
+    };
+
+    // --- Autosave as draft ---
+    let timer: number | undefined;
+    let saving: Promise<void> | null = null;
+    let dirty = false;
+
+    function snapshot() {
+      const fd = new FormData(form!);
+      fd.delete("photos"); // photos go through their own upload
+      fd.set("intent", "draft");
+      return fd;
+    }
+
+    async function saveOnce() {
+      dirty = false;
+      status("Speichert …");
+      try {
+        const { data, error } = await actions.loans.save(snapshot());
+        if (error) throw error;
+        if (!idInput.value) {
+          idInput.value = data.loanId;
+          const url = new URL(location.href);
+          url.searchParams.set("loan", data.loanId);
+          url.searchParams.delete("gespeichert");
+          history.replaceState(null, "", url);
+        }
+        const t = new Date();
+        status(`Entwurf gespeichert, ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")} Uhr`);
+      } catch (e) {
+        dirty = true;
+        status(`Nicht gespeichert (${(e as Error)?.message || "offline?"}). Wird beim nächsten Tippen erneut versucht.`, true);
+      }
+    }
+
+    /** Waits for any running save, then saves if there are unsaved changes (or nothing exists yet). */
+    async function flush() {
+      clearTimeout(timer);
+      while (saving) await saving;
+      if (dirty || !idInput.value) {
+        saving = saveOnce().finally(() => (saving = null));
+        await saving;
+      }
+    }
+
+    function schedule() {
+      dirty = true;
+      clearTimeout(timer);
+      timer = window.setTimeout(() => void flush(), 800);
+    }
+
+    form.addEventListener("input", (e) => {
+      if ((e.target as HTMLElement).matches("input[type=file]")) return;
+      schedule();
+    });
+    form.addEventListener("change", (e) => {
+      if ((e.target as HTMLElement).matches("input[type=file]")) return;
+      schedule();
+    });
+    // Phone locks or the tab goes to the background: save right away.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden" && dirty) void flush();
+    });
+
+    // A real submit (finalise, discard) must not race an autosave that is creating the draft.
+    form.addEventListener("submit", async (e) => {
+      clearTimeout(timer);
+      if (saving) {
+        e.preventDefault();
+        await flush();
+        form.requestSubmit((e as SubmitEvent).submitter as HTMLButtonElement | null);
+      }
+    });
+
+    // --- Live cap preview ---
+    const capInput = form.elements.namedItem("liabilityCapEur") as HTMLInputElement;
+    const capPreview = document.getElementById("cap-preview")!;
+    capInput.addEventListener("input", () => {
+      const n = Number(capInput.value.replace(/\./g, "").replace(",", "."));
+      if (Number.isFinite(n) && n > 0) capPreview.textContent = `höchstens ${formatEuro(n, false)} je Schaden`;
+    });
+
+    // --- Signatures ---
+    const pads = {
+      lender: setupPad(
+        document.getElementById("pad-lender") as HTMLCanvasElement,
+        form.elements.namedItem("sigLender") as HTMLInputElement,
+        schedule,
+      ),
+      borrower: setupPad(
+        document.getElementById("pad-borrower") as HTMLCanvasElement,
+        form.elements.namedItem("sigBorrower") as HTMLInputElement,
+        schedule,
+      ),
+    };
+    form.querySelectorAll<HTMLButtonElement>("[data-clear]").forEach((b) =>
+      b.addEventListener("click", () => pads[b.dataset.clear as "lender" | "borrower"].clear()),
+    );
+
+    // --- Photos ---
+    wirePhotoInput({
+      input: document.getElementById("file-handover") as HTMLInputElement,
+      box: document.getElementById("thumbs-handover")!,
+      kind: "handover",
+      getLoanId: async () => {
+        await flush();
+        return idInput.value || null;
+      },
+      status,
+    });
+
+    // --- PDF ---
+    const pdfBtn = document.getElementById("make-pdf") as HTMLButtonElement;
+    pdfBtn.addEventListener("click", async () => {
+      pdfBtn.disabled = true;
+      try {
+        await flush();
+        if (!idInput.value) throw new Error("Entwurf konnte nicht gespeichert werden");
+        await downloadContract(idInput.value, status);
+        status("PDF erstellt. Zum Abschließen unten auf „Abschließen“ tippen.");
+      } catch (e) {
+        status(`PDF konnte nicht erstellt werden (${(e as Error)?.message || "Fehler"}).`, true);
+      } finally {
+        pdfBtn.disabled = false;
+      }
+    });
+  }
+</script>

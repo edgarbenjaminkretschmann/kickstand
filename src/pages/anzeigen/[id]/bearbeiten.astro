@@ -1,0 +1,102 @@
+---
+import { actions } from "astro:actions";
+import Base from "../../../layouts/Base.astro";
+import FormAlert from "../../../components/FormAlert.astro";
+import ListingForm from "../../../components/ListingForm.astro";
+import ListingTypeStep from "../../../components/ListingTypeStep.astro";
+import { listOwnBikes } from "../../../lib/data/bikes";
+import { getOwnListing, listCategories, listListingPhotos } from "../../../lib/data/listings";
+import { fieldErrors, formError } from "../../../lib/form";
+import { centsToInput } from "../../../lib/listing-format";
+import { submittedValues } from "../../../lib/submitted";
+
+const user = Astro.locals.user!;
+const listing = await getOwnListing(Astro.params.id!, user.id);
+// Only the owner may edit; everyone else gets a plain 404.
+if (!listing) return new Response("Nicht gefunden", { status: 404 });
+const base = `/anzeigen/${listing.id}/bearbeiten`;
+
+const result = Astro.getActionResult(actions.listings.update);
+if (result && !result.error) return Astro.redirect(`/anzeigen/${listing.id}?gespeichert=1`);
+const photoRemoved = Astro.getActionResult(actions.listings.removePhoto);
+const photoCover = Astro.getActionResult(actions.listings.coverPhoto);
+if ((photoRemoved && !photoRemoved.error) || (photoCover && !photoCover.error)) return Astro.redirect(`${base}#fotos`);
+
+const prev = await submittedValues(Astro.request, !!result?.error);
+const q = Astro.url.searchParams;
+const categories = await listCategories();
+const type = prev?.type ?? q.get("typ") ?? listing.type;
+const categorySlug = prev?.categorySlug ?? q.get("kategorie") ?? listing.categorySlug;
+const category = categories.find((c) => c.slug === categorySlug);
+const chooseType = q.get("schritt") === "1" || !category;
+
+const [bikes, photos] = await Promise.all([listOwnBikes(user.id), listListingPhotos(listing.id)]);
+const values: Record<string, string> = prev ?? {
+  title: listing.title,
+  description: listing.description,
+  priceKind: listing.priceKind,
+  price: centsToInput(listing.priceCents),
+  zip: listing.zip,
+  city: listing.city,
+  country: listing.country,
+  bikeId: listing.bikeId ?? "",
+};
+const changeHref = `${base}?${new URLSearchParams({ schritt: "1", typ: type, kategorie: categorySlug })}`;
+---
+
+<Base title="Anzeige bearbeiten">
+  <div class="page-head">
+    <h1>Anzeige bearbeiten</h1>
+    <p><a href={`/anzeigen/${listing.id}`}>{listing.title}</a></p>
+  </div>
+
+  {
+    chooseType ? (
+      <ListingTypeStep action={base} categories={categories} type={type} category={categorySlug} />
+    ) : (
+      <>
+        {photos.length > 0 && (
+          <section class="panel" id="fotos" aria-labelledby="h-fotos">
+            <h2 id="h-fotos">Fotos ({photos.length})</h2>
+            <FormAlert message={formError(photoRemoved) ?? formError(photoCover)} />
+            <ul class="photo-admin">
+              {photos.map((p, i) => (
+                <li>
+                  <img src={`/media/listing/${p.id}`} alt={i === 0 ? "Titelbild" : `Foto ${i + 1}`} width="160" height="120" loading="lazy" />
+                  {i === 0 ? (
+                    <span class="chip chip-biete">Titelbild</span>
+                  ) : (
+                    <form method="POST" action={`${actions.listings.coverPhoto}`}>
+                      <input type="hidden" name="photoId" value={p.id} />
+                      <button type="submit" class="btn-link">
+                        Als Titelbild
+                      </button>
+                    </form>
+                  )}
+                  <form method="POST" action={`${actions.listings.removePhoto}`}>
+                    <input type="hidden" name="photoId" value={p.id} />
+                    <button type="submit" class="btn-link danger-link" data-confirm="Wirklich entfernen?">
+                      Entfernen
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <ListingForm
+          mode="update"
+          id={listing.id}
+          type={type}
+          category={category!}
+          values={values}
+          errors={fieldErrors(result)}
+          message={formError(result)}
+          bikes={bikes}
+          photoCount={photos.length}
+          changeHref={changeHref}
+        />
+      </>
+    )
+  }
+</Base>

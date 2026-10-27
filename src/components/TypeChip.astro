@@ -1,0 +1,14 @@
+---
+// "Biete" in sky, "Suche" in the warm yellow. Help requests read "Hilfe gesucht".
+import { TYPE_LABEL } from "../lib/listing-format";
+
+interface Props {
+  type: string;
+  category?: string;
+}
+
+const { type, category } = Astro.props;
+const label = type === "suche" && category === "hilfe" ? "Hilfe gesucht" : (TYPE_LABEL[type] ?? type);
+---
+
+<span class:list={["chip", type === "suche" ? "chip-suche" : "chip-biete"]}>{label}</span>

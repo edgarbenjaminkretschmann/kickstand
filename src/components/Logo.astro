@@ -1,0 +1,59 @@
+---
+// "Kickstand" in Mr Dafoe inside the sky oval, with the Vlogato byline. Design A.
+interface Props {
+  href?: string;
+  /** Hide the byline (e.g. very tight spots). */
+  compact?: boolean;
+}
+
+const { href = "/", compact = false } = Astro.props;
+---
+
+<a href={href} class="logo" aria-label="Kickstand, ein Projekt von Vlogato. Zur Startseite">
+  <span class="logo-oval" aria-hidden="true">Kickstand</span>
+  {!compact && <span class="logo-by" aria-hidden="true">ein Projekt von Vlogato</span>}
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+    text-decoration: none;
+    min-height: var(--tap);
+  }
+  .logo-oval {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 132px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--sky);
+    font-family: var(--script);
+    font-size: 34px;
+    line-height: 1;
+    color: var(--ink);
+    flex: none;
+  }
+  .logo-by {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.25;
+  }
+  @media (max-width: 560px) {
+    .logo {
+      gap: 8px;
+    }
+    .logo-oval {
+      width: 104px;
+      height: 44px;
+      font-size: 27px;
+    }
+    .logo-by {
+      font-size: 12px;
+      max-width: 6.5em;
+    }
+  }
+</style>

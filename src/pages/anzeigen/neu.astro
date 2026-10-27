@@ -1,0 +1,61 @@
+---
+import { actions } from "astro:actions";
+import Base from "../../layouts/Base.astro";
+import ListingForm from "../../components/ListingForm.astro";
+import ListingTypeStep from "../../components/ListingTypeStep.astro";
+import { listOwnBikes } from "../../lib/data/bikes";
+import { listCategories } from "../../lib/data/listings";
+import { getProfile } from "../../lib/data/profiles";
+import { fieldErrors, formError } from "../../lib/form";
+import { submittedValues } from "../../lib/submitted";
+
+const user = Astro.locals.user!;
+const result = Astro.getActionResult(actions.listings.create);
+if (result && !result.error) return Astro.redirect(`/anzeigen/${result.data.id}?neu=1`);
+const prev = await submittedValues(Astro.request, !!result?.error);
+
+const q = Astro.url.searchParams;
+const categories = await listCategories();
+// After a failed post the query string is gone; type and category come from the posted fields.
+const type = prev?.type ?? q.get("typ") ?? "";
+const categorySlug = prev?.categorySlug ?? q.get("kategorie") ?? "";
+const category = categories.find((c) => c.slug === categorySlug);
+const step2 = (q.get("schritt") === "2" || !!prev) && ["biete", "suche"].includes(type) && !!category;
+
+const bikes = step2 ? await listOwnBikes(user.id) : [];
+const profile = step2 && !prev ? await getProfile(user.id) : null;
+const zipFromProfile = profile?.zipCity.match(/^\d{4,5}/)?.[0] ?? "";
+const values: Record<string, string> = prev ?? {
+  zip: zipFromProfile,
+  city: profile?.city ?? "",
+  country: "DE",
+  priceKind: "kostenlos",
+  bikeId: q.get("bike") ?? "",
+};
+const keep: Record<string, string> = q.get("bike") ? { bike: q.get("bike")! } : {};
+const changeHref = `/anzeigen/neu?${new URLSearchParams({ typ: type, kategorie: categorySlug, ...keep })}`;
+---
+
+<Base title="Anzeige aufgeben">
+  <div class="page-head">
+    <h1>Anzeige aufgeben</h1>
+    <p>{step2 ? "Beschreib kurz, was du anbietest oder suchst." : "Kostenlos, in zwei Schritten."}</p>
+  </div>
+  {
+    step2 && category ? (
+      <ListingForm
+        mode="create"
+        type={type}
+        category={category}
+        values={values}
+        errors={fieldErrors(result)}
+        message={formError(result)}
+        bikes={bikes}
+        photoCount={0}
+        changeHref={changeHref}
+      />
+    ) : (
+      <ListingTypeStep action="/anzeigen/neu" categories={categories} type={type} category={categorySlug} keep={keep} />
+    )
+  }
+</Base>

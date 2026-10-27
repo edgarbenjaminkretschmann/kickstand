@@ -1,0 +1,469 @@
+---
+// Landing page, Design A "Vlogato-Familie". The dark section shows the latest real listings.
+import { actions } from "astro:actions";
+import Base from "../layouts/Base.astro";
+import TypeChip from "../components/TypeChip.astro";
+import { latestListings } from "../lib/data/listings";
+import { placeLabel, priceLabel } from "../lib/listing-format";
+
+const loggedOut = Astro.getActionResult(actions.auth.logout);
+if (loggedOut && !loggedOut.error) return Astro.redirect("/");
+const user = Astro.locals.user;
+const latest = await latestListings(6);
+const joinHref = user ? "/anzeigen/neu" : "/registrieren";
+---
+
+<Base bare>
+  <section class="hero wrap wide">
+    <div class="hero-text">
+      <p class="eyebrow">Motorräder teilen · Garagen teilen</p>
+      <h1>Dein Motorrad steht rum? Leih es aus – mit Vertrag aus dem Handy.</h1>
+      <svg class="stroke" width="260" height="18" viewBox="0 0 260 18" aria-hidden="true">
+        <path d="M2 12 C40 6 90 5 140 7 S220 9 258 4 L256 11 C210 15 150 13 100 14 S30 17 4 17 Z" fill="currentColor"></path>
+      </svg>
+      <p class="lead">
+        Kickstand ist für Leute, die sich gegenseitig aushelfen: ein Motorrad für ein paar Wochen, ein Platz in der Garage, Werkzeug für den
+        Kettenwechsel. Den Leihvertrag füllst du zusammen am Handy aus, mit Fotos und Unterschrift.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="/app/bikes/new">Motorrad eintragen</a>
+        <a class="btn btn-sky btn-lg" href="#so">So geht's</a>
+      </div>
+    </div>
+    <a class="hero-figure" href="/touren">
+      <div class="oval">
+        <picture>
+          <source type="image/webp" srcset="/images/rider-640.webp 640w, /images/rider-1200.webp 1200w" sizes="(min-width: 1000px) 520px, 92vw" />
+          <img
+            src="/images/rider-1200.webp"
+            alt="Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen"
+            width="1200"
+            height="900"
+            fetchpriority="high"
+          />
+        </picture>
+      </div>
+      <span class="hero-caption">Philippinen 2019 – 21 Orte in 35 Tagen mit dem Motorrad.</span>
+      <span class="btn btn-outline btn-small hero-more">Edgar &amp; seine Motorradreisen</span>
+    </a>
+  </section>
+
+  <section id="so" class="band-wash">
+    <div class="wrap wide section">
+      <h2 class="h-section">So geht's</h2>
+      <ol class="steps">
+        <li class="step">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3>Motorrad eintragen</h3>
+          <p>Daten aus dem Fahrzeugschein, Versicherung und wie viel der Entleiher im Schadensfall höchstens zahlt.</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3>Leihvertrag am Handy</h3>
+          <p>Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3>Übergabe &amp; Rückgabe</h3>
+          <p>Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="wrap wide section contract">
+    <picture class="contract-photo">
+      <source type="image/webp" srcset="/images/myanmar-640.webp 640w, /images/myanmar-1200.webp 1021w" sizes="(min-width: 1000px) 560px, 92vw" />
+      <img
+        src="/images/myanmar-1200.webp"
+        alt="Bepackte Enduro auf dem Seitenständer vor einem grünen Bauzaun in Myanmar"
+        width="1021"
+        height="681"
+        loading="lazy"
+      />
+    </picture>
+    <div class="contract-text">
+      <h2 class="h-section">Der Vertrag, den wir selbst benutzen</h2>
+      <p class="lead-sm">
+        Unentgeltliche Leihe nach §§ 598 ff. BGB. Klare Haftungsgrenze pro Schaden, Rückgabe auf Aufforderung innerhalb von 3 Tagen,
+        Übergabeprotokoll mit Fotos.
+      </p>
+      <div class="clause">
+        <strong>§ 6 Haftung des Entleihers</strong><br />
+        Die Haftung ist auf höchstens <strong>1.000,00 €</strong> (in Worten: eintausend Euro) je Schadensfall begrenzt.
+      </div>
+    </div>
+  </section>
+
+  <section id="board" class="band-dark">
+    <div class="wrap wide section">
+      <div class="board-head">
+        <div class="board-intro">
+          <h2 class="h-section">Garagen &amp; Hilfe</h2>
+          <p>Platz unterm Dach, Werkzeug oder eine helfende Hand. Kontakt nach dem Anmelden.</p>
+        </div>
+        <a class="board-all" href="/anzeigen">Alle Einträge ansehen</a>
+      </div>
+      {
+        latest.length ? (
+          <ul class="board-grid">
+            {latest.map((l) => (
+              <li class="dcard">
+                <div class="chips">
+                  <TypeChip type={l.type} category={l.categorySlug} />
+                  <span class="chip chip-outline">{l.categoryLabel}</span>
+                  {l.lent && <span class="chip chip-ink">verliehen</span>}
+                </div>
+                <h3>
+                  <a href={`/anzeigen/${l.id}`}>{l.title}</a>
+                </h3>
+                <p class="dcard-meta">
+                  {[placeLabel(l), priceLabel(l.priceKind, l.priceCents)].filter(Boolean).join(" · ")}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="board-empty">
+            <p>Noch keine Anzeigen. Biete deine Garage an, verleih Werkzeug oder frag nach Hilfe.</p>
+            <a class="btn btn-sky" href="/anzeigen/neu">
+              Erste Anzeige aufgeben
+            </a>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="band-sky">
+    <div class="wrap wide cta">
+      <h2 class="closing">Einfach losfahren.</h2>
+      <a class="btn btn-primary btn-xl" href={joinHref}>{user ? "Anzeige aufgeben" : "Kostenlos mitmachen"}</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .section {
+    padding-top: 72px;
+    padding-bottom: 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .h-section {
+    font-family: var(--slab);
+    font-size: clamp(1.75rem, 1.2rem + 2vw, 2.25rem);
+    line-height: 1.15;
+  }
+
+  /* Hero */
+  .hero {
+    padding-top: 72px;
+    padding-bottom: 56px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 56px;
+  }
+  .hero-text {
+    flex: 1 1 440px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .eyebrow {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--link);
+  }
+  .hero h1 {
+    font-family: var(--slab);
+    font-size: clamp(2rem, 1.1rem + 3.6vw, 3.25rem);
+    line-height: 1.08;
+    font-weight: 700;
+  }
+  .stroke {
+    color: var(--ink);
+    max-width: 100%;
+    height: auto;
+  }
+  .lead {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--text-2);
+    max-width: 34em;
+  }
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  /* The photo, caption and pill are one link to /touren. */
+  .hero-figure {
+    flex: 1 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .hero-figure .oval {
+    width: 100%;
+  }
+  .hero-figure:hover .hero-more {
+    background: var(--ink);
+    color: #ffffff;
+  }
+  .hero-figure:focus-visible {
+    outline: none;
+  }
+  .hero-figure:focus-visible .oval {
+    outline: 3px solid var(--ink);
+    outline-offset: 4px;
+  }
+  .oval {
+    border-radius: 50% / 46%;
+    overflow: hidden;
+    background: var(--sky);
+    padding: 14px;
+  }
+  .oval img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 50% / 46%;
+  }
+  .hero-caption {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* So geht's */
+  .band-wash {
+    background: var(--sky-wash);
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 24px;
+  }
+  .step {
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .step-num {
+    font-family: var(--script);
+    font-size: 44px;
+    line-height: 1;
+    color: var(--link);
+  }
+  .step h3 {
+    font-family: var(--slab);
+    font-size: 22px;
+  }
+  .step p {
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+
+  /* Contract */
+  .contract {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 48px;
+  }
+  .contract-photo {
+    flex: 1 1 420px;
+    min-width: 0;
+  }
+  .contract-photo img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-card);
+  }
+  .contract-text {
+    flex: 1 1 380px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .lead-sm {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+  .clause {
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 20px;
+    font-family: var(--slab);
+    font-size: 15px;
+    line-height: 1.55;
+    background: var(--surface);
+  }
+
+  /* Garagen & Hilfe */
+  .band-dark {
+    background: var(--dark);
+    color: #ffffff;
+  }
+  .band-dark .section {
+    gap: 32px;
+  }
+  .board-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+  }
+  .board-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .board-intro p {
+    color: var(--dark-muted);
+  }
+  .board-all {
+    color: var(--sky);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+  .board-all:hover {
+    color: #ffffff;
+  }
+  .board-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 20px;
+  }
+  .dcard {
+    position: relative;
+    border: 1px solid var(--dark-line);
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .dcard:hover {
+    border-color: var(--dark-chip-line);
+  }
+  .dcard:has(a:focus-visible) {
+    outline: 3px solid var(--sky);
+    outline-offset: 2px;
+  }
+  .dcard .chip-outline {
+    border-color: var(--dark-chip-line);
+    color: var(--dark-muted);
+  }
+  .dcard .chip-ink {
+    background: #ffffff;
+    color: var(--ink);
+  }
+  .dcard h3 {
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.3;
+  }
+  .dcard h3 a {
+    color: #ffffff;
+    text-decoration: none;
+  }
+  .dcard h3 a:focus-visible {
+    outline: none;
+  }
+  /* Whole card clickable through the title link. */
+  .dcard h3 a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .dcard-meta {
+    color: var(--dark-muted);
+    font-size: 14px;
+    margin-top: auto;
+  }
+  .board-empty {
+    border: 1px dashed var(--dark-chip-line);
+    border-radius: 14px;
+    padding: 28px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    color: var(--dark-muted);
+  }
+
+  /* Closing band */
+  .band-sky {
+    background: var(--sky);
+  }
+  .cta {
+    padding-top: 64px;
+    padding-bottom: 64px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .closing {
+    font-family: var(--script);
+    font-weight: 400;
+    font-size: clamp(2.75rem, 2rem + 3vw, 3.5rem);
+    line-height: 1.05;
+  }
+
+  @media (max-width: 559px) {
+    .hero {
+      padding-top: 36px;
+      padding-bottom: 40px;
+      gap: 32px;
+    }
+    .section {
+      padding-top: 48px;
+      padding-bottom: 48px;
+      gap: 24px;
+    }
+    .contract {
+      gap: 28px;
+    }
+    .step {
+      padding: 22px;
+    }
+    .lead {
+      font-size: 17px;
+    }
+    .cta {
+      padding-top: 44px;
+      padding-bottom: 44px;
+    }
+  }
+</style>

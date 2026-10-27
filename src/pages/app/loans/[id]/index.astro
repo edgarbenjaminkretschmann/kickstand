@@ -1,0 +1,233 @@
+---
+import Base from "../../../../layouts/Base.astro";
+import BikeDoc from "../../../../components/BikeDoc.astro";
+import { getLoanForUser } from "../../../../lib/access";
+import { loadLoanParts, toItems } from "../../../../lib/contract-data";
+import { formatDate, formatDateTime, formatTimestamp } from "../../../../lib/dates";
+import { formatEuro, groupThousands } from "../../../../lib/euro-words";
+import { LOAN_STATUS } from "../../../../lib/labels";
+import { photoUrl } from "../../../../lib/urls";
+
+const user = Astro.locals.user!;
+const access = await getLoanForUser(Astro.params.id!, user.id);
+if (!access) return new Response("Nicht gefunden", { status: 404 });
+if (access.loan.status === "draft" && access.role === "lender") return Astro.redirect(`/app/loans/new?loan=${access.loan.id}`);
+if (access.loan.status === "draft") return new Response("Nicht gefunden", { status: 404 });
+
+const parts = (await loadLoanParts(access.loan.id))!;
+const { loan, bike, lender, handover, ret, handoverPhotos, returnPhotos, signatures } = parts;
+const items = toItems(loan.handedOverItems);
+const isLender = access.role === "lender";
+const mit = [
+  items.keys ? `Schlüssel (${items.keyCount})` : "",
+  items.registration ? "Zulassungsbescheinigung Teil I" : "",
+  items.other,
+].filter(Boolean);
+const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} km` : "–");
+---
+
+<Base title={`Leihvertrag ${bike.make} ${bike.model}`} dock>
+  <div class="page-head">
+    <h1>Leihvertrag {bike.make} {bike.model}</h1>
+    <p><span class:list={["tag", loan.status === "active" && "tag-accent"]}>{LOAN_STATUS[loan.status]}</span></p>
+  </div>
+  {Astro.url.searchParams.has("neu") && <p class="notice" role="status">Vertrag abgeschlossen. Das Motorrad ist jetzt als verliehen markiert.</p>}
+  {Astro.url.searchParams.has("zurueck") && <p class="notice" role="status">Rückgabe gespeichert. Das PDF enthält jetzt auch die Rückgabe.</p>}
+
+  <BikeDoc bike={bike} extra={[["Verleiher", lender.name], ["Entleiher", loan.borrowerName]]} />
+
+  <section class="card">
+    <h2>Vereinbarung</h2>
+    <dl class="kv">
+      <dt>Beginn</dt>
+      <dd>{formatDateTime(loan.startDate, loan.startTime)}</dd>
+      <dt>Ende</dt>
+      <dd>
+        {loan.endMode === "fixed" ? formatDateTime(loan.endDate, loan.endTime) : `offen, spätestens ${formatDate(loan.latestEndDate)} (Rückgabe auf Aufforderung binnen 3 Tagen)`}
+      </dd>
+      <dt>Rückgabeort</dt>
+      <dd>{loan.returnPlace}</dd>
+      <dt>Haftung</dt>
+      <dd>höchstens <span class="mono">{formatEuro(loan.liabilityCapEur)}</span> je Schaden</dd>
+      <dt>Mitgegeben</dt>
+      <dd>{mit.join(", ") || "–"}</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Protokoll</h2>
+    <div class="proto">
+      <div>
+        <h3>Übergabe</h3>
+        <dl class="kv">
+          <dt>Zeit</dt>
+          <dd>{formatDateTime(handover?.datetime) || "–"}</dd>
+          <dt>km</dt>
+          <dd class="mono">{km(handover?.odometerKm)}</dd>
+          <dt>Tank</dt>
+          <dd>{handover?.fuelLevel || "–"}</dd>
+          <dt>Schäden</dt>
+          <dd>{handover?.damages || "keine angegeben"}</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Rückgabe</h3>
+        {
+          ret ? (
+            <dl class="kv">
+              <dt>Zeit</dt>
+              <dd>{formatDateTime(ret.datetime)}</dd>
+              <dt>km</dt>
+              <dd class="mono">{km(ret.odometerKm)}</dd>
+              <dt>Tank</dt>
+              <dd>{ret.fuelLevel || "–"}</dd>
+              <dt>Neue Schäden</dt>
+              <dd>{ret.damages || "keine angegeben"}</dd>
+            </dl>
+          ) : (
+            <p class="muted small">Noch nicht zurückgegeben.</p>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    (handoverPhotos.length > 0 || returnPhotos.length > 0) && (
+      <section class="card">
+        <h2>Fotos</h2>
+        {[
+          ["Übergabe", handoverPhotos],
+          ["Rückgabe", returnPhotos],
+        ].map(([label, list]) =>
+          (list as typeof handoverPhotos).length ? (
+            <>
+              <h3 class="small muted">{label as string}</h3>
+              <div class="thumbs">
+                {(list as typeof handoverPhotos).map((p, i) => (
+                  <a class="thumb" href={photoUrl(p.id)} target="_blank" rel="noopener">
+                    <img src={photoUrl(p.id)} alt={`${label} Foto ${i + 1}, ${formatTimestamp(p.takenAt)}`} loading="lazy" />
+                  </a>
+                ))}
+              </div>
+            </>
+          ) : null,
+        )}
+      </section>
+    )
+  }
+
+  {
+    (signatures.lender || signatures.borrower) && (
+      <section class="card">
+        <h2>Unterschriften</h2>
+        <p class="small muted">{loan.placeDate}</p>
+        <div class="sigs">
+          {[
+            ["Verleiher", signatures.lender],
+            ["Entleiher", signatures.borrower],
+          ].map(([label, s]) => (
+            <figure>
+              {s ? <img src={`/media/signature/${(s as { id: string }).id}`} alt={`Unterschrift ${label}`} /> : <div class="nosig">nicht digital unterschrieben</div>}
+              <figcaption class="small muted">{label as string}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <p id="status" role="status" aria-live="polite" class="small muted"></p>
+  <p class="small"><a href="/app">Zurück zu Mein Bereich</a></p>
+
+  <div class="dock" slot="after">
+    <div class="in">
+      {
+        isLender && loan.status === "active" && (
+          <a class="btn" href={`/app/loans/${loan.id}/return`}>
+            Rückgabe
+          </a>
+        )
+      }
+      <button type="button" id="make-pdf" class="btn-primary js-only" data-loan={loan.id}>PDF herunterladen</button>
+      <p class="nojs-only small">Für das PDF bitte JavaScript aktivieren.</p>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .kv {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 4px 14px;
+    margin: 0;
+  }
+  .kv dt {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .kv dd {
+    margin: 0;
+  }
+  .proto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 16px;
+  }
+  .proto h3 {
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+  }
+  .sigs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 12px;
+  }
+  figure {
+    margin: 0;
+  }
+  figure img,
+  .nosig {
+    width: 100%;
+    aspect-ratio: 3 / 1;
+    object-fit: contain;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .nosig {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5b6961;
+    font-size: 0.85rem;
+  }
+  #status:empty {
+    display: none;
+  }
+  #status.err {
+    color: var(--danger);
+  }
+</style>
+
+<script>
+  import { downloadContract } from "../../../../scripts/pdf";
+
+  const btn = document.getElementById("make-pdf") as HTMLButtonElement | null;
+  const statusEl = document.getElementById("status")!;
+  const status = (t: string, err = false) => {
+    statusEl.textContent = t;
+    statusEl.classList.toggle("err", err);
+  };
+  btn?.addEventListener("click", async () => {
+    btn.disabled = true;
+    try {
+      await downloadContract(btn.dataset.loan!, status);
+      status("PDF erstellt.");
+    } catch (e) {
+      status(`PDF konnte nicht erstellt werden (${(e as Error)?.message || "Fehler"}).`, true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
