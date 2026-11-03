@@ -22,3 +22,8 @@ interface ImagesBinding {
     };
   };
 }
+
+/** Workers Rate Limiting binding (wrangler.jsonc → ratelimits). */
+interface RateLimit {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}

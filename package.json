@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "preview": "astro build && wrangler dev",
+    "deploy": "astro build && wrangler deploy",
+    "check:bundle": "astro build && wrangler deploy --dry-run --outdir dist-check && node scripts/check-bundle.mjs dist-check",
     "start": "node ./dist/server/entry.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
@@ -14,9 +17,6 @@
     "db:migrate-legacy": "tsx scripts/migrate-legacy.ts",
     "test": "vitest run",
     "check": "astro check",
-    "build:cf": "astro build --config astro.config.cloudflare.mjs",
-    "preview:cf": "npm run build:cf && wrangler dev",
-    "deploy:cf": "npm run build:cf && wrangler deploy",
     "r2:upload": "node scripts/upload-r2.mjs"
   },
   "dependencies": {

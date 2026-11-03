@@ -8,69 +8,79 @@ import { parseSetCookieHeader, toCookieOptions } from "better-auth/cookies";
 import { db } from "../../db/client";
 import { Account, Session, User, Verification } from "../../db/schema";
 import { ensureProfile } from "../data/profiles";
-
-const env = (name: string): string | undefined => process.env[name] || (import.meta.env?.[name] as string | undefined) || undefined;
-
-// Read at runtime (process.env first) so a secret present at build time is never inlined into the bundle.
-const secret = env("BETTER_AUTH_SECRET");
-if (!secret && import.meta.env?.PROD) {
-  throw new Error("BETTER_AUTH_SECRET must be set in production");
-}
-
-const googleClientId = env("GOOGLE_CLIENT_ID");
-const googleClientSecret = env("GOOGLE_CLIENT_SECRET");
+import { env, isProd } from "../env";
 
 /** Google login is offered only when both credentials are set. */
-export const googleEnabled = !!(googleClientId && googleClientSecret);
+export function isGoogleEnabled(): boolean {
+  return !!(env("GOOGLE_CLIENT_ID") && env("GOOGLE_CLIENT_SECRET"));
+}
 
-const auth = betterAuth({
-  secret: secret ?? "dev-only-secret-not-for-production-use-0000",
-  baseURL: env("BETTER_AUTH_URL") ?? env("SITE_URL"),
-  database: drizzleAdapter(db, {
-    provider: "sqlite",
-    schema: { user: User, session: Session, account: Account, verification: Verification },
-  }),
-  emailAndPassword: {
-    enabled: true,
-    minPasswordLength: 8,
-    requireEmailVerification: false,
-    autoSignIn: true,
-  },
-  socialProviders: googleEnabled
-    ? { google: { clientId: googleClientId!, clientSecret: googleClientSecret!, prompt: "select_account" } }
-    : {},
-  account: {
-    // A Google login with the same, verified e-mail joins the existing email+password account.
-    accountLinking: { enabled: true, trustedProviders: ["google"] },
-  },
-  databaseHooks: {
-    user: {
-      create: {
-        // Every new member (email or Google) gets a profile prefilled with the display name.
-        after: async (user) => {
-          await ensureProfile(user.id, user.name);
+// Built on first use, not at import: on Workers secrets only exist while a request runs.
+function createAuth() {
+  const secret = env("BETTER_AUTH_SECRET");
+  if (!secret && isProd) throw new Error("BETTER_AUTH_SECRET must be set in production");
+  const googleClientId = env("GOOGLE_CLIENT_ID");
+  const googleClientSecret = env("GOOGLE_CLIENT_SECRET");
+
+  return betterAuth({
+    secret: secret ?? "dev-only-secret-not-for-production-use-0000",
+    // Cookies get the Secure flag automatically when this is an https:// URL.
+    baseURL: env("BETTER_AUTH_URL") ?? env("SITE_URL"),
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+      schema: { user: User, session: Session, account: Account, verification: Verification },
+    }),
+    emailAndPassword: {
+      enabled: true,
+      minPasswordLength: 8,
+      requireEmailVerification: false,
+      autoSignIn: true,
+    },
+    socialProviders:
+      googleClientId && googleClientSecret
+        ? { google: { clientId: googleClientId, clientSecret: googleClientSecret, prompt: "select_account" as const } }
+        : {},
+    account: {
+      // A Google login with the same, verified e-mail joins the existing email+password account.
+      accountLinking: { enabled: true, trustedProviders: ["google"] },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          // Every new member (email or Google) gets a profile prefilled with the display name.
+          after: async (user) => {
+            await ensureProfile(user.id, user.name);
+          },
         },
       },
     },
-  },
-  session: {
-    expiresIn: 60 * 60 * 24 * 30,
-    updateAge: 60 * 60 * 24,
-  },
-  telemetry: { enabled: false },
-});
+    session: {
+      expiresIn: 60 * 60 * 24 * 30,
+      updateAge: 60 * 60 * 24,
+    },
+    telemetry: { enabled: false },
+  });
+}
 
-export type AuthUser = typeof auth.$Infer.Session.user;
-export type AuthSession = typeof auth.$Infer.Session.session;
+type Auth = ReturnType<typeof createAuth>;
+let instance: Auth | undefined;
+
+function getAuth(): Auth {
+  if (!instance) instance = createAuth();
+  return instance;
+}
+
+export type AuthUser = Auth["$Infer"]["Session"]["user"];
+export type AuthSession = Auth["$Infer"]["Session"]["session"];
 
 /** Handles /api/auth/* (OAuth callbacks, session endpoints). */
 export function handleAuthRequest(request: Request): Promise<Response> {
-  return auth.handler(request);
+  return getAuth().handler(request);
 }
 
 /** The signed-in user and session for a request, or nulls. */
 export async function getSession(headers: Headers): Promise<{ user: AuthUser | null; session: AuthSession | null }> {
-  const result = await auth.api.getSession({ headers });
+  const result = await getAuth().api.getSession({ headers });
   return { user: result?.user ?? null, session: result?.session ?? null };
 }
 
@@ -131,7 +141,7 @@ function translate(e: unknown): never {
 
 export async function signUpWithEmail(ctx: Ctx, input: { name: string; email: string; password: string }): Promise<void> {
   try {
-    const { headers } = await auth.api.signUpEmail({
+    const { headers } = await getAuth().api.signUpEmail({
       body: { name: input.name, email: input.email.toLowerCase(), password: input.password },
       headers: ctx.request.headers,
       returnHeaders: true,
@@ -144,7 +154,7 @@ export async function signUpWithEmail(ctx: Ctx, input: { name: string; email: st
 
 export async function signInWithEmail(ctx: Ctx, input: { email: string; password: string }): Promise<void> {
   try {
-    const { headers } = await auth.api.signInEmail({
+    const { headers } = await getAuth().api.signInEmail({
       body: { email: input.email.toLowerCase(), password: input.password, rememberMe: true },
       headers: ctx.request.headers,
       returnHeaders: true,
@@ -160,9 +170,9 @@ export async function signInWithEmail(ctx: Ctx, input: { email: string; password
  * `next` is where the member lands afterwards; new members go to the profile first.
  */
 export async function startGoogleSignIn(ctx: Ctx, next: string): Promise<string> {
-  if (!googleEnabled) throw new AuthFailure("Google-Anmeldung ist nicht eingerichtet.");
+  if (!isGoogleEnabled()) throw new AuthFailure("Google-Anmeldung ist nicht eingerichtet.");
   try {
-    const { headers, response } = await auth.api.signInSocial({
+    const { headers, response } = await getAuth().api.signInSocial({
       body: {
         provider: "google",
         callbackURL: next,
@@ -182,6 +192,6 @@ export async function startGoogleSignIn(ctx: Ctx, next: string): Promise<string>
 }
 
 export async function signOut(ctx: Ctx): Promise<void> {
-  const { headers } = await auth.api.signOut({ headers: ctx.request.headers, returnHeaders: true });
+  const { headers } = await getAuth().api.signOut({ headers: ctx.request.headers, returnHeaders: true });
   applyCookies(headers, ctx.cookies);
 }

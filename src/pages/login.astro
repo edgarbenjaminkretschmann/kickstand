@@ -4,8 +4,12 @@ import Base from "../layouts/Base.astro";
 import Field from "../components/Field.astro";
 import FormAlert from "../components/FormAlert.astro";
 import GoogleButton from "../components/GoogleButton.astro";
+import { env } from "../lib/env";
 import { fieldErrors, formError } from "../lib/form";
 import { safeNext, submittedValues } from "../lib/submitted";
+
+// The seeded demo accounts: always in dev, in production only while SHOW_DEMO_LOGINS=true.
+const showDemoLogins = import.meta.env.DEV || env("SHOW_DEMO_LOGINS") === "true";
 
 const next = safeNext(Astro.url.searchParams.get("next"));
 if (Astro.locals.user) return Astro.redirect(next);
@@ -39,7 +43,7 @@ const prev = await submittedValues(Astro.request, !!result?.error);
       </form>
     </div>
     {
-      import.meta.env.DEV && (
+      showDemoLogins && (
         <p class="notice small">
           Demo: <span class="mono">demo@kickstand.test</span> / <span class="mono">kickstand-demo</span>
         </p>

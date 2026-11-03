@@ -1,7 +1,7 @@
 ---
 // "Mit Google anmelden". Posts to the google action, which redirects to Google. Hidden when Google is not configured.
 import { actions } from "astro:actions";
-import { googleEnabled } from "../lib/auth";
+import { isGoogleEnabled } from "../lib/auth";
 
 interface Props {
   next: string;
@@ -12,7 +12,7 @@ const { next, label = "Mit Google anmelden" } = Astro.props;
 ---
 
 {
-  googleEnabled && (
+  isGoogleEnabled() && (
     <>
       <form method="POST" action={actions.auth.google} class="google-form">
         <input type="hidden" name="next" value={next} />

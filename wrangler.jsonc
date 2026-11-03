@@ -1,22 +1,35 @@
-// Cloudflare Workers config for Kickstand. Build first: `npm run build:cf`.
+// Cloudflare Workers config for Kickstand. `npm run deploy` builds and uploads; `npm run preview` runs it locally.
 // Secrets are not stored here: `wrangler secret put BETTER_AUTH_SECRET`, `DATABASE_AUTH_TOKEN`,
-// and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+// and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. For `npm run preview` they go into .dev.vars.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "kickstand",
   "main": "./dist/_worker.js/index.js",
-  "compatibility_date": "2025-09-01",
+  "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
+  // Static files from the build (dist/), as @astrojs/cloudflare expects. public/.assetsignore keeps _worker.js out.
   "assets": { "binding": "ASSETS", "directory": "./dist" },
   "observability": { "enabled": true },
+  // Turso sits in AWS eu-west-1 and one page runs several queries: run the Worker near the database.
+  "placement": { "mode": "smart" },
   "vars": {
-    // Turso, e.g. libsql://kickstand-<org>.aws-eu-west-1.turso.io
+    // Turso (libsql://<db>-<org>.aws-eu-west-1.turso.io). The token is the secret DATABASE_AUTH_TOKEN.
     "DATABASE_URL": "libsql://kickstand-kickstand.aws-eu-west-1.turso.io",
+    // Public URL. Also read by astro.config.mjs at build time, so it is the one place to change it.
     "SITE_URL": "https://kickstand.jolly-wildflower-4370.workers.dev",
-    "BETTER_AUTH_URL": "https://kickstand.jolly-wildflower-4370.workers.dev"
+    "BETTER_AUTH_URL": "https://kickstand.jolly-wildflower-4370.workers.dev",
+    // Shows the demo accounts on /login. "false" once real members use the site.
+    "SHOW_DEMO_LOGINS": "true"
   },
-  // Photos, bike photos, protocol photos. Private; served only through /media/*.
+  // All photos (listings, bikes, loan protocols). Private, no public URL: served only through /media/*,
+  // which checks access first.
   "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "kickstand-photos" }],
-  // Resizes uploads (replaces sharp, which does not run on Workers).
-  "images": { "binding": "IMAGES" }
+  // Resizes uploads and strips their metadata (replaces sharp, which does not run on Workers).
+  "images": { "binding": "IMAGES" },
+  // Workers Rate Limiting (src/lib/rate-limit.ts). Periods can only be 10 or 60 seconds.
+  "ratelimits": [
+    { "name": "LOGIN_IP_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } },
+    { "name": "LOGIN_EMAIL_LIMITER", "namespace_id": "1002", "simple": { "limit": 5, "period": 60 } },
+    { "name": "MESSAGE_LIMITER", "namespace_id": "1003", "simple": { "limit": 10, "period": 60 } }
+  ]
 }

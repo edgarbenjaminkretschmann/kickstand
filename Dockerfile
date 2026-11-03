@@ -9,6 +9,7 @@ COPY . .
 # Public URL, needed at build time so Astro trusts the Host header for its CSRF origin check.
 ARG SITE_URL=http://localhost:4321
 ENV SITE_URL=$SITE_URL
+ENV KICKSTAND_TARGET=node
 RUN npm run build && npm prune --omit=dev
 
 FROM node:22-bookworm-slim
