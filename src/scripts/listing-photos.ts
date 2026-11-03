@@ -6,10 +6,11 @@ export function wireListingPhotos(input: HTMLInputElement, box: HTMLElement, sta
   const room = Number(input.dataset.room) || 8;
   const defaultText = statusEl.textContent ?? "";
   const form = input.form;
+  // Set while photos are being shrunk, cleared when done, so a later submit goes through untouched.
   let busy: Promise<void> | null = null;
 
   input.addEventListener("change", () => {
-    busy = (async () => {
+    const job = (async () => {
       const files = [...(input.files ?? [])].filter((f) => f.type.startsWith("image/"));
       const picked = files.slice(0, room);
       box.replaceChildren();
@@ -39,7 +40,10 @@ export function wireListingPhotos(input: HTMLInputElement, box: HTMLElement, sta
       input.files = dt.files;
       const skipped = files.length - picked.length;
       statusEl.textContent = `${picked.length} Foto(s) bereit${skipped > 0 ? `, ${skipped} übersprungen (höchstens ${room})` : ""}. Sie werden beim Speichern hochgeladen.`;
-    })();
+    })().finally(() => {
+      if (busy === job) busy = null;
+    });
+    busy = job;
   });
 
   // Do not submit while photos are still being shrunk.
@@ -48,7 +52,8 @@ export function wireListingPhotos(input: HTMLInputElement, box: HTMLElement, sta
     e.preventDefault();
     const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null;
     await busy;
-    busy = null;
-    form.requestSubmit(submitter);
+    // Submit again from a fresh task: a requestSubmit() while the first submit event is still being
+    // dispatched is ignored by the browser.
+    setTimeout(() => form.requestSubmit(submitter), 0);
   });
 }
