@@ -1,6 +1,7 @@
 import { ActionError, type ActionAPIContext } from "astro:actions";
 import { AuthFailure, AuthRequiredError, requireUser as requireAuthUser } from "../lib/auth";
 import { DataError } from "../lib/data/errors";
+import { UploadError } from "../lib/uploads";
 
 export function requireUser(context: ActionAPIContext) {
   try {
@@ -25,6 +26,7 @@ export async function guard<T>(fn: () => Promise<T>): Promise<T> {
   } catch (e) {
     if (e instanceof DataError) throw new ActionError({ code: e.code, message: e.message });
     if (e instanceof AuthFailure) throw new ActionError({ code: "BAD_REQUEST", message: e.message });
+    if (e instanceof UploadError) throw new ActionError({ code: "BAD_REQUEST", message: e.message });
     if (e instanceof AuthRequiredError) throw new ActionError({ code: "UNAUTHORIZED", message: e.message });
     throw e;
   }
