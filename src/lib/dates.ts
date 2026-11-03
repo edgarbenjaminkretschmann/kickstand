@@ -1,8 +1,10 @@
-// Dates are stored as ISO strings (YYYY-MM-DD, HH:MM) and always shown as DD.MM.YYYY.
-// We never rely on the browser locale: date fields are plain text inputs parsed here.
+// Dates are stored as ISO strings (YYYY-MM-DD, HH:MM) and shown as DD.MM.YYYY in German, DD/MM/YYYY in the
+// other languages. We never rely on the browser locale: date fields are plain text inputs parsed here.
+// Functions without a `lang` argument give German, which is what the contract PDF uses.
+import type { Lang } from "../i18n";
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
-const DE_DATE = /^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/;
+const DE_DATE = /^(\d{1,2})[./](\d{1,2})[./](\d{2}|\d{4})$/;
 const TIME = /^([01]?\d|2[0-3])[:.]?([0-5]\d)$/;
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -39,32 +41,40 @@ function isValidYmd(y: number, m: number, d: number): boolean {
   return d <= days;
 }
 
-/** "2026-10-23" -> "23.10.2026". Returns "" for empty input and the input itself if it is not ISO. */
-export function formatDate(value: string | null | undefined): string {
+/** Separator between day, month and year: "23.10.2026" in German, "23/10/2026" elsewhere. */
+const dateSep = (lang: Lang) => (lang === "de" ? "." : "/");
+
+/** "2026-10-23" -> "23.10.2026" (en: "23/10/2026"). Returns "" for empty input and the input itself if it is not ISO. */
+export function formatDate(value: string | null | undefined, lang: Lang = "de"): string {
   if (!value) return "";
   const m = ISO_DATE.exec(value.slice(0, 10));
-  return m ? `${m[3]}.${m[2]}.${m[1]}` : value;
+  const sep = dateSep(lang);
+  return m ? `${m[3]}${sep}${m[2]}${sep}${m[1]}` : value;
 }
 
-/** "2026-10-23T14:05" or ("2026-10-23", "14:05") -> "23.10.2026, 14:05 Uhr". */
-export function formatDateTime(date: string | null | undefined, time?: string | null): string {
+/** "14:05" -> "14:05 Uhr" in German, unchanged elsewhere. */
+const clock = (time: string, lang: Lang) => (lang === "de" ? `${time} Uhr` : time);
+
+/** "2026-10-23T14:05" or ("2026-10-23", "14:05") -> "23.10.2026, 14:05 Uhr" (en: "23/10/2026, 14:05"). */
+export function formatDateTime(date: string | null | undefined, time?: string | null, lang: Lang = "de"): string {
   if (date && !time && date.length > 10) {
     time = date.slice(11, 16);
     date = date.slice(0, 10);
   }
-  return [formatDate(date), time ? `${time} Uhr` : ""].filter(Boolean).join(", ");
+  return [formatDate(date, lang), time ? clock(time, lang) : ""].filter(Boolean).join(", ");
 }
 
-/** A Date (or epoch ms) in Berlin time -> "23.10.2026, 14:05 Uhr". */
-export function formatTimestamp(value: Date | number | string): string {
+/** A Date (or epoch ms) in Berlin time -> "23.10.2026, 14:05 Uhr" (en: "23/10/2026, 14:05"). */
+export function formatTimestamp(value: Date | number | string, lang: Lang = "de"): string {
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   const b = berlinParts(d);
-  return `${pad(b.day)}.${pad(b.month)}.${b.year}, ${pad(b.hour)}:${pad(b.minute)} Uhr`;
+  const sep = dateSep(lang);
+  return `${pad(b.day)}${sep}${pad(b.month)}${sep}${b.year}, ${clock(`${pad(b.hour)}:${pad(b.minute)}`, lang)}`;
 }
 
 /**
- * Parses what a person types into a date field. Accepts "23.10.2026", "1.2.26" and ISO "2026-10-23".
+ * Parses what a person types into a date field. Accepts "23.10.2026", "23/10/2026", "1.2.26" and ISO "2026-10-23".
  * Returns ISO "YYYY-MM-DD", or null if empty or invalid.
  */
 export function parseDate(input: string | null | undefined): string | null {

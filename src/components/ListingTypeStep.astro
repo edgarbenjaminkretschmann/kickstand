@@ -1,5 +1,6 @@
 ---
 // Step 1 of "Anzeige aufgeben": Biete or Suche, plus a category. A plain GET form, so it works without JS.
+import { i18n, tk } from "../i18n";
 import type { CategoryRecord } from "../lib/data/listings";
 
 interface Props {
@@ -11,15 +12,16 @@ interface Props {
   keep?: Record<string, string>;
 }
 
+const { t } = i18n(Astro.locals.lang);
 const { action, categories, type = "", category = "", keep = {} } = Astro.props;
 const HINTS: Record<string, string> = {
-  "motorrad-leihen": "Kostenlos verleihen, mit Leihvertrag",
-  garage: "Stellplatz, Halle, Hebebühne",
-  werkzeug: "Verleihen oder ausleihen",
-  teile: "Ersatzteile, Zubehör, Bekleidung",
-  hilfe: "Gemeinsam schrauben",
-  tour: "Zusammen fahren",
-  sonstiges: "Alles andere",
+  "motorrad-leihen": tk("Kostenlos verleihen, mit Leihvertrag"),
+  garage: tk("Stellplatz, Halle, Hebebühne"),
+  werkzeug: tk("Verleihen oder ausleihen"),
+  teile: tk("Ersatzteile, Zubehör, Bekleidung"),
+  hilfe: tk("Gemeinsam schrauben"),
+  tour: tk("Zusammen fahren"),
+  sonstiges: tk("Alles andere"),
 };
 ---
 
@@ -27,35 +29,35 @@ const HINTS: Record<string, string> = {
   {Object.entries(keep).map(([k, v]) => <input type="hidden" name={k} value={v} />)}
   <input type="hidden" name="schritt" value="2" />
   <fieldset class="panel">
-    <legend class="step-legend"><span class="step-no" aria-hidden="true">1</span> Bietest du etwas an oder suchst du?</legend>
+    <legend class="step-legend"><span class="step-no" aria-hidden="true">1</span> {t("Bietest du etwas an oder suchst du?")}</legend>
     <div class="choice-grid choice-2">
       <label class="choice">
         <input type="radio" name="typ" value="biete" checked={type !== "suche"} required />
-        <span class="choice-title">Biete</span>
-        <span class="choice-hint">Ich habe etwas für andere</span>
+        <span class="choice-title">{t("Biete")}</span>
+        <span class="choice-hint">{t("Ich habe etwas für andere")}</span>
       </label>
       <label class="choice">
         <input type="radio" name="typ" value="suche" checked={type === "suche"} />
-        <span class="choice-title">Suche</span>
-        <span class="choice-hint">Ich brauche etwas oder jemanden</span>
+        <span class="choice-title">{t("Suche")}</span>
+        <span class="choice-hint">{t("Ich brauche etwas oder jemanden")}</span>
       </label>
     </div>
   </fieldset>
   <fieldset class="panel">
-    <legend class="step-legend"><span class="step-no" aria-hidden="true">2</span> Worum geht es?</legend>
+    <legend class="step-legend"><span class="step-no" aria-hidden="true">2</span> {t("Worum geht es?")}</legend>
     <div class="choice-grid">
       {
         categories.map((c, i) => (
           <label class="choice">
             <input type="radio" name="kategorie" value={c.slug} checked={category ? c.slug === category : i === 0} required />
-            <span class="choice-title">{c.label}</span>
-            <span class="choice-hint">{HINTS[c.slug] ?? ""}</span>
+            <span class="choice-title">{t(c.label)}</span>
+            <span class="choice-hint">{HINTS[c.slug] ? t(HINTS[c.slug]) : ""}</span>
           </label>
         ))
       }
     </div>
   </fieldset>
   <div class="actions">
-    <button type="submit" class="btn-primary">Weiter</button>
+    <button type="submit" class="btn-primary">{t("Weiter")}</button>
   </div>
 </form>

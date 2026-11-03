@@ -1,13 +1,16 @@
 ---
 // "Kickstand" in Mr Dafoe inside the sky oval. Design A (the look is borrowed from vlogato.com).
+import { i18n } from "../i18n";
+
 interface Props {
   href?: string;
 }
 
 const { href = "/" } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
 ---
 
-<a href={href} class="logo" aria-label="Kickstand. Zur Startseite">
+<a href={href} class="logo" aria-label={t("Kickstand. Zur Startseite")}>
   <span class="logo-oval" aria-hidden="true">Kickstand</span>
 </a>
 

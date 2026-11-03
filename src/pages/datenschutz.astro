@@ -1,9 +1,14 @@
 ---
 import Base from "../layouts/Base.astro";
+import { i18n } from "../i18n";
+
+// The legal text stays German (binding); other languages get a short notice on top.
+const { t, lang } = i18n(Astro.locals.lang);
 ---
 
-<Base title="Datenschutz">
-  <article class="prose">
+<Base title={t("Datenschutz")}>
+  {lang !== "de" && <p class="notice" lang={lang}>{t("Diese Seite gibt es nur auf Deutsch. Die deutsche Fassung ist verbindlich.")}</p>}
+  <article class="prose" lang="de">
     <h1>Datenschutz</h1>
     <p>Die vollständige Datenschutzerklärung folgt vor dem Start.</p>
     <p>Kurz: Kickstand speichert nur, was für Anzeigen, Nachrichten und Leihverträge nötig ist. Kein Tracking, keine Werbung, keine Analyse-Tools. Schriften kommen von Google Fonts.</p>

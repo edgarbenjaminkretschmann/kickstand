@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, inArray, max, or, sql, type AnyColumn, type 
 import { db } from "../../db/client";
 import { Bike, Category, Listing, ListingPhoto, User } from "../../db/schema";
 import { lentBikeIds } from "./bikes";
+import { tk } from "../../i18n";
 import { badRequest, newId, notFound } from "./errors";
 import type { Listing as ListingRecord } from "./types";
 
@@ -108,14 +109,14 @@ const isOneOf = <T extends readonly string[]>(list: T, v: string): v is T[number
  * - Other listings never link a bike.
  */
 export async function checkListingInput(userId: string, input: ListingInput) {
-  if (!isOneOf(LISTING_TYPES, input.type)) badRequest("Bitte Biete oder Suche wählen.");
+  if (!isOneOf(LISTING_TYPES, input.type)) badRequest(tk("Bitte Biete oder Suche wählen."));
   const category = await getCategory(input.categorySlug);
-  if (!category) badRequest("Bitte eine Kategorie wählen.");
+  if (!category) badRequest(tk("Bitte eine Kategorie wählen."));
   const title = input.title.trim();
-  if (title.length < 3) badRequest("Bitte einen Titel angeben.");
+  if (title.length < 3) badRequest(tk("Bitte einen Titel angeben."));
   const city = input.city.trim();
   const zip = input.zip.trim();
-  if (!city && !zip) badRequest("Bitte Ort oder PLZ angeben.");
+  if (!city && !zip) badRequest(tk("Bitte Ort oder PLZ angeben."));
 
   const isBikeOffer = category.slug === BIKE_CATEGORY && input.type === "biete";
   let bikeId: string | null = null;
@@ -123,18 +124,18 @@ export async function checkListingInput(userId: string, input: ListingInput) {
   let priceCents = input.priceCents;
 
   if (isBikeOffer) {
-    if (!input.bikeId) badRequest("Für „Motorrad zum Leihen“ bitte eins deiner Motorräder wählen.");
+    if (!input.bikeId) badRequest(tk("Für „Motorrad zum Leihen“ bitte eins deiner Motorräder wählen."));
     const [bike] = await db.select().from(Bike).where(and(eq(Bike.id, input.bikeId), eq(Bike.ownerId, userId)));
-    if (!bike) badRequest("Für „Motorrad zum Leihen“ bitte eins deiner Motorräder wählen.");
+    if (!bike) badRequest(tk("Für „Motorrad zum Leihen“ bitte eins deiner Motorräder wählen."));
     bikeId = bike.id;
     // Kickstand only does free loans (Leihe nach § 598 BGB).
     priceKind = "kostenlos";
     priceCents = null;
   } else {
-    if (!isOneOf(PRICE_KINDS, priceKind)) badRequest("Bitte eine Preisart wählen.");
-    if (priceKind === "preis" && (priceCents == null || priceCents <= 0)) badRequest("Bitte einen Preis angeben.");
+    if (!isOneOf(PRICE_KINDS, priceKind)) badRequest(tk("Bitte eine Preisart wählen."));
+    if (priceKind === "preis" && (priceCents == null || priceCents <= 0)) badRequest(tk("Bitte einen Preis angeben."));
     if (priceKind === "kostenlos" || priceKind === "tausch") priceCents = null;
-    if (priceCents != null && (priceCents < 0 || priceCents > 100_000_00)) badRequest("Der Preis muss zwischen 0 und 100.000 € liegen.");
+    if (priceCents != null && (priceCents < 0 || priceCents > 100_000_00)) badRequest(tk("Der Preis muss zwischen 0 und 100.000 € liegen."));
   }
 
   const description = input.description.trim().slice(0, 4000);
@@ -171,7 +172,7 @@ export async function getOwnListing(listingId: string, userId: string): Promise<
 
 async function requireOwnListing(listingId: string, userId: string): Promise<ListingRecord> {
   const l = await getOwnListing(listingId, userId);
-  if (!l) notFound("Anzeige nicht gefunden.");
+  if (!l) notFound(tk("Anzeige nicht gefunden."));
   return l;
 }
 
@@ -187,7 +188,7 @@ export async function updateListing(userId: string, listingId: string, input: Li
 
 export async function setListingStatus(userId: string, listingId: string, status: string): Promise<void> {
   const existing = await requireOwnListing(listingId, userId);
-  if (!isOneOf(LISTING_STATUSES, status)) badRequest("Unbekannter Status.");
+  if (!isOneOf(LISTING_STATUSES, status)) badRequest(tk("Unbekannter Status."));
   await db.update(Listing).set({ status, updatedAt: new Date() }).where(eq(Listing.id, existing.id));
 }
 
@@ -213,7 +214,7 @@ export async function countListingPhotos(listingId: string): Promise<number> {
 /** Checks the owner and the photo limit before an upload. */
 export async function assertCanAddPhoto(userId: string, listingId: string): Promise<void> {
   await requireOwnListing(listingId, userId);
-  if ((await countListingPhotos(listingId)) >= MAX_PHOTOS) badRequest(`Höchstens ${MAX_PHOTOS} Fotos pro Anzeige.`);
+  if ((await countListingPhotos(listingId)) >= MAX_PHOTOS) badRequest(tk("Höchstens 8 Fotos pro Anzeige.")) // MAX_PHOTOS is 8; a fixed sentence so it can be translated;
 }
 
 export async function addListingPhoto(userId: string, listingId: string, key: string): Promise<string> {
@@ -231,7 +232,7 @@ export async function getListingPhoto(photoId: string): Promise<ListingPhotoReco
 
 async function requireOwnPhoto(userId: string, photoId: string): Promise<ListingPhotoRecord> {
   const p = await getListingPhoto(photoId);
-  if (!p || !(await getOwnListing(p.listingId, userId))) notFound("Foto nicht gefunden.");
+  if (!p || !(await getOwnListing(p.listingId, userId))) notFound(tk("Foto nicht gefunden."));
   return p;
 }
 

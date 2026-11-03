@@ -49,3 +49,18 @@ describe("parseTime / addDays", () => {
     expect(addDays("2026-01-31", 1)).toBe("2026-02-01");
   });
 });
+
+describe("dates in other languages", () => {
+  it("uses DD/MM/YYYY and no 'Uhr' outside German", async () => {
+    const { formatTimestamp } = await import("../src/lib/dates");
+    expect(formatDate("2026-10-23", "en")).toBe("23/10/2026");
+    expect(formatDateTime("2026-10-23T14:05", null, "fr")).toBe("23/10/2026, 14:05");
+    expect(formatDateTime("2026-10-23", "14:05")).toBe("23.10.2026, 14:05 Uhr");
+    expect(formatTimestamp(new Date("2026-07-01T22:30:00Z"), "pt")).toBe("02/07/2026, 00:30");
+  });
+  it("parses dates typed with slashes", () => {
+    expect(parseDate("23/10/2026")).toBe("2026-10-23");
+    expect(parseDate("1/2/26")).toBe("2026-02-01");
+    expect(parseDate("31/02/2026")).toBeNull();
+  });
+});

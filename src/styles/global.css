@@ -373,6 +373,26 @@ main.page {
   min-height: var(--tap);
 }
 
+.lang-switch {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+}
+
+.lang-switch a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: var(--muted);
+}
+
+.lang-switch a[aria-current] {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
 /* --- Bottom tab bar (mobile) --- */
 
 .tabbar {

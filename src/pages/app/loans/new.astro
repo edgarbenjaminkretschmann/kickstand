@@ -18,7 +18,9 @@ import { formatEuro } from "../../../lib/euro-words";
 import { formError } from "../../../lib/form";
 import { submittedValues } from "../../../lib/submitted";
 import { photoUrl } from "../../../lib/urls";
+import { i18n } from "../../../i18n";
 
+const { t, lang } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const q = Astro.url.searchParams;
 
@@ -43,7 +45,7 @@ if (saved && !saved.error) {
 
 // Existing draft?
 const parts = loanParam ? await loadLoanParts(loanParam) : null;
-if (loanParam && (!parts || parts.loan.lenderId !== user.id)) return new Response("Nicht gefunden", { status: 404 });
+if (loanParam && (!parts || parts.loan.lenderId !== user.id)) return new Response(t("Nicht gefunden"), { status: 404 });
 if (parts && parts.loan.status !== "draft") return Astro.redirect(`/app/loans/${parts.loan.id}`);
 
 const bike = await getOwnBike(parts?.bike.id ?? q.get("bike") ?? prev?.bikeId ?? "", user.id);
@@ -102,7 +104,7 @@ const base = {
   odometerKm: hp?.odometerKm != null ? String(hp.odometerKm) : "",
   fuelLevel: hp?.fuelLevel ?? "",
   damages: hp?.damages ?? "",
-  placeDate: L?.placeDate ?? [lenderProfile?.city, formatDate(todayIso())].filter(Boolean).join(", "),
+  placeDate: L?.placeDate ?? [lenderProfile?.city, formatDate(todayIso(), lang)].filter(Boolean).join(", "),
   sigLender: parts?.signatures.lender?.pngDataUrl ?? "",
   sigBorrower: parts?.signatures.borrower?.pngDataUrl ?? "",
 };
@@ -111,32 +113,40 @@ const v: typeof base = prev
   : base;
 const capNumber = Number(String(v.liabilityCapEur).replace(/\./g, "").replace(",", ".")) || bike.liabilityCapEur;
 const photos = parts?.handoverPhotos ?? [];
-const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen. Bitte ergänzen: ${problems.join(" ")}` : null);
+const savedError = formError(saved);
+// Action messages and the finalize problems are German keys; translate them here, where they are shown.
+const message = savedError
+  ? t(savedError)
+  : problems.length
+    ? t("Noch nicht abgeschlossen. Bitte ergänzen: {list}", { list: problems.map((p) => t(p)).join(" ") })
+    : null;
 ---
 
-<Base title="Leihvertrag" dock>
+<Base title={t("Leihvertrag")} dock>
   <div class="page-head">
-    <h1>Leihvertrag Motorrad</h1>
-    <p>Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.</p>
+    <h1>{t("Leihvertrag Motorrad")}</h1>
+    <p>{t("Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.")}</p>
   </div>
 
-  {q.has("gespeichert") && !problems.length && <p class="notice nojs-only" role="status">Entwurf gespeichert.</p>}
+  {q.has("gespeichert") && !problems.length && <p class="notice nojs-only" role="status">{t("Entwurf gespeichert.")}</p>}
   {
     otherDrafts.length > 0 && (
       <p class="notice">
-        Es gibt schon einen Entwurf für dieses Motorrad
-        {otherDrafts[0].borrowerName && <> (an {otherDrafts[0].borrowerName})</>}. <a href={`/app/loans/new?loan=${otherDrafts[0].id}`}>Weiter bearbeiten</a>
+        {otherDrafts[0].borrowerName
+          ? t("Es gibt schon einen Entwurf für dieses Motorrad (an {name}).", { name: otherDrafts[0].borrowerName })
+          : t("Es gibt schon einen Entwurf für dieses Motorrad.")}{" "}
+        <a href={`/app/loans/new?loan=${otherDrafts[0].id}`}>{t("Weiter bearbeiten")}</a>
       </p>
     )
   }
-  {active && <p class="notice">Dieses Motorrad ist gerade an {active.borrowerName} verliehen. Abschließen geht erst nach der Rückgabe.</p>}
-  {prefill.borrowerDisplayName && <p class="notice">Aus dem Profil von {prefill.borrowerDisplayName} vorausgefüllt. Bitte mit Ausweis und Führerschein vergleichen.</p>}
+  {active && <p class="notice">{t("Dieses Motorrad ist gerade an {name} verliehen. Abschließen geht erst nach der Rückgabe.", { name: active.borrowerName })}</p>}
+  {prefill.borrowerDisplayName && <p class="notice">{t("Aus dem Profil von {name} vorausgefüllt. Bitte mit Ausweis und Führerschein vergleichen.", { name: prefill.borrowerDisplayName })}</p>}
 
-  <BikeDoc bike={bike} extra={[["Verleiher", lenderName]]} />
+  <BikeDoc bike={bike} extra={[[t("Verleiher"), lenderName]]} />
 
   <form id="loan-form" method="POST" action={actions.loans.save} enctype="multipart/form-data" class="stack" novalidate autocomplete="off">
     <!-- Enter in a text field saves the draft rather than finalising. -->
-    <button type="submit" name="intent" value="draft" class="visually-hidden" tabindex="-1" aria-hidden="true">Speichern</button>
+    <button type="submit" name="intent" value="draft" class="visually-hidden" tabindex="-1" aria-hidden="true">{t("Speichern")}</button>
     <input type="hidden" name="loanId" value={parts?.loan.id ?? ""} />
     <input type="hidden" name="bikeId" value={bike.id} />
     <input type="hidden" name="listingId" value={listingId ?? ""} />
@@ -145,101 +155,100 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
     <FormAlert message={message} />
 
     <section class="card">
-      <h2>Haftungsgrenze Entleiher</h2>
-      <p class="cap mono" id="cap-preview">höchstens {formatEuro(capNumber, false)} je Schaden</p>
-      <Field label="Betrag in €" name="liabilityCapEur" mono inputmode="decimal" value={v.liabilityCapEur} />
+      <h2>{t("Haftungsgrenze Entleiher")}</h2>
+      <p class="cap mono" id="cap-preview">{t("höchstens {amount} je Schaden", { amount: formatEuro(capNumber, false) })}</p>
+      <Field label={t("Betrag in €")} name="liabilityCapEur" mono inputmode="decimal" value={v.liabilityCapEur} />
       <p class="hint">
-        Der Entleiher zahlt den tatsächlichen Schaden, höchstens diesen Betrag. Bei Vorsatz, grober Fahrlässigkeit, Alkohol oder Fahren ohne
-        Führerschein haftet er voll.
+        {t("Der Entleiher zahlt den tatsächlichen Schaden, höchstens diesen Betrag. Bei Vorsatz, grober Fahrlässigkeit, Alkohol oder Fahren ohne Führerschein haftet er voll.")}
       </p>
     </section>
 
     <section class="card">
-      <h2>Entleiher</h2>
-      <p class="hint">Ein Konto braucht der Entleiher nicht. Daten vom Führerschein und Ausweis abschreiben.</p>
-      <Field label="Name, Vorname" name="borrowerName" autocomplete="off" value={v.borrowerName} />
-      <Field label="Straße, Hausnummer" name="borrowerStreet" value={v.borrowerStreet} />
-      <Field label="PLZ, Ort" name="borrowerZipCity" value={v.borrowerZipCity} />
+      <h2>{t("Entleiher")}</h2>
+      <p class="hint">{t("Ein Konto braucht der Entleiher nicht. Daten vom Führerschein und Ausweis abschreiben.")}</p>
+      <Field label={t("Name, Vorname")} name="borrowerName" autocomplete="off" value={v.borrowerName} />
+      <Field label={t("Straße, Hausnummer")} name="borrowerStreet" value={v.borrowerStreet} />
+      <Field label={t("PLZ, Ort")} name="borrowerZipCity" value={v.borrowerZipCity} />
       <div class="row stack-sm">
-        <DateField label="Geburtsdatum" name="borrowerBirthdate" value={v.borrowerBirthdate} />
-        <Field label="Telefon" name="borrowerPhone" type="tel" inputmode="tel" value={v.borrowerPhone} />
+        <DateField label={t("Geburtsdatum")} name="borrowerBirthdate" value={v.borrowerBirthdate} />
+        <Field label={t("Telefon")} name="borrowerPhone" type="tel" inputmode="tel" value={v.borrowerPhone} />
       </div>
       <div class="row stack-sm">
-        <Field label="Führerschein-Nr." name="licenseNumber" mono value={v.licenseNumber} />
-        <Field label="Klasse A seit" name="licenseClassASince" inputmode="numeric" placeholder="z. B. 2015" value={v.licenseClassASince} />
+        <Field label={t("Führerschein-Nr.")} name="licenseNumber" mono value={v.licenseNumber} />
+        <Field label={t("Klasse A seit")} name="licenseClassASince" inputmode="numeric" placeholder={t("z. B. 2015")} value={v.licenseClassASince} />
       </div>
     </section>
 
     <section class="card">
-      <h2>Leihdauer</h2>
+      <h2>{t("Leihdauer")}</h2>
       <div class="row">
-        <DateField label="Beginn Datum" name="startDate" value={v.startDate} />
-        <TimeField label="Uhrzeit" name="startTime" value={v.startTime} />
+        <DateField label={t("Beginn Datum")} name="startDate" value={v.startDate} />
+        <TimeField label={t("Uhrzeit")} name="startTime" value={v.startTime} />
       </div>
-      <div class="seg" role="radiogroup" aria-label="Ende der Leihe">
-        <label><input type="radio" name="endMode" value="open" checked={v.endMode !== "fixed"} /><span>Offen</span></label>
-        <label><input type="radio" name="endMode" value="fixed" checked={v.endMode === "fixed"} /><span>Festes Ende</span></label>
+      <div class="seg" role="radiogroup" aria-label={t("Ende der Leihe")}>
+        <label><input type="radio" name="endMode" value="open" checked={v.endMode !== "fixed"} /><span>{t("Offen")}</span></label>
+        <label><input type="radio" name="endMode" value="fixed" checked={v.endMode === "fixed"} /><span>{t("Festes Ende")}</span></label>
       </div>
       <div class="open-only stack">
-        <DateField label="Offen (unbefristet), spätestens am" name="latestEndDate" value={v.latestEndDate} required />
+        <DateField label={t("Offen (unbefristet), spätestens am")} name="latestEndDate" value={v.latestEndDate} required />
         <p class="hint">
-          Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.
+          {t("Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.")}
         </p>
       </div>
       <div class="fixed-only row">
-        <DateField label="Ende Datum" name="endDate" value={v.endDate} />
-        <TimeField label="Uhrzeit" name="endTime" value={v.endTime} />
+        <DateField label={t("Ende Datum")} name="endDate" value={v.endDate} />
+        <TimeField label={t("Uhrzeit")} name="endTime" value={v.endTime} />
       </div>
-      <Field label="Rückgabeort" name="returnPlace" value={v.returnPlace} />
+      <Field label={t("Rückgabeort")} name="returnPlace" value={v.returnPlace} />
     </section>
 
     <section class="card">
-      <h2>Mitgegeben</h2>
+      <h2>{t("Mitgegeben")}</h2>
       <div class="row">
-        <label class="check"><input type="checkbox" name="keys" checked={v.keys} />Schlüssel</label>
-        <Field label="Anzahl" name="keyCount" type="number" min="1" max="9" inputmode="numeric" value={v.keyCount} />
+        <label class="check"><input type="checkbox" name="keys" checked={v.keys} />{t("Schlüssel")}</label>
+        <Field label={t("Anzahl")} name="keyCount" type="number" min="1" max="9" inputmode="numeric" value={v.keyCount} />
       </div>
-      <label class="check"><input type="checkbox" name="registration" checked={v.registration} />Zulassungsbescheinigung Teil I</label>
-      <Field label="Sonstiges (z. B. Helm, Schloss)" name="otherItems" value={v.otherItems} />
+      <label class="check"><input type="checkbox" name="registration" checked={v.registration} />{t("Zulassungsbescheinigung Teil I")}</label>
+      <Field label={t("Sonstiges (z. B. Helm, Schloss)")} name="otherItems" value={v.otherItems} />
     </section>
 
     <section class="card">
-      <h2>Übergabe</h2>
+      <h2>{t("Übergabe")}</h2>
       <div class="row">
-        <Field label="Kilometerstand" name="odometerKm" mono inputmode="numeric" value={v.odometerKm} />
-        <Field label="Tankstand" name="fuelLevel" placeholder="z. B. voll, ½" value={v.fuelLevel} />
+        <Field label={t("Kilometerstand")} name="odometerKm" mono inputmode="numeric" value={v.odometerKm} />
+        <Field label={t("Tankstand")} name="fuelLevel" placeholder={t("z. B. voll, ½")} value={v.fuelLevel} />
       </div>
-      <Field label="Vorhandene Schäden / Kratzer" name="damages" multiline value={v.damages} placeholder="z. B. Kratzer Tank links, Spiegel rechts lose" />
-      <p class="hint">Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.</p>
+      <Field label={t("Vorhandene Schäden / Kratzer")} name="damages" multiline value={v.damages} placeholder={t("z. B. Kratzer Tank links, Spiegel rechts lose")} />
+      <p class="hint">{t("Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.")}</p>
       <div class="thumbs" id="thumbs-handover">
         {
           photos.map((p, i) => (
             <div class="thumb" data-photo-id={p.id}>
-              <img src={photoUrl(p.id)} alt={`Foto ${i + 1}, ${formatTimestamp(p.takenAt)}`} loading="lazy" />
+              <img src={photoUrl(p.id)} alt={t("Foto {n}, {time}", { n: i + 1, time: formatTimestamp(p.takenAt, lang) })} loading="lazy" />
             </div>
           ))
         }
       </div>
       <label class="photo-btn">
-        + Fotos aufnehmen oder hochladen
+        {t("+ Fotos aufnehmen oder hochladen")}
         <input type="file" name="photos" accept="image/*" multiple id="file-handover" />
       </label>
     </section>
 
     <section class="card">
-      <h2>Unterschriften</h2>
-      <Field label="Ort, Datum" name="placeDate" value={v.placeDate} />
+      <h2>{t("Unterschriften")}</h2>
+      <Field label={t("Ort, Datum")} name="placeDate" value={v.placeDate} />
       <div class="sig js-only">
-        <div class="sig-bar"><span>Verleiher ({lenderName})</span><button type="button" class="btn-link" data-clear="lender">Löschen</button></div>
-        <canvas id="pad-lender" aria-label="Unterschrift Verleiher, mit dem Finger zeichnen"></canvas>
+        <div class="sig-bar"><span>{t("Verleiher ({name})", { name: lenderName })}</span><button type="button" class="btn-link" data-clear="lender">{t("Löschen")}</button></div>
+        <canvas id="pad-lender" aria-label={t("Unterschrift Verleiher, mit dem Finger zeichnen")}></canvas>
         <input type="hidden" name="sigLender" value={v.sigLender} />
       </div>
       <div class="sig js-only">
-        <div class="sig-bar"><span>Entleiher</span><button type="button" class="btn-link" data-clear="borrower">Löschen</button></div>
-        <canvas id="pad-borrower" aria-label="Unterschrift Entleiher, mit dem Finger zeichnen"></canvas>
+        <div class="sig-bar"><span>{t("Entleiher")}</span><button type="button" class="btn-link" data-clear="borrower">{t("Löschen")}</button></div>
+        <canvas id="pad-borrower" aria-label={t("Unterschrift Entleiher, mit dem Finger zeichnen")}></canvas>
         <input type="hidden" name="sigBorrower" value={v.sigBorrower} />
       </div>
-      <p class="hint">Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.</p>
+      <p class="hint">{t("Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.")}</p>
     </section>
 
     <p id="status" role="status" aria-live="polite" class="small muted"></p>
@@ -247,8 +256,8 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
     {
       parts && (
         <div class="actions">
-          <button type="submit" formaction={actions.loans.discard} formnovalidate class="btn-link" data-confirm="Wirklich löschen?">
-            Entwurf löschen
+          <button type="submit" formaction={actions.loans.discard} formnovalidate class="btn-link" data-confirm={t("Wirklich löschen?")}>
+            {t("Entwurf löschen")}
           </button>
         </div>
       )
@@ -256,10 +265,11 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
 
     <div class="dock">
       <div class="in">
-        <button type="submit" name="intent" value="finalize" class="btn">Abschließen</button>
-        <button type="submit" name="intent" value="draft" class="btn-primary nojs-only">Speichern</button>
-        <button type="button" id="make-pdf" class="btn-primary js-only">PDF erstellen</button>
+        <button type="submit" name="intent" value="finalize" class="btn">{t("Abschließen")}</button>
+        <button type="submit" name="intent" value="draft" class="btn-primary nojs-only">{t("Speichern")}</button>
+        <button type="button" id="make-pdf" class="btn-primary js-only">{t("PDF erstellen")}</button>
       </div>
+      {lang !== "de" && <p class="small muted pdf-lang">{t("Der Vertrag wird auf Deutsch erstellt. Die deutsche Fassung ist verbindlich.")}</p>}
     </div>
   </form>
 </Base>
@@ -300,6 +310,10 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
     font-size: 0.9rem;
     color: var(--muted);
   }
+  .pdf-lang {
+    margin: 6px 0 0;
+    text-align: center;
+  }
   #status:empty {
     display: none;
   }
@@ -314,6 +328,7 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
   import { wirePhotoInput } from "../../../scripts/photos";
   import { downloadContract } from "../../../scripts/pdf";
   import { formatEuro } from "../../../lib/euro-words";
+  import { ct } from "../../../i18n/client";
 
   const form = document.getElementById("loan-form") as HTMLFormElement | null;
   if (form) {
@@ -338,7 +353,7 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
 
     async function saveOnce() {
       dirty = false;
-      status("Speichert …");
+      status(ct("Speichert …"));
       try {
         const { data, error } = await actions.loans.save(snapshot());
         if (error) throw error;
@@ -349,11 +364,12 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
           url.searchParams.delete("gespeichert");
           history.replaceState(null, "", url);
         }
-        const t = new Date();
-        status(`Entwurf gespeichert, ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")} Uhr`);
+        const now = new Date();
+        const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        status(ct("Entwurf gespeichert, {time} Uhr", { time }));
       } catch (e) {
         dirty = true;
-        status(`Nicht gespeichert (${(e as Error)?.message || "offline?"}). Wird beim nächsten Tippen erneut versucht.`, true);
+        status(ct("Nicht gespeichert ({reason}). Wird beim nächsten Tippen erneut versucht.", { reason: (e as Error)?.message || ct("offline?") }), true);
       }
     }
 
@@ -401,7 +417,7 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
     const capPreview = document.getElementById("cap-preview")!;
     capInput.addEventListener("input", () => {
       const n = Number(capInput.value.replace(/\./g, "").replace(",", "."));
-      if (Number.isFinite(n) && n > 0) capPreview.textContent = `höchstens ${formatEuro(n, false)} je Schaden`;
+      if (Number.isFinite(n) && n > 0) capPreview.textContent = ct("höchstens {amount} je Schaden", { amount: formatEuro(n, false) });
     });
 
     // --- Signatures ---
@@ -439,11 +455,11 @@ const message = formError(saved) ?? (problems.length ? `Noch nicht abgeschlossen
       pdfBtn.disabled = true;
       try {
         await flush();
-        if (!idInput.value) throw new Error("Entwurf konnte nicht gespeichert werden");
+        if (!idInput.value) throw new Error(ct("Entwurf konnte nicht gespeichert werden"));
         await downloadContract(idInput.value, status);
-        status("PDF erstellt. Zum Abschließen unten auf „Abschließen“ tippen.");
+        status(ct("PDF erstellt. Zum Abschließen unten auf „Abschließen“ tippen."));
       } catch (e) {
-        status(`PDF konnte nicht erstellt werden (${(e as Error)?.message || "Fehler"}).`, true);
+        status(ct("PDF konnte nicht erstellt werden ({reason}).", { reason: (e as Error)?.message || ct("Fehler") }), true);
       } finally {
         pdfBtn.disabled = false;
       }

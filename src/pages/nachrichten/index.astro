@@ -1,23 +1,25 @@
 ---
+import { i18n } from "../../i18n";
 import Base from "../../layouts/Base.astro";
 import { listConversations } from "../../lib/data/conversations";
 import { relativeDate } from "../../lib/listing-format";
 
+const { t, lang } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const conversations = await listConversations(user.id);
 ---
 
-<Base title="Nachrichten">
+<Base title={t("Nachrichten")}>
   <div class="page-head">
-    <h1>Nachrichten</h1>
-    <p>Deine Unterhaltungen zu Anzeigen.</p>
+    <h1>{t("Nachrichten")}</h1>
+    <p>{t("Deine Unterhaltungen zu Anzeigen.")}</p>
   </div>
   {
     conversations.length === 0 ? (
       <div class="empty-box">
-        <p>Noch keine Nachrichten. Schreib bei einer Anzeige auf „Nachricht schreiben“.</p>
+        <p>{t("Noch keine Nachrichten. Schreib bei einer Anzeige auf „Nachricht schreiben“.")}</p>
         <a class="btn" href="/anzeigen">
-          Anzeigen ansehen
+          {t("Anzeigen ansehen")}
         </a>
       </div>
     ) : (
@@ -33,14 +35,14 @@ const conversations = await listConversations(user.id);
                   {c.other.name}
                 </a>
                 <time class="small muted" datetime={c.lastMessageAt.toISOString()}>
-                  {relativeDate(c.lastMessageAt)}
+                  {relativeDate(c.lastMessageAt, undefined, lang)}
                 </time>
               </div>
               <span class="small">{c.listing.title}</span>
               <span class="snippet">{c.lastMessage}</span>
             </div>
             {c.unread > 0 && (
-              <span class="count count-hot" aria-label={`${c.unread} ungelesen`}>
+              <span class="count count-hot" aria-label={t("{n} ungelesen", { n: c.unread })}>
                 {c.unread}
               </span>
             )}

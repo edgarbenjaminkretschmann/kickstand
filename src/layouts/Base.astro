@@ -1,6 +1,8 @@
 ---
 import { actions } from "astro:actions";
 import Logo from "../components/Logo.astro";
+import { i18n, LANG_NAMES, LANGS } from "../i18n";
+import clientKeys from "../i18n/client-keys.json";
 import { unreadTotal } from "../lib/data/conversations";
 import "../styles/global.css";
 
@@ -15,32 +17,41 @@ interface Props {
   bare?: boolean;
 }
 
+const { t, lang, tag } = i18n(Astro.locals.lang);
 const {
   title,
-  description = "Motorräder kostenlos leihen, Garagen, Werkzeug und Hilfe unter Motorradfahrern. Mit Leihvertrag aus dem Handy.",
+  description = t("Motorräder kostenlos leihen, Garagen, Werkzeug und Hilfe unter Motorradfahrern. Mit Leihvertrag aus dem Handy."),
   dock = false,
   wide = false,
   bare = false,
 } = Astro.props;
 const user = Astro.locals.user;
 const path = Astro.url.pathname;
-const pageTitle = title ? `${title} · Kickstand` : "Kickstand · Motorräder teilen, Garagen teilen";
+const pageTitle = title ? `${title} · Kickstand` : `Kickstand · ${t("Motorräder teilen, Garagen teilen")}`;
+// The same page in every language. German links go through /de/…, which redirects to the plain URL, so the
+// link rewriter (src/i18n/links.ts) does not prefix them with the current language.
+const here = path + Astro.url.search;
+const altHref = (l: (typeof LANGS)[number]) => (l === "de" ? `/de${here === "/" ? "" : here}` : `/${l}${here === "/" ? "" : here}`);
+const site = Astro.site ?? Astro.url;
+// Strings browser scripts need (collected from their ct calls), in this page's language. "<" is escaped so
+// the JSON cannot close the script element.
+const clientDict = lang === "de" ? null : JSON.stringify(Object.fromEntries(clientKeys.map((k) => [k, t(k)]))).replace(/</g, "\\u003c");
 const unread = user ? await unreadTotal(user.id) : 0;
 const initial = (user?.name.trim()[0] ?? "?").toUpperCase();
 
 const is = (prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 const current = (on: boolean) => (on ? "page" : undefined);
 const tabs = [
-  { href: "/anzeigen", label: "Suchen", icon: "search", on: is("/anzeigen") && !is("/anzeigen/neu") },
-  { href: "/merkliste", label: "Merkliste", icon: "heart", on: is("/merkliste") },
-  { href: "/anzeigen/neu", label: "Aufgeben", icon: "plus", on: is("/anzeigen/neu") },
-  { href: "/nachrichten", label: "Nachrichten", icon: "chat", on: is("/nachrichten"), badge: unread },
-  { href: "/app", label: "Mein Bereich", icon: "user", on: is("/app") || is("/profil") },
+  { href: "/anzeigen", label: t("Suchen"), icon: "search", on: is("/anzeigen") && !is("/anzeigen/neu") },
+  { href: "/merkliste", label: t("Merkliste"), icon: "heart", on: is("/merkliste") },
+  { href: "/anzeigen/neu", label: t("Aufgeben"), icon: "plus", on: is("/anzeigen/neu") },
+  { href: "/nachrichten", label: t("Nachrichten"), icon: "chat", on: is("/nachrichten"), badge: unread },
+  { href: "/app", label: t("Mein Bereich"), icon: "user", on: is("/app") || is("/profil") },
 ];
 ---
 
 <!doctype html>
-<html lang="de">
+<html lang={tag.slice(0, 2)}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -55,32 +66,34 @@ const tabs = [
       href="https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Open+Sans:wght@400;600&family=Roboto+Slab:wght@500;700&display=swap"
     />
     <title>{pageTitle}</title>
+    {LANGS.map((l) => <link rel="alternate" hreflang={l} href={new URL(l === "de" ? here : `/${l}${here === "/" ? "" : here}`, site).href} />)}
     <script is:inline>document.documentElement.classList.add("js");</script>
+    {clientDict && <script type="application/json" id="i18n-client" set:html={clientDict} />}
   </head>
   <body class:list={{ "has-dock": dock, "has-tabs": !dock }}>
-    <a href="#main" class="skip">Zum Inhalt</a>
+    <a href="#main" class="skip">{t("Zum Inhalt")}</a>
     <header class="site-header">
       <div class="bar">
         <Logo />
-        <nav class="main-nav" aria-label="Hauptnavigation">
-          <a href="/anzeigen" class="nav-link desktop-only" aria-current={current(is("/anzeigen") && !is("/anzeigen/neu"))}>Suchen</a>
+        <nav class="main-nav" aria-label={t("Hauptnavigation")}>
+          <a href="/anzeigen" class="nav-link desktop-only" aria-current={current(is("/anzeigen") && !is("/anzeigen/neu"))}>{t("Suchen")}</a>
           {
             user && (
               <a href="/nachrichten" class="nav-link desktop-only" aria-current={current(is("/nachrichten"))}>
-                Nachrichten
+                {t("Nachrichten")}
                 {unread > 0 && (
-                  <span class="count count-hot" aria-label={`${unread} ungelesen`}>
+                  <span class="count count-hot" aria-label={t("{n} ungelesen", { n: unread })}>
                     {unread}
                   </span>
                 )}
               </a>
             )
           }
-          <a href="/anzeigen/neu" class="btn btn-primary btn-small desktop-only">Anzeige aufgeben</a>
+          <a href="/anzeigen/neu" class="btn btn-primary btn-small desktop-only">{t("Anzeige aufgeben")}</a>
           {
             user ? (
               <details class="menu">
-                <summary aria-label={`Menü für ${user.name}`}>
+                <summary aria-label={t("Menü für {name}", { name: user.name })}>
                   <span class="avatar" aria-hidden="true">
                     {initial}
                   </span>
@@ -88,18 +101,18 @@ const tabs = [
                 </summary>
                 <div class="menu-pop">
                   <p class="menu-name">{user.name}</p>
-                  <a href="/app">Mein Bereich</a>
-                  <a href="/app#anzeigen">Meine Anzeigen</a>
-                  <a href="/merkliste">Merkliste</a>
-                  <a href="/profil">Profil</a>
+                  <a href="/app">{t("Mein Bereich")}</a>
+                  <a href="/app#anzeigen">{t("Meine Anzeigen")}</a>
+                  <a href="/merkliste">{t("Merkliste")}</a>
+                  <a href="/profil">{t("Profil")}</a>
                   <form method="POST" action={"/" + actions.auth.logout}>
-                    <button type="submit">Abmelden</button>
+                    <button type="submit">{t("Abmelden")}</button>
                   </form>
                 </div>
               </details>
             ) : (
               <a href={`/login${path === "/" || path === "/login" ? "" : `?next=${encodeURIComponent(path + Astro.url.search)}`}`} class="btn btn-outline btn-small">
-                Anmelden
+                {t("Anmelden")}
               </a>
             )
           }
@@ -126,11 +139,18 @@ const tabs = [
           <div class="foot">
             <span>Kickstand · Edgar Kretschmann</span>
             <span class="foot-links">
-              <a href="/so-gehts">So geht's</a>
-              <a href="/touren">Edgars Touren</a>
-              <a href="/impressum">Impressum</a>
-              <a href="/datenschutz">Datenschutz</a>
+              <a href="/so-gehts">{t("So geht's")}</a>
+              <a href="/touren">{t("Edgars Touren")}</a>
+              <a href="/impressum">{t("Impressum")}</a>
+              <a href="/datenschutz">{t("Datenschutz")}</a>
             </span>
+            <nav class="lang-switch" aria-label={t("Sprache")}>
+              {LANGS.map((l) => (
+                <a href={altHref(l)} hreflang={l} lang={l} aria-current={l === lang ? "true" : undefined}>
+                  {LANG_NAMES[l]}
+                </a>
+              ))}
+            </nav>
           </div>
         </footer>
       )
@@ -138,7 +158,7 @@ const tabs = [
 
     {
       !dock && (
-        <nav class="tabbar" aria-label="Schnellzugriff">
+        <nav class="tabbar" aria-label={t("Schnellzugriff")}>
           {tabs.map((t) => (
             <a href={t.href} aria-current={current(t.on)} class:list={{ "tab-add": t.icon === "plus" }}>
               <span class="tab-icon" aria-hidden="true">

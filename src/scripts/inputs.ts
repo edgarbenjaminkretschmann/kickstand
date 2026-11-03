@@ -1,3 +1,5 @@
+import { ct } from "../i18n/client";
+
 // Adds separators while typing into date (TT.MM.JJJJ) and time (HH:MM) text fields, since many phone
 // number pads have no "." or ":" key. Only reacts to plain typing, so deleting stays predictable.
 
@@ -45,7 +47,7 @@ document.addEventListener("click", (e) => {
   const original = btn.textContent;
   btn.dataset.armed = "1";
   btn.classList.add("armed");
-  btn.textContent = btn.dataset.confirm || "Wirklich?";
+  btn.textContent = btn.dataset.confirm || ct("Wirklich?");
   setTimeout(() => {
     delete btn.dataset.armed;
     btn.classList.remove("armed");

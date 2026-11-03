@@ -1,0 +1,1863 @@
+{
+  "2026": [
+    "src/pages/touren.astro"
+  ],
+  "„Spätestens am“ liegt vor dem Beginn.": [
+    "src/actions/loans.ts"
+  ],
+  "(noch kein Name)": [
+    "src/pages/app/index.astro"
+  ],
+  "{alt}, groß anzeigen": [
+    "src/pages/touren.astro"
+  ],
+  "{bike} bearbeiten": [
+    "src/pages/app/bikes/[id]/edit.astro"
+  ],
+  "{bike}, verliehen an {name}": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "{kw} kW ({ps} PS)": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "{label} entfernen": [
+    "src/scripts/photos.ts"
+  ],
+  "{label} Foto {n}, {time}": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "{n} Anzeigen": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "{n} Foto(s) bereit, {skipped} übersprungen (höchstens {room}). Sie werden beim Speichern hochgeladen.": [
+    "src/scripts/listing-photos.ts"
+  ],
+  "{n} Foto(s) bereit. Sie werden beim Speichern hochgeladen.": [
+    "src/scripts/listing-photos.ts"
+  ],
+  "{n} Foto(s) werden eingebunden …": [
+    "src/scripts/pdf.ts"
+  ],
+  "{n} Foto(s) werden verkleinert …": [
+    "src/scripts/listing-photos.ts"
+  ],
+  "{n} Fotos": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "{n} neu": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/index.astro"
+  ],
+  "{n} ungelesen": [
+    "src/layouts/Base.astro",
+    "src/pages/nachrichten/index.astro"
+  ],
+  "{ok} Foto(s) gespeichert, {bad} übersprungen. Nur Fotos sind möglich.": [
+    "src/scripts/photos.ts"
+  ],
+  "{ok} Foto(s) gespeichert.": [
+    "src/scripts/photos.ts"
+  ],
+  "{price} VB": [
+    "src/lib/listing-format.ts"
+  ],
+  "{title}, Foto {n} von {count}": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "+ Foto aufnehmen oder hochladen": [
+    "src/components/BikeForm.astro"
+  ],
+  "+ Fotos aufnehmen oder hochladen": [
+    "src/components/ListingForm.astro",
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "1 Anzeige": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "21 Orte in 35 Tagen": [
+    "src/pages/touren.astro"
+  ],
+  "22 Tage auf einer geliehenen Honda Win": [
+    "src/pages/touren.astro"
+  ],
+  "ab {date}": [
+    "src/pages/app/index.astro"
+  ],
+  "Abbrechen": [
+    "src/components/BikeForm.astro",
+    "src/components/ListingForm.astro",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Abgelehnt": [
+    "src/lib/labels.ts"
+  ],
+  "Abgeschlossen ({n})": [
+    "src/pages/app/index.astro"
+  ],
+  "Abmelden": [
+    "src/layouts/Base.astro"
+  ],
+  "Abschließen": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Abschreiben wie im Fahrzeugschein. Die Codes stehen dort links neben den Feldern. Kennzeichen und FIN bleiben privat und stehen nur im Leihvertrag.": [
+    "src/components/BikeForm.astro"
+  ],
+  "Aktiv": [
+    "src/lib/listing-format.ts"
+  ],
+  "Aktive Leihen": [
+    "src/pages/app/index.astro"
+  ],
+  "Aktuelles Foto": [
+    "src/components/BikeForm.astro"
+  ],
+  "Alle": [
+    "src/pages/anzeigen/index.astro",
+    "src/pages/app/index.astro"
+  ],
+  "Alle Einträge ansehen": [
+    "src/pages/index.astro"
+  ],
+  "Alle Kategorien": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Alles andere": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Alpen 2018": [
+    "src/pages/touren.astro"
+  ],
+  "Als Titelbild": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro"
+  ],
+  "am {date}": [
+    "src/lib/listing-format.ts"
+  ],
+  "an {name}": [
+    "src/pages/app/index.astro"
+  ],
+  "Anbieter": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Andere sehen deinen Vornamen und seit wann du dabei bist.": [
+    "src/pages/profil.astro"
+  ],
+  "Anderes Foto wählen": [
+    "src/components/BikeForm.astro"
+  ],
+  "Ändern": [
+    "src/components/ListingForm.astro"
+  ],
+  "Änderungen gespeichert.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Angenommen": [
+    "src/lib/labels.ts"
+  ],
+  "Anmelden": [
+    "src/layouts/Base.astro",
+    "src/pages/login.astro",
+    "src/pages/registrieren.astro"
+  ],
+  "Anmeldung fehlgeschlagen.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Anschrift des Entleihers fehlt.": [
+    "src/actions/loans.ts"
+  ],
+  "Antwort": [
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Anzahl": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Anzeige": [
+    "src/components/ListingForm.astro"
+  ],
+  "Anzeige aufgeben": [
+    "src/layouts/Base.astro",
+    "src/pages/anzeigen/index.astro",
+    "src/pages/anzeigen/neu.astro",
+    "src/pages/app/index.astro",
+    "src/pages/index.astro",
+    "src/pages/touren.astro"
+  ],
+  "Anzeige bearbeiten": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro"
+  ],
+  "Anzeige löschen": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Anzeige nicht gefunden.": [
+    "src/lib/data/conversations.ts",
+    "src/lib/data/listings.ts",
+    "src/lib/data/saved.ts"
+  ],
+  "Anzeige veröffentlichen": [
+    "src/components/ListingForm.astro"
+  ],
+  "Anzeige wirklich löschen?": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Anzeigen": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/anzeigen/index.astro",
+    "src/pages/app/index.astro"
+  ],
+  "Anzeigen ansehen": [
+    "src/pages/merkliste.astro",
+    "src/pages/nachrichten/index.astro",
+    "src/pages/touren.astro"
+  ],
+  "Anzeigen, die du dir gemerkt hast.": [
+    "src/pages/merkliste.astro"
+  ],
+  "Anzeigename": [
+    "src/pages/profil.astro"
+  ],
+  "Art": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Auf deiner": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Aufgeben": [
+    "src/layouts/Base.astro"
+  ],
+  "Auflage": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Aus dem Profil von {name} vorausgefüllt. Bitte mit Ausweis und Führerschein vergleichen.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Bearbeiten": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/index.astro"
+  ],
+  "Beginn": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Beginn Datum": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Beginn der Leihe fehlt.": [
+    "src/actions/loans.ts"
+  ],
+  "Bei Festpreis Pflicht, bei VB optional.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Bei offener Leihe ist „spätestens am“ Pflicht.": [
+    "src/actions/loans.ts"
+  ],
+  "Bei Übergabe": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Bemerkungen und Ausnahmen": [
+    "src/components/BikeForm.astro"
+  ],
+  "Benzin": [
+    "src/components/BikeForm.astro"
+  ],
+  "Bepackte Enduro auf dem Seitenständer vor einem grünen Bauzaun in Myanmar": [
+    "src/pages/index.astro"
+  ],
+  "Bepacktes Motorrad über einem grünen Alpental": [
+    "src/pages/touren.astro"
+  ],
+  "Bereiche": [
+    "src/pages/app/index.astro"
+  ],
+  "Beschreib kurz, was du anbietest oder suchst.": [
+    "src/pages/anzeigen/neu.astro"
+  ],
+  "Beschreibung": [
+    "src/components/ListingForm.astro"
+  ],
+  "Betrag in €": [
+    "src/components/ListingForm.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Bezahlt habe ich das Reisen fast immer mit Unterrichten: Englisch und Deutsch, fast ein Jahr in Qingdao, danach in Südkorea und auf den Philippinen. Früher habe ich auf meinem Blog vlogato davon erzählt, heute erzähle ich hier weiter.": [
+    "src/pages/touren.astro"
+  ],
+  "Biete": [
+    "src/components/ListingTypeStep.astro",
+    "src/lib/listing-format.ts",
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Biete Hilfe": [
+    "src/lib/labels.ts"
+  ],
+  "Biete und suche unter Motorradfahrern: Motorräder zum Leihen, Garagen, Werkzeug, Teile, Hilfe und Touren.": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Bietest du etwas an oder suchst du?": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "bis {date}": [
+    "src/pages/app/index.astro"
+  ],
+  "Bis dahin: Wenn dein Konto mit Google verbunden ist, melde dich einfach mit Google an. Sonst schreib uns kurz, dann helfen wir dir weiter.": [
+    "src/pages/passwort-vergessen.astro"
+  ],
+  "Bis zu {n} Fotos mehr. Das erste ist das Titelbild. Fotos sind öffentlich.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Bis zu {n} Fotos. Das erste ist das Titelbild. Fotos sind öffentlich.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Bitte Biete oder Suche wählen.": [
+    "src/actions/listings.ts",
+    "src/lib/data/listings.ts"
+  ],
+  "Bitte das Datum angeben.": [
+    "src/actions/loans.ts"
+  ],
+  "Bitte das Löschen bestätigen.": [
+    "src/actions/listings.ts"
+  ],
+  "Bitte das Modell angeben.": [
+    "src/actions/bikes.ts"
+  ],
+  "Bitte das Passwort angeben.": [
+    "src/actions/auth.ts"
+  ],
+  "Bitte deinen Namen angeben.": [
+    "src/actions/auth.ts"
+  ],
+  "Bitte die E-Mail angeben.": [
+    "src/actions/auth.ts"
+  ],
+  "Bitte die Marke angeben.": [
+    "src/actions/bikes.ts"
+  ],
+  "Bitte ein Foto als JPEG, PNG oder WebP hochladen.": [
+    "src/lib/uploads.ts"
+  ],
+  "Bitte ein Passwort wählen.": [
+    "src/actions/auth.ts"
+  ],
+  "Bitte eine E-Mail angeben.": [
+    "src/actions/auth.ts"
+  ],
+  "Bitte eine gültige E-Mail angeben.": [
+    "src/actions/auth.ts",
+    "src/lib/auth/index.ts"
+  ],
+  "Bitte eine Kategorie wählen.": [
+    "src/actions/listings.ts",
+    "src/lib/data/listings.ts"
+  ],
+  "Bitte eine Nachricht schreiben.": [
+    "src/actions/messages.ts",
+    "src/lib/data/conversations.ts",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Bitte eine Preisart wählen.": [
+    "src/lib/data/listings.ts"
+  ],
+  "Bitte eine Zahl angeben.": [
+    "src/actions/bikes.ts",
+    "src/actions/loans.ts"
+  ],
+  "Bitte einen Anzeigenamen angeben.": [
+    "src/actions/profile.ts"
+  ],
+  "Bitte einen Betrag angeben, z. B. 20 oder 12,50.": [
+    "src/actions/listings.ts"
+  ],
+  "Bitte einen Betrag angeben.": [
+    "src/actions/bikes.ts"
+  ],
+  "Bitte einen Preis angeben.": [
+    "src/lib/data/listings.ts"
+  ],
+  "Bitte einen Titel angeben.": [
+    "src/actions/listings.ts",
+    "src/lib/data/listings.ts"
+  ],
+  "Bitte erst speichern, dann Fotos hinzufügen.": [
+    "src/scripts/photos.ts"
+  ],
+  "Bitte Ort oder PLZ angeben.": [
+    "src/lib/data/listings.ts"
+  ],
+  "Bitte zuerst anmelden.": [
+    "src/actions/util.ts",
+    "src/lib/auth/index.ts",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Blick über den Lenker auf eine leere Landstraße, im Hintergrund ein Vulkan": [
+    "src/pages/touren.astro"
+  ],
+  "Blick über den Rückspiegel auf ein Hochgebirgstal mit Schnee und Gletscherresten": [
+    "src/pages/touren.astro"
+  ],
+  "dann die Anzeige aufgeben.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Das Ende liegt vor dem Beginn.": [
+    "src/actions/loans.ts"
+  ],
+  "Das Enduro mit Gepäck steht vor einer grünen Plane am Wegrand": [
+    "src/pages/touren.astro"
+  ],
+  "Das hat nicht geklappt. Bitte nochmal versuchen.": [
+    "src/lib/form.ts"
+  ],
+  "Das ist deine eigene Anzeige.": [
+    "src/lib/data/conversations.ts"
+  ],
+  "Das mit Regenplanen verpackte Motorrad steht im Regen am Strassenrand": [
+    "src/pages/touren.astro"
+  ],
+  "Das Motorrad": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Das Motorrad ist die günstigste Art zu reisen, und die schönste.": [
+    "src/pages/touren.astro"
+  ],
+  "Das Motorrad ist gerade verliehen.": [
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Das Motorrad ist gerade verliehen. Bitte später nochmal schauen.": [
+    "src/lib/data/conversations.ts"
+  ],
+  "Das Motorrad ist gerade verliehen. Schau später nochmal vorbei.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Das Motorrad mit blauem Gepäck steht auf Sand vor einer felsigen Küste": [
+    "src/pages/touren.astro"
+  ],
+  "Das Passwort braucht mindestens 8 Zeichen.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Das Zurücksetzen per E-Mail kommt bald. Kickstand verschickt noch keine E-Mails.": [
+    "src/pages/passwort-vergessen.astro"
+  ],
+  "Daten aus dem Fahrzeugschein, Versicherung und wie viel der Entleiher im Schadensfall höchstens zahlt.": [
+    "src/pages/index.astro"
+  ],
+  "Daten werden geladen …": [
+    "src/scripts/pdf.ts"
+  ],
+  "Datenschutz": [
+    "src/layouts/Base.astro",
+    "src/pages/datenschutz.astro"
+  ],
+  "Datum": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Datum als TT.MM.JJJJ": [
+    "src/components/DateField.astro"
+  ],
+  "Datum als TT.MM.JJJJ angeben.": [
+    "src/actions/bikes.ts",
+    "src/actions/loans.ts",
+    "src/actions/profile.ts"
+  ],
+  "Dein {link} ist noch unvollständig. Mit vollem Namen, Anschrift, Geburtsdatum und Führerschein-Nr. sind Leihverträge schneller ausgefüllt.": [
+    "src/pages/app/index.astro"
+  ],
+  "Dein Anzeigename ist öffentlich. Alles andere bleibt privat und füllt nur deine Leihverträge vor.": [
+    "src/pages/profil.astro"
+  ],
+  "Dein Motorrad steht rum? Leih es aus – mit Vertrag aus dem Handy.": [
+    "src/pages/index.astro"
+  ],
+  "Deine Anzeige": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Deine Anzeige ist online.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Deine Anzeigen, Motorräder, Leihen und Nachrichten.": [
+    "src/pages/app/index.astro"
+  ],
+  "Deine Unterhaltungen zu Anzeigen.": [
+    "src/pages/nachrichten/index.astro"
+  ],
+  "Der Entleiher zahlt den tatsächlichen Schaden, höchstens diesen Betrag. Bei Vorsatz, grober Fahrlässigkeit, Alkohol oder Fahren ohne Führerschein haftet er voll.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Der Kilometerstand ist kleiner als bei der Übergabe.": [
+    "src/actions/loans.ts"
+  ],
+  "Der Preis muss zwischen 0 und 100.000 € liegen.": [
+    "src/lib/data/listings.ts"
+  ],
+  "Der Vertrag wird auf Deutsch erstellt. Die deutsche Fassung ist verbindlich.": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Der Vertrag, den wir selbst benutzen": [
+    "src/pages/index.astro"
+  ],
+  "Die Anmeldung mit Google hat nicht geklappt. Bitte nochmal versuchen.": [
+    "src/pages/login.astro"
+  ],
+  "Die BMW GS 1200 mit Alukoffern, Helm auf dem Sitz, vor weitem Himmel": [
+    "src/pages/touren.astro"
+  ],
+  "Die BMW GS 1200 von hinten mit Alukoffern und Topcase auf einem Parkplatz": [
+    "src/pages/touren.astro"
+  ],
+  "Die BMW GS 1200 von vorn links, rot-silber mit Windschild und Topcase": [
+    "src/pages/touren.astro"
+  ],
+  "Die Haftungsgrenze muss zwischen 0 und 100.000 € liegen.": [
+    "src/actions/bikes.ts"
+  ],
+  "Die Honda steht an einer Bergstrasse mit Leitplanke, dahinter ein grünes Alpental": [
+    "src/pages/touren.astro"
+  ],
+  "Die Philippinen waren lange mein Winterquartier: Das Visum war einfach, fast alle sprechen Englisch, und die Menschen sind sehr, sehr freundlich. Durch die Philippinen zu reisen ist, als würde man sich in eine wunderschöne, chaotische Freundin verlieben.": [
+    "src/pages/touren.astro"
+  ],
+  "Die rote BMW GS 1200 mit Koffern und Topcase auf gepflastertem Platz": [
+    "src/pages/touren.astro"
+  ],
+  "Die Route: von Iloilo nach Dumangas, mit der Fähre nach Bacolod, weiter nach Sipalay mit Sugar Beach und dem Wasserfall von HuyopHuyop, dann Dumaguete, Siquijor und Bohol mit den Chocolate Hills. Sipalay ist wirklich ein verstecktes Juwel am anderen Ende der Welt.": [
+    "src/pages/touren.astro"
+  ],
+  "Die Rückgabe liegt vor dem Beginn der Leihe.": [
+    "src/actions/loans.ts"
+  ],
+  "Diese Anzeige ist erledigt und erscheint nicht mehr in der Suche.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Diese Anzeige ist nicht mehr aktiv.": [
+    "src/lib/data/conversations.ts",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Diese Anzeige ist reserviert und erscheint nicht mehr in der Suche.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Diese E-Mail ist schon registriert.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Diese Seite gibt es nur auf Deutsch. Die deutsche Fassung ist verbindlich.": [
+    "src/pages/datenschutz.astro",
+    "src/pages/impressum.astro"
+  ],
+  "Dieser Vertrag ist schon abgeschlossen.": [
+    "src/actions/loans.ts"
+  ],
+  "Dieses Motorrad ist gerade an {name} verliehen. Abschließen geht erst nach der Rückgabe.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Dieses Motorrad ist gerade verliehen. Erst die Rückgabe abschließen.": [
+    "src/actions/loans.ts"
+  ],
+  "Du hast noch kein Motorrad eingetragen.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Du schreibst gerade sehr viele Nachrichten. Bitte kurz warten.": [
+    "src/actions/messages.ts",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Du:": [
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "E-Mail": [
+    "src/pages/login.astro",
+    "src/pages/registrieren.astro"
+  ],
+  "E-Mail oder Passwort stimmt nicht.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Edgar & seine Motorradreisen": [
+    "src/pages/index.astro",
+    "src/pages/touren.astro"
+  ],
+  "Edgar am Strand zwischen Felsen, im Vordergrund Lenker und Spiegel der Enduro": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar auf dem Motorrad in der kargen Tatacoa-Wüste": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar im Helm mit getönter Brille auf einem Pass, im Hintergrund Berge mit Schneeflecken": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar in Motorradjacke neben seiner Honda": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar Kretschmann: Motorradreisen durch Vietnam, Myanmar, die Alpen, die Philippinen, Portugal, Indien und Kolumbien.": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar macht Pause vor einem kleinen Café": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen": [
+    "src/pages/index.astro",
+    "src/pages/touren.astro"
+  ],
+  "Edgar mit seinem Motorrad auf einer Klippe über dem Atlantik": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar mit Sonnenbrille und Schal neben seinem Motorrad, hinter ihm Berge mit Schneeresten": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar steht mit dem beladenen Motorrad an einer Landstrasse, hinten ein Vulkan": [
+    "src/pages/touren.astro"
+  ],
+  "Edgar winkt vor einem roten Backsteintempel mit Gerüst": [
+    "src/pages/touren.astro"
+  ],
+  "Edgars Touren": [
+    "src/layouts/Base.astro"
+  ],
+  "Ein altes Holzboot liegt am Strand unter Palmen": [
+    "src/pages/touren.astro"
+  ],
+  "Ein Konto braucht der Entleiher nicht. Daten vom Führerschein und Ausweis abschreiben.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Ein runder Kaktus mit roter Frucht in der Tatacoa-Wüste": [
+    "src/pages/touren.astro"
+  ],
+  "Eine Reise beginnt mit ein bisschen Vorbereitung und viel Mut.": [
+    "src/pages/touren.astro"
+  ],
+  "Eine Strasse windet sich in Serpentinen durch Teeplantagen und bewaldete Hügel": [
+    "src/pages/touren.astro"
+  ],
+  "Einfach losfahren.": [
+    "src/pages/index.astro"
+  ],
+  "Einmal eintragen, dann ist jeder Leihvertrag in ein paar Minuten fertig.": [
+    "src/pages/app/bikes/new.astro"
+  ],
+  "Ende": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Ende Datum": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Ende der Leihe": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Ende der Leihe fehlt.": [
+    "src/actions/loans.ts"
+  ],
+  "Entfernen": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro"
+  ],
+  "Entleiher": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.": [
+    "src/pages/index.astro"
+  ],
+  "Entwurf": [
+    "src/lib/labels.ts"
+  ],
+  "Entwurf gespeichert, {time} Uhr": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Entwurf gespeichert.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Entwurf konnte nicht gespeichert werden": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Entwurf löschen": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Erledigt": [
+    "src/lib/listing-format.ts"
+  ],
+  "Ersatzteile, Zubehör, Bekleidung": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Erst das Motorrad eintragen": [
+    "src/components/ListingForm.astro"
+  ],
+  "Erste Anzeige aufgeben": [
+    "src/pages/index.astro"
+  ],
+  "Erstzulassung": [
+    "src/components/BikeForm.astro",
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Es gibt schon einen Entwurf für dieses Motorrad (an {name}).": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Es gibt schon einen Entwurf für dieses Motorrad.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "EZ": [
+    "src/components/BikeDoc.astro"
+  ],
+  "Fahrzeug": [
+    "src/components/BikeDoc.astro"
+  ],
+  "Fahrzeug-Ident.-Nr.": [
+    "src/components/BikeForm.astro"
+  ],
+  "Fahrzeugdaten": [
+    "src/components/BikeDoc.astro"
+  ],
+  "Fahrzeugdaten bearbeiten": [
+    "src/pages/app/bikes/[id]/edit.astro"
+  ],
+  "Fast alles gebraucht kaufen: Das spart Geld und schont die Umwelt.": [
+    "src/pages/touren.astro"
+  ],
+  "Fehler": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Festes Ende": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Festpreis": [
+    "src/lib/listing-format.ts"
+  ],
+  "Filter zurücksetzen": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "FIN": [
+    "src/components/BikeDoc.astro"
+  ],
+  "Foto": [
+    "src/components/BikeForm.astro"
+  ],
+  "Foto {n}": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/scripts/listing-photos.ts",
+    "src/scripts/photos.ts"
+  ],
+  "Foto {n} von {total} wird hochgeladen …": [
+    "src/scripts/photos.ts"
+  ],
+  "Foto {n}, {time}": [
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Foto entfernen": [
+    "src/components/BikeForm.astro"
+  ],
+  "Foto ist zu groß (max. 20 MB).": [
+    "src/lib/uploads.ts"
+  ],
+  "Foto ist zu groß (max. 25 MB).": [
+    "src/lib/uploads.ts"
+  ],
+  "Foto nicht gefunden.": [
+    "src/actions/loans.ts",
+    "src/lib/data/listings.ts"
+  ],
+  "Foto wird hochgeladen": [
+    "src/scripts/photos.ts"
+  ],
+  "Fotos": [
+    "src/components/ListingForm.astro",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Fotos ({n})": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro"
+  ],
+  "Fotos können hier nicht mehr geändert werden.": [
+    "src/actions/loans.ts"
+  ],
+  "Fotos und Nachrichten dazu werden mit gelöscht.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Führerschein-Nr.": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Führerschein-Nr. fehlt.": [
+    "src/actions/loans.ts"
+  ],
+  "Für „Motorrad zum Leihen“ bitte eins deiner Motorräder wählen.": [
+    "src/lib/data/listings.ts"
+  ],
+  "Für das PDF bitte JavaScript aktivieren.": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Für diese Anzeige sind keine neuen Nachrichten möglich.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Für Leihverträge (privat)": [
+    "src/pages/profil.astro"
+  ],
+  "Garage / Stellplatz": [
+    "src/db/categories.ts",
+    "src/lib/labels.ts"
+  ],
+  "Garagen & Hilfe": [
+    "src/pages/index.astro"
+  ],
+  "Geburtsdatum": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Geliehen": [
+    "src/pages/app/index.astro"
+  ],
+  "Gemeinsam schrauben": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Gemerkt": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Gerade nichts verliehen oder geliehen.": [
+    "src/pages/app/index.astro"
+  ],
+  "Gerade verliehen an {name}.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Geschmückte Royal Enfield auf einer belebten Straße": [
+    "src/pages/touren.astro"
+  ],
+  "Gespeichert.": [
+    "src/pages/profil.astro"
+  ],
+  "gestern": [
+    "src/lib/listing-format.ts"
+  ],
+  "Gewählt: {name}": [
+    "src/components/BikeForm.astro"
+  ],
+  "Google-Anmeldung fehlgeschlagen.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Google-Anmeldung ist nicht eingerichtet.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Grasbewachsener Hügelkamm mit Pfad und weitem Blick über das Hochland": [
+    "src/pages/touren.astro"
+  ],
+  "Haftpflichtversicherer": [
+    "src/components/BikeForm.astro"
+  ],
+  "Haftung": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Haftungsgrenze Entleiher": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Haftungsgrenze Entleiher in €": [
+    "src/components/BikeForm.astro"
+  ],
+  "Hallo {name}": [
+    "src/pages/app/index.astro"
+  ],
+  "Hallo, ich kann dir helfen.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Hallo, ist das noch zu haben? Wann würde es passen?": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Handelsbezeichnung": [
+    "src/components/BikeForm.astro"
+  ],
+  "Hauptnavigation": [
+    "src/layouts/Base.astro"
+  ],
+  "Heiß. Wild. Myanmar. Das könnte man über viele Länder in Asien sagen, aber die Abgeschiedenheit und die Nähe zum Einfachen machen Myanmar besonders. Zweimal war ich dort mit dem Motorrad unterwegs: über leere Straßen unter Gewitterwolken, an die Küste und zu den Tempeln von Bagan.": [
+    "src/pages/touren.astro"
+  ],
+  "heute": [
+    "src/lib/listing-format.ts"
+  ],
+  "Heute: die GS 1200": [
+    "src/pages/touren.astro"
+  ],
+  "Hilfe beim Schrauben": [
+    "src/db/categories.ts"
+  ],
+  "Hilfe gesucht": [
+    "src/components/TypeChip.astro"
+  ],
+  "Hinter Kickstand": [
+    "src/pages/touren.astro"
+  ],
+  "Höchstbetrag je Schaden, den der Entleiher zahlt. Vorschlag für jeden neuen Vertrag.": [
+    "src/components/BikeForm.astro"
+  ],
+  "höchstens {amount} je Schaden": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Höchstens 120 Zeichen.": [
+    "src/actions/listings.ts"
+  ],
+  "Höchstens 4000 Zeichen.": [
+    "src/actions/messages.ts",
+    "src/lib/data/conversations.ts",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Höchstens 8 Fotos pro Anzeige.": [
+    "src/lib/data/listings.ts"
+  ],
+  "Hubraum ccm": [
+    "src/components/BikeForm.astro"
+  ],
+  "Ich bin Edgar Kretschmann. Meine erste große Reise ging nach Australien. Dort habe ich genug gespart, um durch Südostasien zu reisen, und zurück war danach keine Option mehr. Ich konnte nicht zu Hause bleiben, nicht einmal in Europa. Ich musste den Rest der Party sehen.": [
+    "src/pages/touren.astro"
+  ],
+  "Ich brauche etwas oder jemanden": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Ich habe etwas für andere": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Im Juli 2018 bin ich allein durch Bayern, Österreich, die Schweiz und Frankreich gefahren, über einsame Pässe auf 2500 Metern. Die besten Straßen hatte für mich die Schweiz.": [
+    "src/pages/touren.astro"
+  ],
+  "Impressum": [
+    "src/layouts/Base.astro",
+    "src/pages/impressum.astro"
+  ],
+  "in Anzeige": [
+    "src/pages/app/index.astro"
+  ],
+  "In Saigon habe ich mir eine chinesische Honda Win geliehen und sie nach 22 Tagen zurückgebracht. Sie ging ungefähr einmal am Tag kaputt. Das war halb so schlimm: An jeder Ecke saß ein Mechaniker, und eine Reparatur kostete selten mehr als zehn Dollar.": [
+    "src/pages/touren.astro"
+  ],
+  "Indien 2024": [
+    "src/pages/touren.astro"
+  ],
+  "Ja, löschen": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Karte der Tour vom Oktober 2019 mit allen Stationen auf den Philippinen": [
+    "src/pages/touren.astro"
+  ],
+  "Kategorie": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "keine angegeben": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Keine Anzeigen gefunden.": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Kennz.": [
+    "src/components/BikeDoc.astro"
+  ],
+  "Kennzeichen": [
+    "src/components/BikeForm.astro"
+  ],
+  "Kickstand ist für Leute, die sich gegenseitig aushelfen: ein Motorrad für ein paar Wochen, ein Platz in der Garage, Werkzeug für den Kettenwechsel. Den Leihvertrag füllst du zusammen am Handy aus, mit Fotos und Unterschrift.": [
+    "src/pages/index.astro"
+  ],
+  "Kickstand. Zur Startseite": [
+    "src/components/Logo.astro"
+  ],
+  "Kilometerstand": [
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.": [
+    "src/pages/index.astro"
+  ],
+  "Klasse A seit": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Kolumbien 2024, Tatacoa-Wüste": [
+    "src/pages/touren.astro"
+  ],
+  "Kommt als Auflage in den Leihvertrag (§ 4).": [
+    "src/components/BikeForm.astro"
+  ],
+  "Konto anlegen": [
+    "src/pages/registrieren.astro"
+  ],
+  "Kostenlos": [
+    "src/lib/listing-format.ts"
+  ],
+  "Kostenlos mitmachen": [
+    "src/pages/index.astro"
+  ],
+  "Kostenlos verleihen, mit Leihvertrag": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Kostenlos, in zwei Schritten.": [
+    "src/pages/anzeigen/neu.astro"
+  ],
+  "Kostenlose Leihe nach § 598 BGB mit Leihvertrag, Übergabeprotokoll und Fotos.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Kraftstoff": [
+    "src/components/BikeForm.astro"
+  ],
+  "Land": [
+    "src/components/ListingForm.astro"
+  ],
+  "Leer lassen, wenn nichts Neues dazugekommen ist": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Leere Bergstrasse mit Leitplanke im Nebel": [
+    "src/pages/touren.astro"
+  ],
+  "Leere breite Strasse unter Gewitterwolken, im Rückspiegel ein Bein": [
+    "src/pages/touren.astro"
+  ],
+  "Leihdauer": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Leihen": [
+    "src/pages/app/index.astro"
+  ],
+  "Leihvertrag": [
+    "src/pages/app/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Leihvertrag {bike}": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Leihvertrag am Handy": [
+    "src/pages/index.astro"
+  ],
+  "Leihvertrag mit {name} starten": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Leihvertrag Motorrad": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Leihvertrag starten": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Leistung": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Leistung kW": [
+    "src/components/BikeForm.astro"
+  ],
+  "Löschen": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Marke": [
+    "src/components/BikeForm.astro"
+  ],
+  "Mechaniker repariert ein Motorrad am Straßenrand": [
+    "src/pages/touren.astro"
+  ],
+  "Mein aktuelles Motorrad ist eine rote BMW GS 1200 mit Alukoffern.": [
+    "src/pages/touren.astro"
+  ],
+  "Mein Bereich": [
+    "src/layouts/Base.astro",
+    "src/pages/app/index.astro"
+  ],
+  "Meine Anzeigen": [
+    "src/layouts/Base.astro",
+    "src/pages/app/index.astro"
+  ],
+  "Meine Motorräder": [
+    "src/pages/app/index.astro"
+  ],
+  "Meine VFR habe ich nach langer Suche für 1300 Euro gekauft: zuverlässig, kräftig, sparsam und schön, das Alter war mir egal. Nach etwa einem Jahr hatte ich das erste große Motorrad wirklich im Griff, und seitdem liebe ich den Klang des V4.": [
+    "src/pages/touren.astro"
+  ],
+  "Menü für {name}": [
+    "src/layouts/Base.astro"
+  ],
+  "Merken": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Merkliste": [
+    "src/layouts/Base.astro",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/index.astro",
+    "src/pages/merkliste.astro"
+  ],
+  "Mindestens 8 Zeichen.": [
+    "src/actions/auth.ts",
+    "src/pages/registrieren.astro"
+  ],
+  "Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Mit dem Speichern ist die Leihe beendet und das Motorrad wieder frei.": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Mit der Honda VFR 750 von 1995": [
+    "src/pages/touren.astro"
+  ],
+  "Mit diesen Filtern gibt es gerade nichts. Versuch es mit weniger Filtern.": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Mit Google anmelden": [
+    "src/components/GoogleButton.astro"
+  ],
+  "Mit Google registrieren": [
+    "src/pages/registrieren.astro"
+  ],
+  "Mit meiner Yamaha SZ 150 bin ich 18 Monate über Panay, Mindoro und rund um Manila gefahren, und sie ist kein einziges Mal liegen geblieben. Für die große Tour im Oktober 2019 habe ich unter Zeitdruck eine gebrauchte Rusi mit 200 cm³ gekauft. Der falsche Vergaser hat uns tausend Kilometer lang begleitet, bis ihn eine Werkstatt auf Siquijor gegen einen passenden getauscht hat.": [
+    "src/pages/touren.astro"
+  ],
+  "Mitfahrer / gemeinsame Tour": [
+    "src/db/categories.ts"
+  ],
+  "Mitgegeben": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Mitglied": [
+    "src/lib/data/conversations.ts",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Mitglied seit {date}": [
+    "src/lib/listing-format.ts"
+  ],
+  "Mitmachen": [
+    "src/pages/so-gehts.astro"
+  ],
+  "Modell": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Motorrad": [
+    "src/components/ListingForm.astro"
+  ],
+  "Motorrad an einer Bergstraße durch Teeplantagen": [
+    "src/pages/touren.astro"
+  ],
+  "Motorrad auf einer langen Brücke über einen Fluss": [
+    "src/pages/touren.astro"
+  ],
+  "Motorrad eintragen": [
+    "src/pages/app/bikes/new.astro",
+    "src/pages/app/index.astro",
+    "src/pages/index.astro"
+  ],
+  "Motorrad nicht gefunden.": [
+    "src/actions/bikes.ts",
+    "src/actions/loans.ts"
+  ],
+  "Motorrad zum Leihen": [
+    "src/db/categories.ts"
+  ],
+  "Motorräder": [
+    "src/pages/app/index.astro"
+  ],
+  "Motorräder ansehen": [
+    "src/pages/so-gehts.astro"
+  ],
+  "Motorräder kostenlos leihen, Garagen, Werkzeug und Hilfe unter Motorradfahrern. Mit Leihvertrag aus dem Handy.": [
+    "src/layouts/Base.astro"
+  ],
+  "Motorräder teilen · Garagen teilen": [
+    "src/pages/index.astro"
+  ],
+  "Motorräder teilen, Garagen teilen": [
+    "src/layouts/Base.astro"
+  ],
+  "Motorräder zum Leihen, Garagen, Werkzeug, Teile, Hilfe beim Schrauben und Tourpartner. Biete und suche unter Motorradfahrern.": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Myanmar 2017 und 2019": [
+    "src/pages/touren.astro"
+  ],
+  "Nachricht schreiben": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Nachricht senden": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Nachrichten": [
+    "src/layouts/Base.astro",
+    "src/pages/app/index.astro",
+    "src/pages/nachrichten/[id].astro",
+    "src/pages/nachrichten/index.astro"
+  ],
+  "Nachrichten zu dieser Anzeige": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Nachrichten: {name}": [
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Name": [
+    "src/pages/registrieren.astro"
+  ],
+  "Name des Entleihers fehlt.": [
+    "src/actions/loans.ts"
+  ],
+  "Name, Vorname": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Nasse Strasse durch grüne Hügel, vorn am Motorrad hängen Bananen": [
+    "src/pages/touren.astro"
+  ],
+  "Neue Schäden": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "nicht digital unterschrieben": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Nicht gefunden": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/bikes/[id]/edit.astro",
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro",
+    "src/pages/nachrichten/[id].astro",
+    "src/pages/so-gehts.astro"
+  ],
+  "Nicht gefunden.": [
+    "src/actions/util.ts",
+    "src/lib/data/errors.ts"
+  ],
+  "Nicht gespeichert ({reason}). Wird beim nächsten Tippen erneut versucht.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Nichts unter Druck kaufen. Es gibt immer noch eine andere Möglichkeit, man muss sie nur finden.": [
+    "src/pages/touren.astro"
+  ],
+  "Noch ein Foto mehr möglich. Das erste ist das Titelbild. Fotos sind öffentlich.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Noch kein Konto?": [
+    "src/pages/login.astro"
+  ],
+  "Noch kein Motorrad eingetragen.": [
+    "src/pages/app/index.astro"
+  ],
+  "Noch keine Anzeigen. Biete deine Garage an, verleih dein Motorrad oder frag nach Hilfe.": [
+    "src/pages/app/index.astro"
+  ],
+  "Noch keine Anzeigen. Biete deine Garage an, verleih Werkzeug oder frag nach Hilfe.": [
+    "src/pages/index.astro"
+  ],
+  "Noch keine Anzeigen. Sei die oder der Erste.": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Noch keine Nachrichten.": [
+    "src/pages/app/index.astro"
+  ],
+  "Noch keine Nachrichten. Schreib bei einer Anzeige auf „Nachricht schreiben“.": [
+    "src/pages/nachrichten/index.astro"
+  ],
+  "Noch nicht abgeschlossen. Bitte ergänzen: {list}": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Noch nicht zurückgegeben.": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Noch nichts gemerkt. Tipp auf das Herz bei einer Anzeige.": [
+    "src/pages/app/index.astro"
+  ],
+  "Noch nichts gemerkt. Tipp bei einer Anzeige auf „Merken“.": [
+    "src/pages/merkliste.astro"
+  ],
+  "Nur Entwürfe können gelöscht werden.": [
+    "src/actions/loans.ts"
+  ],
+  "Nur Fotos können hochgeladen werden.": [
+    "src/actions/bikes.ts",
+    "src/actions/listings.ts",
+    "src/actions/loans.ts",
+    "src/actions/util.ts"
+  ],
+  "Nur laufende Leihen können zurückgegeben werden.": [
+    "src/actions/loans.ts"
+  ],
+  "oder mit E-Mail": [
+    "src/components/GoogleButton.astro"
+  ],
+  "Offen": [
+    "src/lib/labels.ts",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Offen (unbefristet), spätestens am": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "offen, spätestens {date} (Rückgabe auf Aufforderung binnen 3 Tagen)": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Öffentlich": [
+    "src/pages/profil.astro"
+  ],
+  "offline?": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Ort": [
+    "src/components/ListingForm.astro"
+  ],
+  "Ort für Anzeigen": [
+    "src/pages/profil.astro"
+  ],
+  "Ort nicht angegeben": [
+    "src/components/ListingCard.astro",
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Ort oder PLZ": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Ort, Datum": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Passwort": [
+    "src/pages/login.astro",
+    "src/pages/registrieren.astro"
+  ],
+  "Passwort vergessen": [
+    "src/pages/passwort-vergessen.astro"
+  ],
+  "Passwort vergessen?": [
+    "src/pages/login.astro"
+  ],
+  "PDF erstellen": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "PDF erstellt.": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "PDF erstellt. Zum Abschließen unten auf „Abschließen“ tippen.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "PDF herunterladen": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "PDF konnte nicht erstellt werden ({reason}).": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "PDF wird erstellt …": [
+    "src/scripts/pdf.ts"
+  ],
+  "Pfad": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Philippinen 2019": [
+    "src/pages/touren.astro"
+  ],
+  "Philippinen 2019 – 21 Orte in 35 Tagen mit dem Motorrad.": [
+    "src/pages/index.astro"
+  ],
+  "Platz unterm Dach, Werkzeug oder eine helfende Hand. Kontakt nach dem Anmelden.": [
+    "src/pages/index.astro"
+  ],
+  "PLZ": [
+    "src/components/ListingForm.astro"
+  ],
+  "PLZ, Ort": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Portugal 2021": [
+    "src/pages/touren.astro"
+  ],
+  "Preis": [
+    "src/components/ListingForm.astro"
+  ],
+  "Preis auf Anfrage": [
+    "src/lib/listing-format.ts"
+  ],
+  "Preisart": [
+    "src/components/ListingForm.astro"
+  ],
+  "Profil": [
+    "src/layouts/Base.astro",
+    "src/pages/app/index.astro",
+    "src/pages/profil.astro"
+  ],
+  "Profil bearbeiten": [
+    "src/pages/app/index.astro"
+  ],
+  "Protokoll": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Registrieren": [
+    "src/pages/login.astro",
+    "src/pages/registrieren.astro"
+  ],
+  "Reiseenduro mit Topcase auf einer blühenden Wiese": [
+    "src/pages/touren.astro"
+  ],
+  "Reisen": [
+    "src/pages/touren.astro"
+  ],
+  "Reserviert": [
+    "src/lib/listing-format.ts"
+  ],
+  "Roter Stern auf dem weissen Tank eines Motorrads, Blick vom Fahrersitz": [
+    "src/pages/touren.astro"
+  ],
+  "Royal Enfield an einem Aussichtspunkt mit Felsen und Grün": [
+    "src/pages/touren.astro"
+  ],
+  "Rückgabe": [
+    "src/pages/app/index.astro",
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Rückgabe am {date}": [
+    "src/pages/app/index.astro"
+  ],
+  "Rückgabe gespeichert. Das PDF enthält jetzt auch die Rückgabe.": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Rückgabe spätestens {date}": [
+    "src/pages/app/index.astro"
+  ],
+  "Rückgabe speichern": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Rückgabeort": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Rückgabeort fehlt.": [
+    "src/actions/loans.ts"
+  ],
+  "Rückgabeprotokoll": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Ruhiger Fluss vor bewaldeten Kalksteinfelsen im Abendlicht": [
+    "src/pages/touren.astro"
+  ],
+  "Ruhiger Fluss zwischen bewaldeten Hügeln in den Bergen": [
+    "src/pages/touren.astro"
+  ],
+  "Schäden": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Schäden: {text}": [
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Schlüssel": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Schlüssel ({n})": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Schmaler Wasserfall über dunklen Felsen im grünen Dschungel": [
+    "src/pages/touren.astro"
+  ],
+  "Schnellzugriff": [
+    "src/layouts/Base.astro"
+  ],
+  "Schon {n} Fotos. Lösch eins, um ein neues hochzuladen.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Schon dabei?": [
+    "src/pages/registrieren.astro"
+  ],
+  "seit {date}": [
+    "src/pages/app/index.astro"
+  ],
+  "Seite {page} von {count}": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Seiten": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Senden": [
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "So geht's": [
+    "src/layouts/Base.astro",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/index.astro",
+    "src/pages/touren.astro"
+  ],
+  "So sehen dich andere Mitglieder.": [
+    "src/pages/registrieren.astro"
+  ],
+  "Sonnenuntergang über der Tempelebene von Bagan": [
+    "src/pages/touren.astro"
+  ],
+  "Sonstiges": [
+    "src/db/categories.ts"
+  ],
+  "Sonstiges (z. B. Helm, Schloss)": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "spätestens {date}": [
+    "src/pages/app/index.astro"
+  ],
+  "Speichern": [
+    "src/components/BikeForm.astro",
+    "src/components/ListingForm.astro",
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Speichert …": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Sporttourer am Straßenrand vor Felswänden und Schneefeldern": [
+    "src/pages/touren.astro"
+  ],
+  "Sprache": [
+    "src/layouts/Base.astro"
+  ],
+  "Status": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Status geändert: {status}.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Steile grüne Berghänge mit Schneefeldern unter tiefen Wolken": [
+    "src/pages/touren.astro"
+  ],
+  "Stellplatz, Halle, Hebebühne": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Straße, Hausnummer": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Streetfood essen spart Geld. Rechne aber damit, dass es meistens dasselbe gibt.": [
+    "src/pages/touren.astro"
+  ],
+  "Suchbegriff": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Suche": [
+    "src/components/ListingTypeStep.astro",
+    "src/lib/listing-format.ts",
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Suche Hilfe": [
+    "src/lib/labels.ts"
+  ],
+  "Suchen": [
+    "src/layouts/Base.astro",
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Tank": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Tankstand": [
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Tausch": [
+    "src/lib/listing-format.ts"
+  ],
+  "Teile & Zubehör": [
+    "src/db/categories.ts"
+  ],
+  "Telefon": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.": [
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Titel": [
+    "src/components/ListingForm.astro"
+  ],
+  "Titelbild": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro",
+    "src/scripts/listing-photos.ts"
+  ],
+  "TT.MM.JJJJ": [
+    "src/components/DateField.astro"
+  ],
+  "Türkisfarbener Bergsee mit Badeplattform und Bergen im Hintergrund": [
+    "src/pages/touren.astro"
+  ],
+  "Typ": [
+    "src/components/BikeForm.astro"
+  ],
+  "Übergabe": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Übergabe & Rückgabe": [
+    "src/pages/index.astro"
+  ],
+  "Uhrzeit": [
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Uhrzeit als HH:MM": [
+    "src/components/TimeField.astro"
+  ],
+  "Uhrzeit als HH:MM angeben.": [
+    "src/actions/loans.ts"
+  ],
+  "Unbekannter Status.": [
+    "src/lib/data/listings.ts"
+  ],
+  "Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Unentgeltliche Leihe nach §§ 598 ff. BGB. Klare Haftungsgrenze pro Schaden, Rückgabe auf Aufforderung innerhalb von 3 Tagen, Übergabeprotokoll mit Fotos.": [
+    "src/pages/index.astro"
+  ],
+  "Unterhaltung nicht gefunden.": [
+    "src/lib/data/conversations.ts",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Unterschrift {label}": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Unterschrift Entleiher, mit dem Finger zeichnen": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Unterschrift ist ungültig.": [
+    "src/actions/loans.ts"
+  ],
+  "Unterschrift Verleiher, mit dem Finger zeichnen": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Unterschriften": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Unterwegs": [
+    "src/pages/touren.astro"
+  ],
+  "Unterwegs habe ich gelernt, wie viel ein geliehenes Motorrad, ein Platz in der Garage oder eine helfende Hand wert sind: ein Fremder mit Benzin, ein Bauer, der weiterhilft, eine Werkstatt im Nirgendwo. Daraus ist Kickstand entstanden.": [
+    "src/pages/touren.astro"
+  ],
+  "Unterwegs ist uns das Benzin ausgegangen, und ein Fremder hat mich zur Tankstelle gefahren. Ich habe am Straßenrand Zündkerzen gereinigt, ein Bauer in einem abgelegenen Dorf hat mir weitergeholfen, und bei den Chocolate Hills riss der Gaszug. Repariert wurde er in einer Werkstatt, in der ein echter Affe saß.": [
+    "src/pages/touren.astro"
+  ],
+  "VB": [
+    "src/components/ListingForm.astro",
+    "src/lib/listing-format.ts"
+  ],
+  "Vereinbarung": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Verhandlungsbasis": [
+    "src/lib/listing-format.ts"
+  ],
+  "Verleihen oder ausleihen": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Verleiher": [
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Verleiher ({name})": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "verliehen": [
+    "src/components/ListingCard.astro",
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/app/index.astro",
+    "src/pages/index.astro"
+  ],
+  "Verliehen": [
+    "src/lib/labels.ts"
+  ],
+  "Verliehen wird immer kostenlos, mit Leihvertrag und der Haftungsgrenze aus den Fahrzeugdaten. Kennzeichen und FIN bleiben privat.": [
+    "src/components/ListingForm.astro"
+  ],
+  "Versicherung und Haftung": [
+    "src/components/BikeForm.astro"
+  ],
+  "Versicherungsschein-Nr.": [
+    "src/components/BikeForm.astro"
+  ],
+  "Vertrag abgeschlossen. Das Motorrad ist jetzt als verliehen markiert.": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Vertrag nicht gefunden.": [
+    "src/actions/loans.ts"
+  ],
+  "Vietnam": [
+    "src/pages/touren.astro"
+  ],
+  "Vietnam ist für mich der Ort, an dem Natur, eine feine Kultur und eine bewegte jüngere Geschichte zusammenkommen.": [
+    "src/pages/touren.astro"
+  ],
+  "Von der Merkliste nehmen": [
+    "src/pages/merkliste.astro"
+  ],
+  "vor {n} Tagen": [
+    "src/lib/listing-format.ts"
+  ],
+  "vor {n} Wochen": [
+    "src/lib/listing-format.ts"
+  ],
+  "Vorhandene Schäden / Kratzer": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Warum Kickstand": [
+    "src/pages/touren.astro"
+  ],
+  "Was genau, wann, unter welchen Bedingungen?": [
+    "src/components/ListingForm.astro"
+  ],
+  "Was ich gelernt habe": [
+    "src/pages/touren.astro"
+  ],
+  "Was ich unterwegs gelernt habe": [
+    "src/pages/touren.astro"
+  ],
+  "Was suchst du? z. B. Hebebühne": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Weite Graslandschaft unter dunklen Wolken": [
+    "src/pages/touren.astro"
+  ],
+  "Weite grüne Teeplantagen an einem Hang unter blauem Himmel": [
+    "src/pages/touren.astro"
+  ],
+  "Weiter": [
+    "src/components/ListingTypeStep.astro",
+    "src/pages/anzeigen/index.astro"
+  ],
+  "Weiter bearbeiten": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Welches Motorrad?": [
+    "src/components/ListingForm.astro"
+  ],
+  "Wenn du dir ein Motorrad leihst und der Verleiher den Vertrag aus eurer Unterhaltung startet, werden diese Angaben dort vorausgefüllt.": [
+    "src/pages/profil.astro"
+  ],
+  "Werkzeug": [
+    "src/db/categories.ts",
+    "src/lib/labels.ts"
+  ],
+  "Wie im Ausweis.": [
+    "src/pages/profil.astro"
+  ],
+  "Willkommen bei Kickstand. Trag hier einmal deine Daten ein, dann geht jeder Leihvertrag schneller. Das geht auch später.": [
+    "src/pages/profil.astro"
+  ],
+  "Wir speichern nur, was für Anzeigen und Leihverträge nötig ist. Kein Tracking, keine Werbung.": [
+    "src/pages/registrieren.astro"
+  ],
+  "Wird auf max. 1600 px verkleinert. Nur du siehst es. Für eine Anzeige lädst du dort eigene Fotos hoch.": [
+    "src/components/BikeForm.astro"
+  ],
+  "Wird in neuen Anzeigen vorgeschlagen.": [
+    "src/pages/profil.astro"
+  ],
+  "Wirklich entfernen?": [
+    "src/pages/anzeigen/[id]/bearbeiten.astro"
+  ],
+  "Wirklich löschen?": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "Wirklich?": [
+    "src/scripts/inputs.ts"
+  ],
+  "Worum geht es?": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "z. B. 2015": [
+    "src/pages/app/loans/new.astro",
+    "src/pages/profil.astro"
+  ],
+  "z. B. 25": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Beifahrer nur mit Fußrasten": [
+    "src/components/BikeForm.astro"
+  ],
+  "z. B. Drehmomentschlüssel fürs Wochenende": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Helfe beim Reifenwechsel": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Honda VFR 750 F für Touren": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Kratzer Tank links, Spiegel rechts lose": [
+    "src/pages/app/loans/new.astro"
+  ],
+  "z. B. Leipzig oder 04": [
+    "src/pages/anzeigen/index.astro"
+  ],
+  "z. B. Montageständer zu verleihen": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Original-Auspuff VFR 750": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Sonntagsrunde Harz": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Stellplatz im Winter frei": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Suche Enduro für zwei Wochen": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. Suche Garage für den Winter": [
+    "src/components/ListingForm.astro"
+  ],
+  "z. B. voll, ½": [
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "z. B. Wer hilft beim Kettenwechsel?": [
+    "src/components/ListingForm.astro"
+  ],
+  "Zeit": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Zu viele Anmeldeversuche. Bitte in ein paar Minuten nochmal.": [
+    "src/actions/auth.ts"
+  ],
+  "Zu viele Versuche. Bitte kurz warten.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Zulassungsbescheinigung Teil I": [
+    "src/components/BikeForm.astro",
+    "src/pages/app/loans/[id]/index.astro",
+    "src/pages/app/loans/new.astro"
+  ],
+  "Zum Inhalt": [
+    "src/layouts/Base.astro"
+  ],
+  "Zum Leihen anbieten": [
+    "src/pages/app/index.astro"
+  ],
+  "Zum Schreiben bitte anmelden. Kostenlos.": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Zum Vertrag": [
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/nachrichten/[id].astro"
+  ],
+  "Zur Anzeige": [
+    "src/pages/app/index.astro"
+  ],
+  "Zur Unterhaltung": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "Zurück": [
+    "src/pages/anzeigen/index.astro",
+    "src/pages/profil.astro"
+  ],
+  "Zurück zu Mein Bereich": [
+    "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Zurück zur Anmeldung": [
+    "src/pages/passwort-vergessen.astro"
+  ],
+  "Zurückgegeben": [
+    "src/lib/labels.ts"
+  ],
+  "Zusammen fahren": [
+    "src/components/ListingTypeStep.astro"
+  ],
+  "Zwischen 11 und 14 Uhr nicht fahren, wenn die Sonne scheint, und die Haut bedecken.": [
+    "src/pages/touren.astro"
+  ]
+}

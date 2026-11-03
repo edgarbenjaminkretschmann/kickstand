@@ -3,6 +3,7 @@
 // format follows the browser locale (e.g. MM/DD/YYYY on an English Android phone).
 import Field from "./Field.astro";
 import { formatDate } from "../lib/dates";
+import { i18n } from "../i18n";
 
 interface Props {
   label: string;
@@ -17,16 +18,17 @@ interface Props {
 }
 
 const { value, ...rest } = Astro.props;
+const { t, lang } = i18n(Astro.locals.lang);
 ---
 
 <Field
   {...rest}
-  value={formatDate(value)}
+  value={formatDate(value, lang)}
   inputmode="numeric"
   autocomplete="off"
-  placeholder="TT.MM.JJJJ"
+  placeholder={t("TT.MM.JJJJ")}
   pattern={"\\d{1,2}\\.\\d{1,2}\\.(\\d{2}|\\d{4})"}
-  title="Datum als TT.MM.JJJJ"
+  title={t("Datum als TT.MM.JJJJ")}
   maxlength={10}
   mono
   data-date

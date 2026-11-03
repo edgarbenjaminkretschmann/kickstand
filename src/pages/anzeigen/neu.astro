@@ -8,7 +8,9 @@ import { listCategories } from "../../lib/data/listings";
 import { getProfile } from "../../lib/data/profiles";
 import { fieldErrors, formError } from "../../lib/form";
 import { submittedValues } from "../../lib/submitted";
+import { i18n } from "../../i18n";
 
+const { t } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const result = Astro.getActionResult(actions.listings.create);
 if (result && !result.error) return Astro.redirect(`/anzeigen/${result.data.id}?neu=1`);
@@ -36,10 +38,10 @@ const keep: Record<string, string> = q.get("bike") ? { bike: q.get("bike")! } : 
 const changeHref = `/anzeigen/neu?${new URLSearchParams({ typ: type, kategorie: categorySlug, ...keep })}`;
 ---
 
-<Base title="Anzeige aufgeben">
+<Base title={t("Anzeige aufgeben")}>
   <div class="page-head">
-    <h1>Anzeige aufgeben</h1>
-    <p>{step2 ? "Beschreib kurz, was du anbietest oder suchst." : "Kostenlos, in zwei Schritten."}</p>
+    <h1>{t("Anzeige aufgeben")}</h1>
+    <p>{step2 ? t("Beschreib kurz, was du anbietest oder suchst.") : t("Kostenlos, in zwei Schritten.")}</p>
   </div>
   {
     step2 && category ? (

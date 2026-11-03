@@ -2,25 +2,27 @@
 import { actions } from "astro:actions";
 import Base from "../layouts/Base.astro";
 import ListingCard from "../components/ListingCard.astro";
+import { i18n } from "../i18n";
 import { listSaved } from "../lib/data/saved";
 
+const { t } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const removed = Astro.getActionResult(actions.listings.save);
 if (removed && !removed.error) return Astro.redirect("/merkliste");
 const saved = await listSaved(user.id);
 ---
 
-<Base title="Merkliste" wide>
+<Base title={t("Merkliste")} wide>
   <div class="page-head">
-    <h1>Merkliste</h1>
-    <p>Anzeigen, die du dir gemerkt hast.</p>
+    <h1>{t("Merkliste")}</h1>
+    <p>{t("Anzeigen, die du dir gemerkt hast.")}</p>
   </div>
   {
     saved.length === 0 ? (
       <div class="empty-box">
-        <p>Noch nichts gemerkt. Tipp bei einer Anzeige auf „Merken“.</p>
+        <p>{t("Noch nichts gemerkt. Tipp bei einer Anzeige auf „Merken“.")}</p>
         <a class="btn" href="/anzeigen">
-          Anzeigen ansehen
+          {t("Anzeigen ansehen")}
         </a>
       </div>
     ) : (
@@ -32,7 +34,7 @@ const saved = await listSaved(user.id);
               <input type="hidden" name="listingId" value={l.id} />
               <input type="hidden" name="saved" value="0" />
               <button type="submit" class="btn-link">
-                Von der Merkliste nehmen
+                {t("Von der Merkliste nehmen")}
               </button>
             </form>
           </div>

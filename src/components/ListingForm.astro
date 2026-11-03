@@ -1,11 +1,12 @@
 ---
 // Step 2 of "Anzeige aufgeben" (and the edit form). Photos are shrunk in the browser before upload when JS runs.
 import { actions } from "astro:actions";
+import { i18n, tk } from "../i18n";
 import Field from "./Field.astro";
 import FormAlert from "./FormAlert.astro";
 import type { Bike } from "../lib/data/types";
 import { BIKE_CATEGORY, MAX_PHOTOS, type CategoryRecord } from "../lib/data/listings";
-import { COUNTRY_LABEL, PRICE_KIND_LABEL, TYPE_LABEL } from "../lib/listing-format";
+import { COUNTRY_LABEL, countryName, PRICE_KIND_LABEL, TYPE_LABEL } from "../lib/listing-format";
 
 interface Props {
   mode: "create" | "update";
@@ -21,18 +22,19 @@ interface Props {
   changeHref: string;
 }
 
+const { t, lang } = i18n(Astro.locals.lang);
 const { mode, id, type, category, values: v, errors, message, bikes, photoCount, changeHref } = Astro.props;
 const isBikeOffer = category.slug === BIKE_CATEGORY && type === "biete";
 const priceKind = v.priceKind || "kostenlos";
 const room = MAX_PHOTOS - photoCount;
 const action = mode === "create" ? actions.listings.create : actions.listings.update;
 const titlePlaceholder: Record<string, string> = {
-  "motorrad-leihen": type === "biete" ? "z. B. Honda VFR 750 F für Touren" : "z. B. Suche Enduro für zwei Wochen",
-  garage: type === "biete" ? "z. B. Stellplatz im Winter frei" : "z. B. Suche Garage für den Winter",
-  werkzeug: type === "biete" ? "z. B. Montageständer zu verleihen" : "z. B. Drehmomentschlüssel fürs Wochenende",
-  teile: "z. B. Original-Auspuff VFR 750",
-  hilfe: type === "biete" ? "z. B. Helfe beim Reifenwechsel" : "z. B. Wer hilft beim Kettenwechsel?",
-  tour: "z. B. Sonntagsrunde Harz",
+  "motorrad-leihen": type === "biete" ? tk("z. B. Honda VFR 750 F für Touren") : tk("z. B. Suche Enduro für zwei Wochen"),
+  garage: type === "biete" ? tk("z. B. Stellplatz im Winter frei") : tk("z. B. Suche Garage für den Winter"),
+  werkzeug: type === "biete" ? tk("z. B. Montageständer zu verleihen") : tk("z. B. Drehmomentschlüssel fürs Wochenende"),
+  teile: tk("z. B. Original-Auspuff VFR 750"),
+  hilfe: type === "biete" ? tk("z. B. Helfe beim Reifenwechsel") : tk("z. B. Wer hilft beim Kettenwechsel?"),
+  tour: tk("z. B. Sonntagsrunde Harz"),
 };
 ---
 
@@ -44,19 +46,19 @@ const titlePlaceholder: Record<string, string> = {
 
   <div class="panel chosen">
     <p>
-      <strong>{TYPE_LABEL[type]}</strong> · {category.label}
+      <strong>{t(TYPE_LABEL[type])}</strong> · {t(category.label)}
     </p>
-    <a class="btn-link" href={changeHref}>Ändern</a>
+    <a class="btn-link" href={changeHref}>{t("Ändern")}</a>
   </div>
 
   {
     isBikeOffer && (
       <section class="panel">
-        <h2>Welches Motorrad?</h2>
+        <h2>{t("Welches Motorrad?")}</h2>
         {bikes.length ? (
           <>
             <fieldset class="choice-grid">
-              <legend class="visually-hidden">Motorrad</legend>
+              <legend class="visually-hidden">{t("Motorrad")}</legend>
               {bikes.map((b, i) => (
                 <label class="choice">
                   <input type="radio" name="bikeId" value={b.id} checked={v.bikeId ? v.bikeId === b.id : i === 0} required />
@@ -67,12 +69,12 @@ const titlePlaceholder: Record<string, string> = {
                 </label>
               ))}
             </fieldset>
-            {errors.bikeId && <span class="error">{errors.bikeId}</span>}
-            <p class="hint">Verliehen wird immer kostenlos, mit Leihvertrag und der Haftungsgrenze aus den Fahrzeugdaten. Kennzeichen und FIN bleiben privat.</p>
+            {errors.bikeId && <span class="error">{t(errors.bikeId)}</span>}
+            <p class="hint">{t("Verliehen wird immer kostenlos, mit Leihvertrag und der Haftungsgrenze aus den Fahrzeugdaten. Kennzeichen und FIN bleiben privat.")}</p>
           </>
         ) : (
           <p class="notice">
-            Du hast noch kein Motorrad eingetragen. <a href="/app/bikes/new">Erst das Motorrad eintragen</a>, dann die Anzeige aufgeben.
+            {t("Du hast noch kein Motorrad eingetragen.")} <a href="/app/bikes/new">{t("Erst das Motorrad eintragen")}</a>, {t("dann die Anzeige aufgeben.")}
           </p>
         )}
       </section>
@@ -80,41 +82,41 @@ const titlePlaceholder: Record<string, string> = {
   }
 
   <section class="panel">
-    <h2>Anzeige</h2>
-    <Field label="Titel" name="title" required maxlength={120} value={v.title} error={errors.title} placeholder={titlePlaceholder[category.slug] ?? ""} />
+    <h2>{t("Anzeige")}</h2>
+    <Field label={t("Titel")} name="title" required maxlength={120} value={v.title} error={errors.title} placeholder={titlePlaceholder[category.slug] ? t(titlePlaceholder[category.slug]) : ""} />
     <Field
-      label="Beschreibung"
+      label={t("Beschreibung")}
       name="description"
       multiline
       rows={6}
       maxlength={4000}
       value={v.description}
       error={errors.description}
-      placeholder="Was genau, wann, unter welchen Bedingungen?"
+      placeholder={t("Was genau, wann, unter welchen Bedingungen?")}
     />
   </section>
 
   {
     !isBikeOffer && (
       <section class="panel">
-        <h2>Preis</h2>
-        <div class="seg seg-4" role="radiogroup" aria-label="Preisart">
+        <h2>{t("Preis")}</h2>
+        <div class="seg seg-4" role="radiogroup" aria-label={t("Preisart")}>
           {Object.entries(PRICE_KIND_LABEL).map(([k, label]) => (
             <label>
               <input type="radio" name="priceKind" value={k} checked={priceKind === k} />
-              <span>{k === "vb" ? "VB" : label}</span>
+              <span>{k === "vb" ? t("VB") : t(label)}</span>
             </label>
           ))}
         </div>
         <div class="price-field">
           <Field
-            label="Betrag in €"
+            label={t("Betrag in €")}
             name="price"
             inputmode="decimal"
             value={v.price}
             error={errors.price}
-            placeholder="z. B. 25"
-            hint="Bei Festpreis Pflicht, bei VB optional."
+            placeholder={t("z. B. 25")}
+            hint={t("Bei Festpreis Pflicht, bei VB optional.")}
           />
         </div>
       </section>
@@ -122,18 +124,18 @@ const titlePlaceholder: Record<string, string> = {
   }
 
   <section class="panel">
-    <h2>Ort</h2>
+    <h2>{t("Ort")}</h2>
     <div class="row-zip">
-      <Field label="PLZ" name="zip" inputmode="numeric" autocomplete="postal-code" maxlength={10} value={v.zip} error={errors.zip} />
-      <Field label="Ort" name="city" autocomplete="address-level2" maxlength={80} value={v.city} error={errors.city} />
+      <Field label={t("PLZ")} name="zip" inputmode="numeric" autocomplete="postal-code" maxlength={10} value={v.zip} error={errors.zip} />
+      <Field label={t("Ort")} name="city" autocomplete="address-level2" maxlength={80} value={v.city} error={errors.city} />
     </div>
     <label class="field">
-      Land
+      {t("Land")}
       <select name="country">
         {
-          Object.entries(COUNTRY_LABEL).map(([code, label]) => (
+          Object.keys(COUNTRY_LABEL).map((code) => (
             <option value={code} selected={(v.country || "DE") === code}>
-              {label}
+              {countryName(code, lang)}
             </option>
           ))
         }
@@ -142,28 +144,32 @@ const titlePlaceholder: Record<string, string> = {
   </section>
 
   <section class="panel">
-    <h2>Fotos</h2>
+    <h2>{t("Fotos")}</h2>
     {
       room > 0 ? (
         <>
           <div class="thumbs" id="listing-previews" />
           <label class="photo-btn">
-            + Fotos aufnehmen oder hochladen
+            {t("+ Fotos aufnehmen oder hochladen")}
             <input type="file" name="photos" accept="image/*" multiple data-listing-photos data-room={room} />
           </label>
           <p class="hint" id="listing-photo-status">
-            Bis zu {room} {room === 1 ? "Foto" : "Fotos"}{photoCount > 0 ? " mehr" : ""}. Das erste ist das Titelbild. Fotos sind öffentlich.
+            {photoCount > 0
+              ? room === 1
+                ? t("Noch ein Foto mehr möglich. Das erste ist das Titelbild. Fotos sind öffentlich.")
+                : t("Bis zu {n} Fotos mehr. Das erste ist das Titelbild. Fotos sind öffentlich.", { n: room })
+              : t("Bis zu {n} Fotos. Das erste ist das Titelbild. Fotos sind öffentlich.", { n: room })}
           </p>
         </>
       ) : (
-        <p class="hint">Schon {MAX_PHOTOS} Fotos. Lösch eins, um ein neues hochzuladen.</p>
+        <p class="hint">{t("Schon {n} Fotos. Lösch eins, um ein neues hochzuladen.", { n: MAX_PHOTOS })}</p>
       )
     }
   </section>
 
   <div class="actions">
-    <button type="submit" class="btn-primary" disabled={isBikeOffer && !bikes.length}>{mode === "create" ? "Anzeige veröffentlichen" : "Speichern"}</button>
-    <a class="btn" href={id ? `/anzeigen/${id}` : "/app"}>Abbrechen</a>
+    <button type="submit" class="btn-primary" disabled={isBikeOffer && !bikes.length}>{mode === "create" ? t("Anzeige veröffentlichen") : t("Speichern")}</button>
+    <a class="btn" href={id ? `/anzeigen/${id}` : "/app"}>{t("Abbrechen")}</a>
   </div>
 </form>
 

@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { i18n } from "../i18n";
 
 interface Props extends Omit<HTMLAttributes<"input">, "value"> {
   label: string;
@@ -16,6 +17,8 @@ interface Props extends Omit<HTMLAttributes<"input">, "value"> {
 }
 
 const { label, name, value, error, code, hint, mono, multiline, rows, type = "text", class: cls, ...rest } = Astro.props;
+// Labels and hints come translated from the page; error messages are German server texts, translated here.
+const { t } = i18n(Astro.locals.lang);
 const id = rest.id ?? `f-${name}`;
 const errId = `${id}-err`;
 const hintId = `${id}-hint`;
@@ -34,5 +37,5 @@ const describedBy = [error ? errId : null, hint ? hintId : null].filter(Boolean)
     )
   }
   {hint && <span class="hint" id={hintId}>{hint}</span>}
-  {error && <span class="error" id={errId}>{error}</span>}
+  {error && <span class="error" id={errId}>{t(error)}</span>}
 </label>

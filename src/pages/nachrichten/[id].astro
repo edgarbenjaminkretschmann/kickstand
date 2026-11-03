@@ -1,5 +1,6 @@
 ---
 import { actions } from "astro:actions";
+import { i18n, LOCALE_TAG } from "../../i18n";
 import Base from "../../layouts/Base.astro";
 import Field from "../../components/Field.astro";
 import FormAlert from "../../components/FormAlert.astro";
@@ -8,11 +9,15 @@ import { getActiveLoan } from "../../lib/data/bikes";
 import { getConversationForUser, listMessages, markRead, MAX_MESSAGE_LENGTH } from "../../lib/data/conversations";
 import { BIKE_CATEGORY } from "../../lib/data/listings";
 import { firstName } from "../../lib/data/profiles";
-import { formatTimestamp } from "../../lib/dates";
+import { formatTimestamp, TIME_ZONE } from "../../lib/dates";
 import { fieldErrors, formError } from "../../lib/form";
 import { STATUS_LABEL } from "../../lib/listing-format";
 import { submittedValues } from "../../lib/submitted";
 
+const { t, lang } = i18n(Astro.locals.lang);
+// Same format as the poll endpoint (api/conversations/[id]/messages.json.ts).
+const msgTime = (d: Date) =>
+  lang === "de" ? formatTimestamp(d) : new Intl.DateTimeFormat(LOCALE_TAG[lang], { timeZone: TIME_ZONE, dateStyle: "short", timeStyle: "short" }).format(d);
 const user = Astro.locals.user!;
 const id = Astro.params.id!;
 
@@ -21,7 +26,7 @@ if (sent && !sent.error) return Astro.redirect(`/nachrichten/${id}#antwort`);
 
 // Only buyer and seller; anyone else gets the same 404 as for a missing id.
 const c = await getConversationForUser(id, user.id);
-if (!c) return new Response("Nicht gefunden", { status: 404 });
+if (!c) return new Response(t("Nicht gefunden"), { status: 404 });
 await markRead(c.id, user.id);
 const messages = (await listMessages(c.id, user.id)) ?? [];
 
@@ -36,9 +41,9 @@ const message = formError(sent);
 const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
 ---
 
-<Base title={`Nachrichten: ${c.other.name}`}>
-  <nav class="crumbs small" aria-label="Pfad">
-    <a href="/nachrichten">Nachrichten</a>
+<Base title={t("Nachrichten: {name}", { name: c.other.name })}>
+  <nav class="crumbs small" aria-label={t("Pfad")}>
+    <a href="/nachrichten">{t("Nachrichten")}</a>
   </nav>
 
   <div class="thread-head">
@@ -46,11 +51,11 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
       {l.coverPhotoId && <img src={`/media/listing/${l.coverPhotoId}`} alt="" width="56" height="56" />}
     </span>
     <div class="conv-body">
-      <h1 class="thread-title">{c.other.name}</h1>
+      <h1 class="thread-title">{t(c.other.name)}</h1>
       <a href={`/anzeigen/${l.id}`} class="small">{l.title}</a>
       <div class="chips">
         <TypeChip type={l.type} category={l.categorySlug} />
-        {l.status !== "aktiv" && <span class="chip chip-outline">{STATUS_LABEL[l.status]}</span>}
+        {l.status !== "aktiv" && <span class="chip chip-outline">{t(STATUS_LABEL[l.status])}</span>}
       </div>
     </div>
   </div>
@@ -59,7 +64,7 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
     canStartLoan && (
       <div class="actions">
         <a class="btn" href={`/app/loans/new?bike=${l.bikeId}&listing=${l.id}&conversation=${c.id}`}>
-          Leihvertrag mit {firstName(c.other.name) || "Mitglied"} starten
+          {t("Leihvertrag mit {name} starten", { name: firstName(t(c.other.name)) || t("Mitglied") })}
         </a>
       </div>
     )
@@ -67,7 +72,7 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
   {
     activeLoan && (
       <p class="small muted">
-        Das Motorrad ist gerade verliehen. <a href={`/app/loans/${activeLoan.id}`}>Zum Vertrag</a>
+        {t("Das Motorrad ist gerade verliehen.")} <a href={`/app/loans/${activeLoan.id}`}>{t("Zum Vertrag")}</a>
       </p>
     )
   }
@@ -76,10 +81,10 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
     {
       messages.map((m) => (
         <li class:list={["msg", { mine: m.senderId === user.id }]} data-id={m.id}>
-          <span class="visually-hidden">{m.senderId === user.id ? "Du:" : `${c.other.name}:`}</span>
+          <span class="visually-hidden">{m.senderId === user.id ? t("Du:") : `${t(c.other.name)}:`}</span>
           <div class="msg-body">{m.body}</div>
           <time class="msg-time" datetime={m.createdAt.toISOString()}>
-            {formatTimestamp(m.createdAt)}
+            {msgTime(m.createdAt)}
           </time>
         </li>
       ))
@@ -89,8 +94,8 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
   <form method="POST" action={actions.messages.send} class="reply" id="antwort" novalidate>
     <FormAlert message={message} />
     <input type="hidden" name="conversationId" value={c.id} />
-    <Field label="Antwort" name="body" multiline rows={3} required maxlength={MAX_MESSAGE_LENGTH} value={prev?.body ?? ""} error={errors.body} />
-    <button type="submit" class="btn-primary">Senden</button>
+    <Field label={t("Antwort")} name="body" multiline rows={3} required maxlength={MAX_MESSAGE_LENGTH} value={prev?.body ?? ""} error={errors.body} />
+    <button type="submit" class="btn-primary">{t("Senden")}</button>
   </form>
 </Base>
 
@@ -103,6 +108,18 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
 
 <script>
   import { actions, isInputError } from "astro:actions";
+  import { ct, pageLang } from "../../i18n/client";
+
+  // Messages the server can send back for this form, listed so they reach the browser dictionary.
+  const SERVER_MESSAGES = [
+    ct("Bitte eine Nachricht schreiben."),
+    ct("Höchstens 4000 Zeichen."),
+    ct("Du schreibst gerade sehr viele Nachrichten. Bitte kurz warten."),
+    ct("Unterhaltung nicht gefunden."),
+    ct("Diese Anzeige ist nicht mehr aktiv."),
+    ct("Bitte zuerst anmelden."),
+  ];
+  void SERVER_MESSAGES;
 
   // With JS: send without reloading, and check for new messages every 15 s while the thread is open.
   const thread = document.getElementById("thread") as HTMLOListElement | null;
@@ -136,7 +153,7 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
     const poll = async () => {
       if (document.hidden) return;
       try {
-        const res = await fetch(`/api/conversations/${conversationId}/messages.json?after=${after}`, { cache: "no-store" });
+        const res = await fetch(`/api/conversations/${conversationId}/messages.json?after=${after}&lang=${pageLang()}`, { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as { messages: Msg[] };
         data.messages.forEach(add);
@@ -166,7 +183,7 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!textarea.value.trim()) {
-        showError("Bitte eine Nachricht schreiben.");
+        showError(ct("Bitte eine Nachricht schreiben."));
         textarea.focus();
         return;
       }
@@ -174,7 +191,7 @@ const lastAt = messages.at(-1)?.createdAt.getTime() ?? 0;
       const { error } = await actions.messages.send(new FormData(form));
       button.disabled = false;
       if (error) {
-        showError(isInputError(error) ? (error.fields.body?.[0] ?? error.message) : error.message);
+        showError(ct(isInputError(error) ? (error.fields.body?.[0] ?? error.message) : error.message));
         return;
       }
       showError(null);

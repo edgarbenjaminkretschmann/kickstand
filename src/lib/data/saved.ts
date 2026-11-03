@@ -2,6 +2,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../../db/client";
 import { Listing, SavedListing } from "../../db/schema";
+import { tk } from "../../i18n";
 import { notFound } from "./errors";
 import { listingCardsByIds, type ListingCard } from "./listings";
 
@@ -23,7 +24,7 @@ export async function savedIds(userId: string, listingIds: string[]): Promise<Se
 /** Saves or unsaves. Returns whether the listing is saved afterwards. */
 export async function setSaved(userId: string, listingId: string, saved: boolean): Promise<boolean> {
   const [l] = await db.select({ id: Listing.id }).from(Listing).where(eq(Listing.id, listingId));
-  if (!l) notFound("Anzeige nicht gefunden.");
+  if (!l) notFound(tk("Anzeige nicht gefunden."));
   if (saved) {
     await db.insert(SavedListing).values({ userId, listingId }).onConflictDoNothing();
   } else {

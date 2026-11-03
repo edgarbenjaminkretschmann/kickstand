@@ -1,5 +1,6 @@
 // Upload rules shared by every platform. The resizing itself lives in src/platform (sharp on Node,
 // Cloudflare Images on Workers); where the bytes end up is decided by src/lib/storage.
+import { tk } from "../i18n";
 
 export const MAX_SIDE = 1600;
 export const JPEG_QUALITY = 82;
@@ -16,9 +17,16 @@ export function isImageFile(f: unknown): f is File {
   return f instanceof File && f.size > 0 && f.type.startsWith("image/");
 }
 
-/** Throws the German message shown in the form when a file is over `maxBytes`. */
+// One fixed sentence per limit, so the message can be translated where it is shown (t(lang, message)).
+const TOO_BIG: Record<number, string> = {
+  20: tk("Foto ist zu groß (max. 20 MB)."),
+  25: tk("Foto ist zu groß (max. 25 MB)."),
+};
+
+/** Throws the German message (a translation key) shown in the form when a file is over `maxBytes`. */
 export function assertUploadSize(file: File, maxBytes: number): void {
-  if (file.size > maxBytes) throw new UploadError(`Foto ist zu groß (max. ${Math.round(maxBytes / 1024 / 1024)} MB).`);
+  const mb = Math.round(maxBytes / 1024 / 1024);
+  if (file.size > maxBytes) throw new UploadError(TOO_BIG[mb] ?? `Foto ist zu groß (max. ${mb} MB).`);
 }
 
 /** "jpeg" | "png" | "webp" from the first bytes, or null. The browser's Content-Type is not trusted. */
@@ -33,7 +41,7 @@ export function sniffImage(head: Uint8Array): "jpeg" | "png" | "webp" | null {
 /** Throws the German form message unless the file really is a JPEG, PNG or WebP. */
 export async function assertImageBytes(file: File): Promise<void> {
   const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
-  if (!sniffImage(head)) throw new UploadError("Bitte ein Foto als JPEG, PNG oder WebP hochladen.");
+  if (!sniffImage(head)) throw new UploadError(tk("Bitte ein Foto als JPEG, PNG oder WebP hochladen."));
 }
 
 // JPEG segments that carry metadata: APP1 (EXIF incl. GPS, XMP), APP3–APP13 (IPTC and vendor data),

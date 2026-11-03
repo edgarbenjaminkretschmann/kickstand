@@ -17,8 +17,8 @@ import {
   type ProtocolKind,
 } from "../lib/data/loans";
 import type { Loan } from "../lib/data/types";
+import { tk } from "../i18n";
 import { parseDate, parseTime } from "../lib/dates";
-import { groupThousands } from "../lib/euro-words";
 import { parseNumber } from "../lib/form";
 import { deleteFile, isImageFile, saveImage } from "../lib/storage";
 import { assertImageBytes } from "../lib/uploads";
@@ -29,7 +29,7 @@ const SIG_PREFIX = "data:image/png;base64,";
 const MAX_SIG_LENGTH = 600_000;
 
 async function storePhoto(loanId: string, protocolId: string, file: File, takenAt?: Date) {
-  if (!isImageFile(file)) badRequest("Nur Fotos können hochgeladen werden.");
+  if (!isImageFile(file)) badRequest(tk("Nur Fotos können hochgeladen werden."));
   const id = newId();
   const key = await saveImage(file, `loans/${loanId}`, id);
   const when = takenAt ?? (file.lastModified ? new Date(file.lastModified) : new Date());
@@ -39,25 +39,25 @@ async function storePhoto(loanId: string, protocolId: string, file: File, takenA
 
 function checkSignature(dataUrl: string | undefined): string {
   const v = s(dataUrl);
-  if (v && (!v.startsWith(SIG_PREFIX) || v.length > MAX_SIG_LENGTH)) badRequest("Unterschrift ist ungültig.");
+  if (v && (!v.startsWith(SIG_PREFIX) || v.length > MAX_SIG_LENGTH)) badRequest(tk("Unterschrift ist ungültig."));
   return v;
 }
 
-/** Checks a loan is complete enough to become a contract. Returns German messages. */
+/** Checks a loan is complete enough to become a contract. Returns German messages (keys; the page translates them). */
 function finalizeProblems(loan: Loan): string[] {
   const p: string[] = [];
-  if (!loan.borrowerName) p.push("Name des Entleihers fehlt.");
-  if (!loan.borrowerStreet || !loan.borrowerZipCity) p.push("Anschrift des Entleihers fehlt.");
-  if (!loan.licenseNumber) p.push("Führerschein-Nr. fehlt.");
-  if (!loan.startDate) p.push("Beginn der Leihe fehlt.");
+  if (!loan.borrowerName) p.push(tk("Name des Entleihers fehlt."));
+  if (!loan.borrowerStreet || !loan.borrowerZipCity) p.push(tk("Anschrift des Entleihers fehlt."));
+  if (!loan.licenseNumber) p.push(tk("Führerschein-Nr. fehlt."));
+  if (!loan.startDate) p.push(tk("Beginn der Leihe fehlt."));
   if (loan.endMode === "fixed") {
-    if (!loan.endDate) p.push("Ende der Leihe fehlt.");
-    else if (loan.startDate && loan.endDate < loan.startDate) p.push("Das Ende liegt vor dem Beginn.");
+    if (!loan.endDate) p.push(tk("Ende der Leihe fehlt."));
+    else if (loan.startDate && loan.endDate < loan.startDate) p.push(tk("Das Ende liegt vor dem Beginn."));
   } else {
-    if (!loan.latestEndDate) p.push("Bei offener Leihe ist „spätestens am“ Pflicht.");
-    else if (loan.startDate && loan.latestEndDate < loan.startDate) p.push("„Spätestens am“ liegt vor dem Beginn.");
+    if (!loan.latestEndDate) p.push(tk("Bei offener Leihe ist „spätestens am“ Pflicht."));
+    else if (loan.startDate && loan.latestEndDate < loan.startDate) p.push(tk("„Spätestens am“ liegt vor dem Beginn."));
   }
-  if (!loan.returnPlace) p.push("Rückgabeort fehlt.");
+  if (!loan.returnPlace) p.push(tk("Rückgabeort fehlt."));
   return p;
 }
 
@@ -104,18 +104,18 @@ export const loanActions = {
       guard(async () => {
         const user = requireUser(context);
         const bike = await getOwnBike(input.bikeId, user.id);
-        if (!bike) notFound("Motorrad nicht gefunden.");
+        if (!bike) notFound(tk("Motorrad nicht gefunden."));
         // Validate before writing anything, so a rejected save leaves no half-created draft.
         const sigLender = checkSignature(input.sigLender);
         const sigBorrower = checkSignature(input.sigBorrower);
         for (const file of input.photos ?? []) {
-          if (file.size > 0 && !isImageFile(file)) badRequest("Nur Fotos können hochgeladen werden.");
+          if (file.size > 0 && !isImageFile(file)) badRequest(tk("Nur Fotos können hochgeladen werden."));
           if (file.size > 0) await assertImageBytes(file);
         }
 
         let loan = input.loanId ? await getOwnLoan(input.loanId, user.id) : null;
-        if (input.loanId && !loan) notFound("Vertrag nicht gefunden.");
-        if (loan && loan.status !== "draft") badRequest("Dieser Vertrag ist schon abgeschlossen.");
+        if (input.loanId && !loan) notFound(tk("Vertrag nicht gefunden."));
+        if (loan && loan.status !== "draft") badRequest(tk("Dieser Vertrag ist schon abgeschlossen."));
 
         // Only link a listing/conversation of this lender about this bike. Links never change once set.
         const links =
@@ -168,7 +168,7 @@ export const loanActions = {
         loan = await getOwnLoan(loanId, user.id);
         const problems = finalizeProblems(loan!);
         const active = await getActiveLoan(bike.id);
-        if (active && active.id !== loanId) problems.push("Dieses Motorrad ist gerade verliehen. Erst die Rückgabe abschließen.");
+        if (active && active.id !== loanId) problems.push(tk("Dieses Motorrad ist gerade verliehen. Erst die Rückgabe abschließen."));
         if (problems.length) return { loanId, status: "draft" as const, problems };
 
         await updateLoan(loanId, { status: "active" });
@@ -189,9 +189,9 @@ export const loanActions = {
       guard(async () => {
         const user = requireUser(context);
         const loan = await getOwnLoan(input.loanId, user.id);
-        if (!loan) notFound("Vertrag nicht gefunden.");
+        if (!loan) notFound(tk("Vertrag nicht gefunden."));
         const allowed = input.kind === "handover" ? loan.status === "draft" : loan.status === "active";
-        if (!allowed) badRequest("Fotos können hier nicht mehr geändert werden.");
+        if (!allowed) badRequest(tk("Fotos können hier nicht mehr geändert werden."));
         const protocolId = await ensureProtocol(loan.id, input.kind as ProtocolKind);
         const ms = Number(input.takenAt);
         const id = await storePhoto(loan.id, protocolId, input.photo, Number.isFinite(ms) && ms > 0 ? new Date(ms) : undefined);
@@ -206,9 +206,9 @@ export const loanActions = {
       guard(async () => {
         const user = requireUser(context);
         const row = await getPhotoWithLoan(input.photoId);
-        if (!row || row.loan.lenderId !== user.id) notFound("Foto nicht gefunden.");
+        if (!row || row.loan.lenderId !== user.id) notFound(tk("Foto nicht gefunden."));
         const allowed = row.protocol.kind === "handover" ? row.loan.status === "draft" : row.loan.status === "active";
-        if (!allowed) badRequest("Fotos können hier nicht mehr geändert werden.");
+        if (!allowed) badRequest(tk("Fotos können hier nicht mehr geändert werden."));
         await deletePhotoRow(row.photo.id);
         await deleteFile(row.photo.path);
         return { ok: true };
@@ -221,10 +221,10 @@ export const loanActions = {
     input: z.object({
       loanId: z.string(),
       returnDate: z
-        .string({ required_error: "Bitte das Datum angeben.", invalid_type_error: "Bitte das Datum angeben." })
-        .refine((v) => parseDate(v) !== null, "Datum als TT.MM.JJJJ angeben."),
-      returnTime: z.string().refine((v) => !v || parseTime(v) !== null, "Uhrzeit als HH:MM angeben.").optional(),
-      odometerKm: z.string().refine((v) => !v || parseNumber(v) !== null, "Bitte eine Zahl angeben.").optional(),
+        .string({ required_error: tk("Bitte das Datum angeben."), invalid_type_error: tk("Bitte das Datum angeben.") })
+        .refine((v) => parseDate(v) !== null, tk("Datum als TT.MM.JJJJ angeben.")),
+      returnTime: z.string().refine((v) => !v || parseTime(v) !== null, tk("Uhrzeit als HH:MM angeben.")).optional(),
+      odometerKm: z.string().refine((v) => !v || parseNumber(v) !== null, tk("Bitte eine Zahl angeben.")).optional(),
       fuelLevel: opt,
       damages: z.string().max(5000).optional(),
       photos: photoFiles,
@@ -233,15 +233,15 @@ export const loanActions = {
       guard(async () => {
         const user = requireUser(context);
         const loan = await getOwnLoan(input.loanId, user.id);
-        if (!loan) notFound("Vertrag nicht gefunden.");
-        if (loan.status !== "active") badRequest("Nur laufende Leihen können zurückgegeben werden.");
+        if (!loan) notFound(tk("Vertrag nicht gefunden."));
+        if (loan.status !== "active") badRequest(tk("Nur laufende Leihen können zurückgegeben werden."));
 
         const date = parseDate(input.returnDate)!;
-        if (loan.startDate && date < loan.startDate) badRequest("Die Rückgabe liegt vor dem Beginn der Leihe.");
+        if (loan.startDate && date < loan.startDate) badRequest(tk("Die Rückgabe liegt vor dem Beginn der Leihe."));
         const km = parseNumber(input.odometerKm);
         const handover = await getProtocol(loan.id, "handover");
         if (km !== null && handover?.odometerKm != null && km < handover.odometerKm) {
-          badRequest(`Der Kilometerstand ist kleiner als bei der Übergabe (${groupThousands(handover.odometerKm)} km).`);
+          badRequest(tk("Der Kilometerstand ist kleiner als bei der Übergabe."));
         }
 
         const protocolId = await upsertProtocol(loan.id, "return", {
@@ -266,8 +266,8 @@ export const loanActions = {
       guard(async () => {
         const user = requireUser(context);
         const loan = await getOwnLoan(input.loanId, user.id);
-        if (!loan) notFound("Vertrag nicht gefunden.");
-        if (loan.status !== "draft") badRequest("Nur Entwürfe können gelöscht werden.");
+        if (!loan) notFound(tk("Vertrag nicht gefunden."));
+        if (loan.status !== "draft") badRequest(tk("Nur Entwürfe können gelöscht werden."));
         for (const key of await deleteLoanCascade(loan.id)) await deleteFile(key);
         return { ok: true };
       }),

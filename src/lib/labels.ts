@@ -1,20 +1,21 @@
-// German UI labels for stored enum values.
+// German UI labels for stored enum values. They are translation keys: show them with t(lang, LABEL[x]).
+import { tk } from "../i18n";
 
 export const BOARD_KINDS: Record<string, string> = {
-  garage: "Garage / Stellplatz",
-  tools: "Werkzeug",
-  help_offered: "Biete Hilfe",
-  help_wanted: "Suche Hilfe",
+  garage: tk("Garage / Stellplatz"),
+  tools: tk("Werkzeug"),
+  help_offered: tk("Biete Hilfe"),
+  help_wanted: tk("Suche Hilfe"),
 };
 
 export const LOAN_STATUS: Record<string, string> = {
-  draft: "Entwurf",
-  active: "Verliehen",
-  returned: "Zurückgegeben",
+  draft: tk("Entwurf"),
+  active: tk("Verliehen"),
+  returned: tk("Zurückgegeben"),
 };
 
 export const REQUEST_STATUS: Record<string, string> = {
-  open: "Offen",
-  accepted: "Angenommen",
-  declined: "Abgelehnt",
+  open: tk("Offen"),
+  accepted: tk("Angenommen"),
+  declined: tk("Abgelehnt"),
 };

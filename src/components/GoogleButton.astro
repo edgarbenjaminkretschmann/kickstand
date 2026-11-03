@@ -2,13 +2,15 @@
 // "Mit Google anmelden". Posts to the google action, which redirects to Google. Hidden when Google is not configured.
 import { actions } from "astro:actions";
 import { isGoogleEnabled } from "../lib/auth";
+import { i18n } from "../i18n";
 
 interface Props {
   next: string;
   label?: string;
 }
 
-const { next, label = "Mit Google anmelden" } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
+const { next, label = t("Mit Google anmelden") } = Astro.props;
 ---
 
 {
@@ -27,7 +29,7 @@ const { next, label = "Mit Google anmelden" } = Astro.props;
         </button>
       </form>
       <p class="divider">
-        <span>oder mit E-Mail</span>
+        <span>{t("oder mit E-Mail")}</span>
       </p>
     </>
   )

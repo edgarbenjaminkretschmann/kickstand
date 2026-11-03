@@ -1,4 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
+import { splitLang } from "./i18n";
+import { localizeResponse } from "./i18n/links";
 import { getSession } from "./lib/auth";
 import { env } from "./lib/env";
 
@@ -43,9 +45,17 @@ function canonicalRedirect(url: URL): Response | null {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { pathname } = context.url;
   const redirect = canonicalRedirect(context.url);
   if (redirect) return redirect;
+
+  // "/de/…" is the language switcher's way to say "German": send it to the plain URL.
+  const de = /^\/de(\/.*)?$/.exec(context.url.pathname);
+  if (de) return context.redirect((de[1] || "/") + context.url.search, 302);
+
+  // "/en/anzeigen" renders the page at "/anzeigen" with locals.lang = "en" (see src/i18n).
+  const { lang, path: pathname } = splitLang(context.url.pathname);
+  context.locals.lang = lang;
+  const render = () => (lang === "de" ? next() : next(new URL(pathname + context.url.search, context.url)));
 
   // Static assets and public listing photos never need a session lookup.
   if (pathname.startsWith("/_astro/") || pathname.startsWith("/images/") || pathname === "/favicon.svg" || pathname.startsWith("/media/listing/")) {
@@ -57,9 +67,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.session = session;
 
   if (!user && PROTECTED.some((re) => re.test(pathname))) {
-    const nextUrl = pathname + context.url.search;
-    return context.redirect(`/login?next=${encodeURIComponent(nextUrl)}`);
+    const nextUrl = context.url.pathname + context.url.search;
+    return localizeResponse(context.redirect(`/login?next=${encodeURIComponent(nextUrl)}`), lang, context.url.origin);
   }
 
-  return withCacheHeaders(await next(), pathname, !!user);
+  const response = withCacheHeaders(await render(), pathname, !!user);
+  return localizeResponse(response, lang, context.url.origin);
 });

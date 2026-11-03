@@ -1,5 +1,6 @@
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
+import { tk } from "../i18n";
 import { createBike, getOwnBike, updateBike } from "../lib/data/bikes";
 import { parseDate } from "../lib/dates";
 import { parseNumber } from "../lib/form";
@@ -20,19 +21,19 @@ export const bikeActions = {
     accept: "form",
     input: z.object({
       id: z.string().optional(),
-      make: req("Bitte die Marke angeben."),
-      model: req("Bitte das Modell angeben."),
+      make: req(tk("Bitte die Marke angeben.")),
+      model: req(tk("Bitte das Modell angeben.")),
       typeCode: opt,
       plate: opt,
       vin: opt,
-      firstRegistration: z.string().refine((v) => !v || parseDate(v) !== null, "Datum als TT.MM.JJJJ angeben.").optional(),
-      powerKw: num("Bitte eine Zahl angeben."),
-      displacementCcm: num("Bitte eine Zahl angeben."),
+      firstRegistration: z.string().refine((v) => !v || parseDate(v) !== null, tk("Datum als TT.MM.JJJJ angeben.")).optional(),
+      powerKw: num(tk("Bitte eine Zahl angeben.")),
+      displacementCcm: num(tk("Bitte eine Zahl angeben.")),
       fuel: opt,
       conditions: opt,
       insurer: opt,
       policyNumber: opt,
-      liabilityCapEur: num("Bitte einen Betrag angeben."),
+      liabilityCapEur: num(tk("Bitte einen Betrag angeben.")),
       photo: z.instanceof(File).optional(),
       removePhoto: z.boolean(),
     }),
@@ -40,10 +41,10 @@ export const bikeActions = {
       guard(async () => {
         const user = requireUser(context);
         const existing = input.id ? await getOwnBike(input.id, user.id) : null;
-        if (input.id && !existing) notFound("Motorrad nicht gefunden.");
+        if (input.id && !existing) notFound(tk("Motorrad nicht gefunden."));
 
         const cap = int(input.liabilityCapEur) ?? 1000;
-        if (cap < 0 || cap > 100_000) badRequest("Die Haftungsgrenze muss zwischen 0 und 100.000 € liegen.");
+        if (cap < 0 || cap > 100_000) badRequest(tk("Die Haftungsgrenze muss zwischen 0 und 100.000 € liegen."));
 
         const id = existing?.id ?? newId();
         let photoPath = existing?.photoPath ?? null;
@@ -52,7 +53,7 @@ export const bikeActions = {
           photoPath = null;
         }
         if (input.photo && input.photo.size > 0) {
-          if (!isImageFile(input.photo)) badRequest("Nur Fotos können hochgeladen werden.");
+          if (!isImageFile(input.photo)) badRequest(tk("Nur Fotos können hochgeladen werden."));
           const old = photoPath;
           photoPath = await saveImage(input.photo, `bikes/${id}`, newId());
           if (old) await deleteFile(old);

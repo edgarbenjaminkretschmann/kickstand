@@ -3,6 +3,7 @@ import { z } from "astro:schema";
 import { parseDate } from "../lib/dates";
 import { saveProfile, setDisplayName } from "../lib/data/profiles";
 import { guard, requireUser, s } from "./util";
+import { tk } from "../i18n";
 
 const opt = z.string().max(200).optional();
 
@@ -11,9 +12,9 @@ export const profileActions = {
     accept: "form",
     input: z.object({
       displayName: z
-        .string({ required_error: "Bitte einen Anzeigenamen angeben.", invalid_type_error: "Bitte einen Anzeigenamen angeben." })
+        .string({ required_error: tk("Bitte einen Anzeigenamen angeben."), invalid_type_error: tk("Bitte einen Anzeigenamen angeben.") })
         .trim()
-        .min(2, "Bitte einen Anzeigenamen angeben.")
+        .min(2, tk("Bitte einen Anzeigenamen angeben."))
         .max(60),
       name: opt,
       street: opt,
@@ -22,7 +23,7 @@ export const profileActions = {
       phone: opt,
       birthdate: z
         .string()
-        .refine((v) => !v || parseDate(v) !== null, "Datum als TT.MM.JJJJ angeben.")
+        .refine((v) => !v || parseDate(v) !== null, tk("Datum als TT.MM.JJJJ angeben."))
         .optional(),
       licenseNumber: opt,
       licenseClassASince: opt,

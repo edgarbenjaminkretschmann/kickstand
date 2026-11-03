@@ -1,5 +1,6 @@
 ---
 // Read-only vehicle data in the Fahrzeugschein look.
+import { i18n } from "../i18n";
 import { formatDate } from "../lib/dates";
 import { groupThousands } from "../lib/euro-words";
 
@@ -18,14 +19,15 @@ interface Props {
   extra?: [string, string][];
 }
 
+const { t, lang } = i18n(Astro.locals.lang);
 const { bike, extra = [] } = Astro.props;
 const rows: [string, string][] = [
-  ["Fahrzeug", `${bike.make} ${bike.model}`.toUpperCase() + (bike.typeCode ? ` (${bike.typeCode})` : "")],
-  ["Kennz.", bike.plate],
-  ["FIN", bike.vin],
+  [t("Fahrzeug"), `${bike.make} ${bike.model}`.toUpperCase() + (bike.typeCode ? ` (${bike.typeCode})` : "")],
+  [t("Kennz."), bike.plate],
+  [t("FIN"), bike.vin],
   [
-    "EZ",
-    [formatDate(bike.firstRegistration), bike.powerKw ? `${bike.powerKw} kW` : "", bike.displacementCcm ? `${groupThousands(bike.displacementCcm)} cm³` : "", bike.fuel]
+    t("EZ"),
+    [formatDate(bike.firstRegistration, lang), bike.powerKw ? `${bike.powerKw} kW` : "", bike.displacementCcm ? `${groupThousands(bike.displacementCcm)} cm³` : "", bike.fuel]
       .filter(Boolean)
       .join(" · "),
   ],
@@ -33,7 +35,7 @@ const rows: [string, string][] = [
 ];
 ---
 
-<dl class="doc" aria-label="Fahrzeugdaten">
+<dl class="doc" aria-label={t("Fahrzeugdaten")}>
   {
     rows
       .filter(([, v]) => v)

@@ -14,7 +14,9 @@ import { formatEuro, groupThousands } from "../../../lib/euro-words";
 import { fieldErrors, formError } from "../../../lib/form";
 import { memberSince, placeLabel, priceLabel, relativeDate, STATUS_LABEL } from "../../../lib/listing-format";
 import { submittedValues } from "../../../lib/submitted";
+import { i18n } from "../../../i18n";
 
+const { t, lang } = i18n(Astro.locals.lang);
 const user = Astro.locals.user;
 const id = Astro.params.id!;
 
@@ -29,7 +31,7 @@ const started = Astro.getActionResult(actions.messages.start);
 if (started && !started.error) return Astro.redirect(`/nachrichten/${started.data.conversationId}`);
 
 const listing = await getListingDetail(id);
-if (!listing) return new Response("Nicht gefunden", { status: 404 });
+if (!listing) return new Response(t("Nicht gefunden"), { status: 404 });
 
 const own = user?.id === listing.userId;
 const existingConversation = user && !own ? await findConversation(listing.id, user.id) : null;
@@ -50,30 +52,38 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
 ---
 
 <Base title={listing.title} description={listing.description.slice(0, 150)} wide>
-  <nav class="crumbs small" aria-label="Pfad">
-    <a href="/anzeigen">Anzeigen</a>
+  <nav class="crumbs small" aria-label={t("Pfad")}>
+    <a href="/anzeigen">{t("Anzeigen")}</a>
     <span aria-hidden="true">/</span>
-    <a href={`/anzeigen?kategorie=${listing.categorySlug}`}>{listing.categoryLabel}</a>
+    <a href={`/anzeigen?kategorie=${listing.categorySlug}`}>{t(listing.categoryLabel)}</a>
   </nav>
 
   <FormAlert message={message} />
-  {Astro.url.searchParams.has("gemerkt") && <p class="notice" role="status">Auf deiner <a href="/merkliste">Merkliste</a>.</p>}
-  {Astro.url.searchParams.has("status") && <p class="notice" role="status">Status geändert: {STATUS_LABEL[listing.status]}.</p>}
-  {Astro.url.searchParams.has("neu") && <p class="notice" role="status">Deine Anzeige ist online.</p>}
-  {Astro.url.searchParams.has("gespeichert") && <p class="notice" role="status">Änderungen gespeichert.</p>}
-  {inactive && <p class="notice">Diese Anzeige ist {STATUS_LABEL[listing.status].toLowerCase()} und erscheint nicht mehr in der Suche.</p>}
+  {Astro.url.searchParams.has("gemerkt") && <p class="notice" role="status">{t("Auf deiner")} <a href="/merkliste">{t("Merkliste")}</a>.</p>}
+  {Astro.url.searchParams.has("status") && <p class="notice" role="status">{t("Status geändert: {status}.", { status: t(STATUS_LABEL[listing.status]) })}</p>}
+  {Astro.url.searchParams.has("neu") && <p class="notice" role="status">{t("Deine Anzeige ist online.")}</p>}
+  {Astro.url.searchParams.has("gespeichert") && <p class="notice" role="status">{t("Änderungen gespeichert.")}</p>}
+  {
+    inactive && (
+      <p class="notice">
+        {listing.status === "reserviert"
+          ? t("Diese Anzeige ist reserviert und erscheint nicht mehr in der Suche.")
+          : t("Diese Anzeige ist erledigt und erscheint nicht mehr in der Suche.")}
+      </p>
+    )
+  }
 
   <div class="detail">
     <div class="detail-top">
       {
         listing.photos.length > 0 ? (
-          <div class="gallery" aria-label={`${listing.photos.length} Fotos`}>
+          <div class="gallery" aria-label={t("{n} Fotos", { n: listing.photos.length })}>
             <ul class="gallery-track">
               {listing.photos.map((p, i) => (
                 <li id={`foto-${i + 1}`}>
                   <img
                     src={`/media/listing/${p.id}`}
-                    alt={`${listing.title}, Foto ${i + 1} von ${listing.photos.length}`}
+                    alt={t("{title}, Foto {n} von {count}", { title: listing.title, n: i + 1, count: listing.photos.length })}
                     width="960"
                     height="720"
                     loading={i === 0 ? "eager" : "lazy"}
@@ -82,9 +92,9 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
               ))}
             </ul>
             {listing.photos.length > 1 && (
-              <nav class="gallery-thumbs" aria-label="Fotos">
+              <nav class="gallery-thumbs" aria-label={t("Fotos")}>
                 {listing.photos.map((p, i) => (
-                  <a href={`#foto-${i + 1}`} aria-label={`Foto ${i + 1}`}>
+                  <a href={`#foto-${i + 1}`} aria-label={t("Foto {n}", { n: i + 1 })}>
                     <img src={`/media/listing/${p.id}`} alt="" width="80" height="60" loading="lazy" />
                   </a>
                 ))}
@@ -93,7 +103,7 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
           </div>
         ) : (
           <div class="gallery-empty" aria-hidden="true">
-            <span>{listing.categoryLabel}</span>
+            <span>{t(listing.categoryLabel)}</span>
           </div>
         )
       }
@@ -101,14 +111,14 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
       <div class="detail-head">
         <div class="chips">
           <TypeChip type={listing.type} category={listing.categorySlug} />
-          <span class="chip chip-outline">{listing.categoryLabel}</span>
-          {listing.lent && <span class="chip chip-ink">verliehen</span>}
-          {inactive && <span class="chip chip-outline">{STATUS_LABEL[listing.status]}</span>}
+          <span class="chip chip-outline">{t(listing.categoryLabel)}</span>
+          {listing.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
+          {inactive && <span class="chip chip-outline">{t(STATUS_LABEL[listing.status])}</span>}
         </div>
         <h1>{listing.title}</h1>
-        <p class="detail-price">{priceLabel(listing.priceKind, listing.priceCents)}</p>
+        <p class="detail-price">{priceLabel(listing.priceKind, listing.priceCents, lang)}</p>
         <p class="muted">
-          {placeLabel(listing) || "Ort nicht angegeben"} · <time datetime={listing.createdAt.toISOString()}>{relativeDate(listing.createdAt)}</time>
+          {placeLabel(listing, lang) || t("Ort nicht angegeben")} · <time datetime={listing.createdAt.toISOString()}>{relativeDate(listing.createdAt, new Date(), lang)}</time>
         </p>
       </div>
 
@@ -120,40 +130,40 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
       {
         isBikeOffer && bike && (
           <section class="panel" aria-labelledby="h-bike">
-            <h2 id="h-bike">Das Motorrad</h2>
+            <h2 id="h-bike">{t("Das Motorrad")}</h2>
             <dl class="facts">
-              <dt>Modell</dt>
+              <dt>{t("Modell")}</dt>
               <dd>
                 {bike.make} {bike.model}
                 {bike.typeCode && ` (${bike.typeCode})`}
               </dd>
               {bike.firstRegistration && (
                 <>
-                  <dt>Erstzulassung</dt>
-                  <dd>{formatDate(bike.firstRegistration).slice(3)}</dd>
+                  <dt>{t("Erstzulassung")}</dt>
+                  <dd>{formatDate(bike.firstRegistration, lang).slice(3)}</dd>
                 </>
               )}
               {(bike.powerKw || bike.displacementCcm) && (
                 <>
-                  <dt>Leistung</dt>
+                  <dt>{t("Leistung")}</dt>
                   <dd>
-                    {[bike.powerKw ? `${bike.powerKw} kW (${Math.round(bike.powerKw * 1.36)} PS)` : "", bike.displacementCcm ? `${groupThousands(bike.displacementCcm)} cm³` : ""]
+                    {[bike.powerKw ? t("{kw} kW ({ps} PS)", { kw: bike.powerKw, ps: Math.round(bike.powerKw * 1.36) }) : "", bike.displacementCcm ? `${groupThousands(bike.displacementCcm)} cm³` : ""]
                       .filter(Boolean)
                       .join(" · ")}
                   </dd>
                 </>
               )}
-              <dt>Haftung</dt>
-              <dd>höchstens {formatEuro(bike.liabilityCapEur, false)} je Schaden</dd>
+              <dt>{t("Haftung")}</dt>
+              <dd>{t("höchstens {amount} je Schaden", { amount: formatEuro(bike.liabilityCapEur, false) })}</dd>
               {bike.conditions && (
                 <>
-                  <dt>Auflage</dt>
+                  <dt>{t("Auflage")}</dt>
                   <dd>{bike.conditions}</dd>
                 </>
               )}
             </dl>
             <p class="small muted">
-              Kostenlose Leihe nach § 598 BGB mit Leihvertrag, Übergabeprotokoll und Fotos. <a href="/so-gehts">So geht's</a>
+              {t("Kostenlose Leihe nach § 598 BGB mit Leihvertrag, Übergabeprotokoll und Fotos.")} <a href="/so-gehts">{t("So geht's")}</a>
             </p>
           </section>
         )
@@ -161,9 +171,9 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
     </div>
 
     <aside class="detail-side">
-      <section class="panel seller" aria-label="Anbieter">
-        <p class="seller-name">{firstName(listing.seller.name) || "Mitglied"}</p>
-        <p class="small muted">{memberSince(listing.seller.memberSince)}</p>
+      <section class="panel seller" aria-label={t("Anbieter")}>
+        <p class="seller-name">{firstName(listing.seller.name) || t("Mitglied")}</p>
+        <p class="small muted">{memberSince(listing.seller.memberSince, lang)}</p>
       </section>
 
       {
@@ -177,7 +187,7 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
                   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
                   </svg>
-                  {saved ? "Gemerkt" : "Merken"}
+                  {saved ? t("Gemerkt") : t("Merken")}
                 </button>
               </form>
             ) : (
@@ -185,39 +195,39 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
                 </svg>
-                Merken
+                {t("Merken")}
               </a>
             )}
 
             {existingConversation ? (
               <a class="btn btn-primary btn-block" href={`/nachrichten/${existingConversation}`}>
-                Zur Unterhaltung
+                {t("Zur Unterhaltung")}
               </a>
             ) : !canMessage ? (
-              <p class="small muted">{listing.lent ? "Das Motorrad ist gerade verliehen. Schau später nochmal vorbei." : "Für diese Anzeige sind keine neuen Nachrichten möglich."}</p>
+              <p class="small muted">{listing.lent ? t("Das Motorrad ist gerade verliehen. Schau später nochmal vorbei.") : t("Für diese Anzeige sind keine neuen Nachrichten möglich.")}</p>
             ) : user ? (
               <form method="POST" action={`${actions.messages.start}`} class="stack msg-form" novalidate>
                 <input type="hidden" name="listingId" value={listing.id} />
                 <Field
-                  label="Nachricht schreiben"
+                  label={t("Nachricht schreiben")}
                   name="body"
                   multiline
                   required
                   maxlength={4000}
                   value={prev?.body ?? ""}
                   error={msgErrors.body}
-                  placeholder={listing.type === "biete" ? "Hallo, ist das noch zu haben? Wann würde es passen?" : "Hallo, ich kann dir helfen."}
+                  placeholder={listing.type === "biete" ? t("Hallo, ist das noch zu haben? Wann würde es passen?") : t("Hallo, ich kann dir helfen.")}
                 />
                 <button type="submit" class="btn-primary btn-block">
-                  Nachricht senden
+                  {t("Nachricht senden")}
                 </button>
               </form>
             ) : (
               <a class="btn btn-primary btn-block" href={loginHref}>
-                Nachricht schreiben
+                {t("Nachricht schreiben")}
               </a>
             )}
-            {!user && <p class="small muted">Zum Schreiben bitte anmelden. Kostenlos.</p>}
+            {!user && <p class="small muted">{t("Zum Schreiben bitte anmelden. Kostenlos.")}</p>}
           </div>
         )
       }
@@ -225,19 +235,19 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
       {
         own && (
           <section class="panel owner" aria-labelledby="h-owner">
-            <h2 id="h-owner">Deine Anzeige</h2>
+            <h2 id="h-owner">{t("Deine Anzeige")}</h2>
             <div class="actions">
               <a class="btn btn-primary" href={`/anzeigen/${listing.id}/bearbeiten`}>
-                Bearbeiten
+                {t("Bearbeiten")}
               </a>
             </div>
             <form method="POST" action={actions.listings.setStatus} class="status-form">
               <input type="hidden" name="id" value={listing.id} />
-              <p class="small muted">Status</p>
+              <p class="small muted">{t("Status")}</p>
               <div class="seg seg-3">
                 {(["aktiv", "reserviert", "erledigt"] as const).map((st) => (
                   <button type="submit" name="status" value={st} class:list={{ on: listing.status === st }} aria-pressed={listing.status === st ? "true" : "false"}>
-                    {STATUS_LABEL[st]}
+                    {t(STATUS_LABEL[st])}
                   </button>
                 ))}
               </div>
@@ -246,17 +256,17 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
             {isBikeOffer &&
               (activeLoan ? (
                 <p class="small">
-                  Gerade verliehen an {activeLoan.borrowerName}. <a href={`/app/loans/${activeLoan.id}`}>Zum Vertrag</a>
+                  {t("Gerade verliehen an {name}.", { name: activeLoan.borrowerName })} <a href={`/app/loans/${activeLoan.id}`}>{t("Zum Vertrag")}</a>
                 </p>
               ) : (
                 <a class="btn btn-block" href={`/app/loans/new?bike=${bike!.id}&listing=${listing.id}`}>
-                  Leihvertrag starten
+                  {t("Leihvertrag starten")}
                 </a>
               ))}
 
             {conversations.length > 0 && (
               <div class="stack">
-                <p class="small muted">Nachrichten zu dieser Anzeige</p>
+                <p class="small muted">{t("Nachrichten zu dieser Anzeige")}</p>
                 <ul class="list">
                   {conversations.map((c) => (
                     <li class:list={["item", { unread: c.unread > 0 }]}>
@@ -264,11 +274,11 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
                         <a class="item-title" href={`/nachrichten/${c.id}`}>
                           {c.other.name}
                         </a>
-                        {c.unread > 0 && <span class="count count-hot">{c.unread} neu</span>}
+                        {c.unread > 0 && <span class="count count-hot">{t("{n} neu", { n: c.unread })}</span>}
                       </div>
                       {isBikeOffer && !activeLoan && (
                         <a class="btn-link" href={`/app/loans/new?bike=${bike!.id}&listing=${listing.id}&conversation=${c.id}`}>
-                          Leihvertrag mit {firstName(c.other.name)} starten
+                          {t("Leihvertrag mit {name} starten", { name: firstName(c.other.name) })}
                         </a>
                       )}
                     </li>
@@ -283,20 +293,20 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
                   <input type="hidden" name="id" value={listing.id} />
                   <input type="hidden" name="confirm" value="ja" />
                   <p>
-                    <strong>Anzeige wirklich löschen?</strong> Fotos und Nachrichten dazu werden mit gelöscht.
+                    <strong>{t("Anzeige wirklich löschen?")}</strong> {t("Fotos und Nachrichten dazu werden mit gelöscht.")}
                   </p>
                   <div class="actions">
                     <button type="submit" class="btn-danger">
-                      Ja, löschen
+                      {t("Ja, löschen")}
                     </button>
                     <a class="btn" href={`/anzeigen/${listing.id}`}>
-                      Abbrechen
+                      {t("Abbrechen")}
                     </a>
                   </div>
                 </form>
               ) : (
                 <a class="btn-link danger-link" href={`/anzeigen/${listing.id}?loeschen=1#loeschen`}>
-                  Anzeige löschen
+                  {t("Anzeige löschen")}
                 </a>
               )}
             </div>

@@ -4,6 +4,8 @@ declare namespace App {
   interface Locals {
     user: import("./lib/auth").AuthUser | null;
     session: import("./lib/auth").AuthSession | null;
+    /** UI language from the URL prefix (German without prefix). Set by the middleware. */
+    lang: import("./i18n").Lang;
   }
 }
 

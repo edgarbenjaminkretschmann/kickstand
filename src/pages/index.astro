@@ -5,7 +5,9 @@ import Base from "../layouts/Base.astro";
 import TypeChip from "../components/TypeChip.astro";
 import { latestListings } from "../lib/data/listings";
 import { placeLabel, priceLabel } from "../lib/listing-format";
+import { i18n } from "../i18n";
 
+const { t, lang } = i18n(Astro.locals.lang);
 const loggedOut = Astro.getActionResult(actions.auth.logout);
 if (loggedOut && !loggedOut.error) return Astro.redirect("/");
 const user = Astro.locals.user;
@@ -16,18 +18,17 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
 <Base bare>
   <section class="hero wrap wide">
     <div class="hero-text">
-      <p class="eyebrow">Motorräder teilen · Garagen teilen</p>
-      <h1>Dein Motorrad steht rum? Leih es aus – mit Vertrag aus dem Handy.</h1>
+      <p class="eyebrow">{t("Motorräder teilen · Garagen teilen")}</p>
+      <h1>{t("Dein Motorrad steht rum? Leih es aus – mit Vertrag aus dem Handy.")}</h1>
       <svg class="stroke" width="260" height="18" viewBox="0 0 260 18" aria-hidden="true">
         <path d="M2 12 C40 6 90 5 140 7 S220 9 258 4 L256 11 C210 15 150 13 100 14 S30 17 4 17 Z" fill="currentColor"></path>
       </svg>
       <p class="lead">
-        Kickstand ist für Leute, die sich gegenseitig aushelfen: ein Motorrad für ein paar Wochen, ein Platz in der Garage, Werkzeug für den
-        Kettenwechsel. Den Leihvertrag füllst du zusammen am Handy aus, mit Fotos und Unterschrift.
+        {t("Kickstand ist für Leute, die sich gegenseitig aushelfen: ein Motorrad für ein paar Wochen, ein Platz in der Garage, Werkzeug für den Kettenwechsel. Den Leihvertrag füllst du zusammen am Handy aus, mit Fotos und Unterschrift.")}
       </p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="/app/bikes/new">Motorrad eintragen</a>
-        <a class="btn btn-sky btn-lg" href="#so">So geht's</a>
+        <a class="btn btn-primary btn-lg" href="/app/bikes/new">{t("Motorrad eintragen")}</a>
+        <a class="btn btn-sky btn-lg" href="#so">{t("So geht's")}</a>
       </div>
     </div>
     <a class="hero-figure" href="/touren">
@@ -36,36 +37,36 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
           <source type="image/webp" srcset="/images/rider-640.webp 640w, /images/rider-1200.webp 1200w" sizes="(min-width: 1000px) 520px, 92vw" />
           <img
             src="/images/rider-1200.webp"
-            alt="Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen"
+            alt={t("Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen")}
             width="1200"
             height="900"
             fetchpriority="high"
           />
         </picture>
       </div>
-      <span class="hero-caption">Philippinen 2019 – 21 Orte in 35 Tagen mit dem Motorrad.</span>
-      <span class="btn btn-outline btn-small hero-more">Edgar &amp; seine Motorradreisen</span>
+      <span class="hero-caption">{t("Philippinen 2019 – 21 Orte in 35 Tagen mit dem Motorrad.")}</span>
+      <span class="btn btn-outline btn-small hero-more">{t("Edgar & seine Motorradreisen")}</span>
     </a>
   </section>
 
   <section id="so" class="band-wash">
     <div class="wrap wide section">
-      <h2 class="h-section">So geht's</h2>
+      <h2 class="h-section">{t("So geht's")}</h2>
       <ol class="steps">
         <li class="step">
           <span class="step-num" aria-hidden="true">1</span>
-          <h3>Motorrad eintragen</h3>
-          <p>Daten aus dem Fahrzeugschein, Versicherung und wie viel der Entleiher im Schadensfall höchstens zahlt.</p>
+          <h3>{t("Motorrad eintragen")}</h3>
+          <p>{t("Daten aus dem Fahrzeugschein, Versicherung und wie viel der Entleiher im Schadensfall höchstens zahlt.")}</p>
         </li>
         <li class="step">
           <span class="step-num" aria-hidden="true">2</span>
-          <h3>Leihvertrag am Handy</h3>
-          <p>Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.</p>
+          <h3>{t("Leihvertrag am Handy")}</h3>
+          <p>{t("Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.")}</p>
         </li>
         <li class="step">
           <span class="step-num" aria-hidden="true">3</span>
-          <h3>Übergabe &amp; Rückgabe</h3>
-          <p>Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.</p>
+          <h3>{t("Übergabe & Rückgabe")}</h3>
+          <p>{t("Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.")}</p>
         </li>
       </ol>
     </div>
@@ -76,19 +77,19 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
       <source type="image/webp" srcset="/images/myanmar-640.webp 640w, /images/myanmar-1200.webp 1021w" sizes="(min-width: 1000px) 560px, 92vw" />
       <img
         src="/images/myanmar-1200.webp"
-        alt="Bepackte Enduro auf dem Seitenständer vor einem grünen Bauzaun in Myanmar"
+        alt={t("Bepackte Enduro auf dem Seitenständer vor einem grünen Bauzaun in Myanmar")}
         width="1021"
         height="681"
         loading="lazy"
       />
     </picture>
     <div class="contract-text">
-      <h2 class="h-section">Der Vertrag, den wir selbst benutzen</h2>
+      <h2 class="h-section">{t("Der Vertrag, den wir selbst benutzen")}</h2>
       <p class="lead-sm">
-        Unentgeltliche Leihe nach §§ 598 ff. BGB. Klare Haftungsgrenze pro Schaden, Rückgabe auf Aufforderung innerhalb von 3 Tagen,
-        Übergabeprotokoll mit Fotos.
+        {t("Unentgeltliche Leihe nach §§ 598 ff. BGB. Klare Haftungsgrenze pro Schaden, Rückgabe auf Aufforderung innerhalb von 3 Tagen, Übergabeprotokoll mit Fotos.")}
       </p>
-      <div class="clause">
+      {/* A quote from the contract, which is German only (binding text). */}
+      <div class="clause" lang="de">
         <strong>§ 6 Haftung des Entleihers</strong><br />
         Die Haftung ist auf höchstens <strong>1.000,00 €</strong> (in Worten: eintausend Euro) je Schadensfall begrenzt.
       </div>
@@ -99,10 +100,10 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
     <div class="wrap wide section">
       <div class="board-head">
         <div class="board-intro">
-          <h2 class="h-section">Garagen &amp; Hilfe</h2>
-          <p>Platz unterm Dach, Werkzeug oder eine helfende Hand. Kontakt nach dem Anmelden.</p>
+          <h2 class="h-section">{t("Garagen & Hilfe")}</h2>
+          <p>{t("Platz unterm Dach, Werkzeug oder eine helfende Hand. Kontakt nach dem Anmelden.")}</p>
         </div>
-        <a class="board-all" href="/anzeigen">Alle Einträge ansehen</a>
+        <a class="board-all" href="/anzeigen">{t("Alle Einträge ansehen")}</a>
       </div>
       {
         latest.length ? (
@@ -111,23 +112,23 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
               <li class="dcard">
                 <div class="chips">
                   <TypeChip type={l.type} category={l.categorySlug} />
-                  <span class="chip chip-outline">{l.categoryLabel}</span>
-                  {l.lent && <span class="chip chip-ink">verliehen</span>}
+                  <span class="chip chip-outline">{t(l.categoryLabel)}</span>
+                  {l.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
                 </div>
                 <h3>
                   <a href={`/anzeigen/${l.id}`}>{l.title}</a>
                 </h3>
                 <p class="dcard-meta">
-                  {[placeLabel(l), priceLabel(l.priceKind, l.priceCents)].filter(Boolean).join(" · ")}
+                  {[placeLabel(l, lang), priceLabel(l.priceKind, l.priceCents, lang)].filter(Boolean).join(" · ")}
                 </p>
               </li>
             ))}
           </ul>
         ) : (
           <div class="board-empty">
-            <p>Noch keine Anzeigen. Biete deine Garage an, verleih Werkzeug oder frag nach Hilfe.</p>
+            <p>{t("Noch keine Anzeigen. Biete deine Garage an, verleih Werkzeug oder frag nach Hilfe.")}</p>
             <a class="btn btn-sky" href="/anzeigen/neu">
-              Erste Anzeige aufgeben
+              {t("Erste Anzeige aufgeben")}
             </a>
           </div>
         )
@@ -137,8 +138,8 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
 
   <section class="band-sky">
     <div class="wrap wide cta">
-      <h2 class="closing">Einfach losfahren.</h2>
-      <a class="btn btn-primary btn-xl" href={joinHref}>{user ? "Anzeige aufgeben" : "Kostenlos mitmachen"}</a>
+      <h2 class="closing">{t("Einfach losfahren.")}</h2>
+      <a class="btn btn-primary btn-xl" href={joinHref}>{user ? t("Anzeige aufgeben") : t("Kostenlos mitmachen")}</a>
     </div>
   </section>
 </Base>

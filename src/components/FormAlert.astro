@@ -1,8 +1,12 @@
 ---
+// Shows a server message. Messages are German (the translation key); they are translated here.
+import { i18n } from "../i18n";
+
 interface Props {
   message?: string | null;
 }
 const { message } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
 ---
 
-{message && <p class="alert" role="alert">{message}</p>}
+{message && <p class="alert" role="alert">{t(message)}</p>}

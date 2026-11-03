@@ -1,9 +1,14 @@
 ---
 import Base from "../layouts/Base.astro";
+import { i18n } from "../i18n";
+
+// The legal text stays German (binding); other languages get a short notice on top.
+const { t, lang } = i18n(Astro.locals.lang);
 ---
 
-<Base title="Impressum">
-  <article class="prose">
+<Base title={t("Impressum")}>
+  {lang !== "de" && <p class="notice" lang={lang}>{t("Diese Seite gibt es nur auf Deutsch. Die deutsche Fassung ist verbindlich.")}</p>}
+  <article class="prose" lang="de">
     <h1>Impressum</h1>
     <p>Angaben gemäß § 5 DDG folgen vor dem Start.</p>
     <p>Kickstand ist ein Projekt von Edgar Kretschmann.</p>

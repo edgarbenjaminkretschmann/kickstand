@@ -1,9 +1,12 @@
 ---
 import { getEntry, render } from "astro:content";
 import Base from "../layouts/Base.astro";
+import { i18n } from "../i18n";
 
-const entry = await getEntry("pages", "so-gehts");
-if (!entry) return new Response("Nicht gefunden", { status: 404 });
+const { t, lang } = i18n(Astro.locals.lang);
+// Translated text lives in src/content/pages/so-gehts-<lang>.md; German (so-gehts.md) is the fallback.
+const entry = (lang !== "de" ? await getEntry("pages", `so-gehts-${lang}`) : undefined) ?? (await getEntry("pages", "so-gehts"));
+if (!entry) return new Response(t("Nicht gefunden"), { status: 404 });
 const { Content } = await render(entry);
 ---
 
@@ -13,7 +16,7 @@ const { Content } = await render(entry);
     <Content />
   </article>
   <p class="actions">
-    <a class="btn btn-primary" href={Astro.locals.user ? "/anzeigen?kategorie=motorrad-leihen" : "/registrieren"}>{Astro.locals.user ? "Motorräder ansehen" : "Mitmachen"}</a>
+    <a class="btn btn-primary" href={Astro.locals.user ? "/anzeigen?kategorie=motorrad-leihen" : "/registrieren"}>{Astro.locals.user ? t("Motorräder ansehen") : t("Mitmachen")}</a>
   </p>
 </Base>
 

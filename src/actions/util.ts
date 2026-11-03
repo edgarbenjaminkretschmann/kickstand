@@ -3,16 +3,17 @@ import { z } from "astro:schema";
 import { AuthFailure, AuthRequiredError, requireUser as requireAuthUser } from "../lib/auth";
 import { DataError } from "../lib/data/errors";
 import { UploadError } from "../lib/uploads";
+import { tk } from "../i18n";
 
 export function requireUser(context: ActionAPIContext) {
   try {
     return requireAuthUser(context);
   } catch {
-    throw new ActionError({ code: "UNAUTHORIZED", message: "Bitte zuerst anmelden." });
+    throw new ActionError({ code: "UNAUTHORIZED", message: tk("Bitte zuerst anmelden.") });
   }
 }
 
-export function notFound(message = "Nicht gefunden."): never {
+export function notFound(message = tk("Nicht gefunden.")): never {
   throw new ActionError({ code: "NOT_FOUND", message });
 }
 
@@ -43,4 +44,4 @@ export const s = (v: string | null | undefined) => (v ?? "").trim();
  * part: Node parses it as an empty File, Cloudflare Workers as "". Both are accepted; the handlers only use
  * entries with `size > 0`, which "" never has.
  */
-export const photoFiles = z.array(z.custom<File>((v) => v instanceof File || v === "", "Nur Fotos können hochgeladen werden.")).optional();
+export const photoFiles = z.array(z.custom<File>((v) => v instanceof File || v === "", tk("Nur Fotos können hochgeladen werden."))).optional();

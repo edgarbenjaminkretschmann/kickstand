@@ -4,9 +4,11 @@ import Base from "../layouts/Base.astro";
 import Field from "../components/Field.astro";
 import FormAlert from "../components/FormAlert.astro";
 import GoogleButton from "../components/GoogleButton.astro";
+import { i18n } from "../i18n";
 import { fieldErrors, formError } from "../lib/form";
 import { safeNext, submittedValues } from "../lib/submitted";
 
+const { t } = i18n(Astro.locals.lang);
 const next = safeNext(Astro.url.searchParams.get("next"), "/profil?willkommen=1");
 if (Astro.locals.user) return Astro.redirect("/app");
 
@@ -21,30 +23,30 @@ const message = formError(result) ?? formError(google);
 const prev = await submittedValues(Astro.request, !!result?.error);
 ---
 
-<Base title="Registrieren">
+<Base title={t("Registrieren")}>
   <div class="auth">
     <div class="page-head">
-      <h1>Registrieren</h1>
-      <p>Schon dabei? <a href={`/login?next=${encodeURIComponent(next)}`}>Anmelden</a></p>
+      <h1>{t("Registrieren")}</h1>
+      <p>{t("Schon dabei?")} <a href={`/login?next=${encodeURIComponent(next)}`}>{t("Anmelden")}</a></p>
     </div>
     <div class="card">
       <FormAlert message={message} />
-      <GoogleButton next={next} label="Mit Google registrieren" />
+      <GoogleButton next={next} label={t("Mit Google registrieren")} />
       <form method="POST" action={`${actions.auth.register}&next=${encodeURIComponent(next)}`} class="stack" novalidate>
-        <Field label="Name" name="name" autocomplete="name" required value={prev?.name} error={errors.name} hint="So sehen dich andere Mitglieder." />
-        <Field label="E-Mail" name="email" type="email" autocomplete="email" required value={prev?.email} error={errors.email} />
+        <Field label={t("Name")} name="name" autocomplete="name" required value={prev?.name} error={errors.name} hint={t("So sehen dich andere Mitglieder.")} />
+        <Field label={t("E-Mail")} name="email" type="email" autocomplete="email" required value={prev?.email} error={errors.email} />
         <Field
-          label="Passwort"
+          label={t("Passwort")}
           name="password"
           type="password"
           autocomplete="new-password"
           minlength={8}
           required
-          hint="Mindestens 8 Zeichen."
+          hint={t("Mindestens 8 Zeichen.")}
           error={errors.password}
         />
-        <button type="submit" class="btn-primary btn-block">Konto anlegen</button>
-        <p class="hint">Wir speichern nur, was für Anzeigen und Leihverträge nötig ist. Kein Tracking, keine Werbung.</p>
+        <button type="submit" class="btn-primary btn-block">{t("Konto anlegen")}</button>
+        <p class="hint">{t("Wir speichern nur, was für Anzeigen und Leihverträge nötig ist. Kein Tracking, keine Werbung.")}</p>
       </form>
     </div>
   </div>

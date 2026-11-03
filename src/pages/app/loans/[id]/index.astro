@@ -7,85 +7,89 @@ import { formatDate, formatDateTime, formatTimestamp } from "../../../../lib/dat
 import { formatEuro, groupThousands } from "../../../../lib/euro-words";
 import { LOAN_STATUS } from "../../../../lib/labels";
 import { photoUrl } from "../../../../lib/urls";
+import { i18n } from "../../../../i18n";
 
+const { t, lang } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const access = await getLoanForUser(Astro.params.id!, user.id);
-if (!access) return new Response("Nicht gefunden", { status: 404 });
+if (!access) return new Response(t("Nicht gefunden"), { status: 404 });
 if (access.loan.status === "draft" && access.role === "lender") return Astro.redirect(`/app/loans/new?loan=${access.loan.id}`);
-if (access.loan.status === "draft") return new Response("Nicht gefunden", { status: 404 });
+if (access.loan.status === "draft") return new Response(t("Nicht gefunden"), { status: 404 });
 
 const parts = (await loadLoanParts(access.loan.id))!;
 const { loan, bike, lender, handover, ret, handoverPhotos, returnPhotos, signatures } = parts;
 const items = toItems(loan.handedOverItems);
 const isLender = access.role === "lender";
 const mit = [
-  items.keys ? `Schlüssel (${items.keyCount})` : "",
-  items.registration ? "Zulassungsbescheinigung Teil I" : "",
+  items.keys ? t("Schlüssel ({n})", { n: items.keyCount }) : "",
+  items.registration ? t("Zulassungsbescheinigung Teil I") : "",
   items.other,
 ].filter(Boolean);
 const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} km` : "–");
 ---
 
-<Base title={`Leihvertrag ${bike.make} ${bike.model}`} dock>
+<Base title={t("Leihvertrag {bike}", { bike: `${bike.make} ${bike.model}` })} dock>
   <div class="page-head">
-    <h1>Leihvertrag {bike.make} {bike.model}</h1>
-    <p><span class:list={["tag", loan.status === "active" && "tag-accent"]}>{LOAN_STATUS[loan.status]}</span></p>
+    <h1>{t("Leihvertrag {bike}", { bike: `${bike.make} ${bike.model}` })}</h1>
+    <p><span class:list={["tag", loan.status === "active" && "tag-accent"]}>{t(LOAN_STATUS[loan.status])}</span></p>
   </div>
-  {Astro.url.searchParams.has("neu") && <p class="notice" role="status">Vertrag abgeschlossen. Das Motorrad ist jetzt als verliehen markiert.</p>}
-  {Astro.url.searchParams.has("zurueck") && <p class="notice" role="status">Rückgabe gespeichert. Das PDF enthält jetzt auch die Rückgabe.</p>}
+  {Astro.url.searchParams.has("neu") && <p class="notice" role="status">{t("Vertrag abgeschlossen. Das Motorrad ist jetzt als verliehen markiert.")}</p>}
+  {Astro.url.searchParams.has("zurueck") && <p class="notice" role="status">{t("Rückgabe gespeichert. Das PDF enthält jetzt auch die Rückgabe.")}</p>}
 
-  <BikeDoc bike={bike} extra={[["Verleiher", lender.name], ["Entleiher", loan.borrowerName]]} />
+  <BikeDoc bike={bike} extra={[[t("Verleiher"), lender.name], [t("Entleiher"), loan.borrowerName]]} />
 
   <section class="card">
-    <h2>Vereinbarung</h2>
+    <h2>{t("Vereinbarung")}</h2>
     <dl class="kv">
-      <dt>Beginn</dt>
-      <dd>{formatDateTime(loan.startDate, loan.startTime)}</dd>
-      <dt>Ende</dt>
+      <dt>{t("Beginn")}</dt>
+      <dd>{formatDateTime(loan.startDate, loan.startTime, lang)}</dd>
+      <dt>{t("Ende")}</dt>
       <dd>
-        {loan.endMode === "fixed" ? formatDateTime(loan.endDate, loan.endTime) : `offen, spätestens ${formatDate(loan.latestEndDate)} (Rückgabe auf Aufforderung binnen 3 Tagen)`}
+        {loan.endMode === "fixed"
+          ? formatDateTime(loan.endDate, loan.endTime, lang)
+          : t("offen, spätestens {date} (Rückgabe auf Aufforderung binnen 3 Tagen)", { date: formatDate(loan.latestEndDate, lang) })}
       </dd>
-      <dt>Rückgabeort</dt>
+      <dt>{t("Rückgabeort")}</dt>
       <dd>{loan.returnPlace}</dd>
-      <dt>Haftung</dt>
-      <dd>höchstens <span class="mono">{formatEuro(loan.liabilityCapEur)}</span> je Schaden</dd>
-      <dt>Mitgegeben</dt>
+      <dt>{t("Haftung")}</dt>
+      <dd>{t("höchstens {amount} je Schaden", { amount: formatEuro(loan.liabilityCapEur) })}</dd>
+      <dt>{t("Mitgegeben")}</dt>
       <dd>{mit.join(", ") || "–"}</dd>
     </dl>
   </section>
 
   <section class="card">
-    <h2>Protokoll</h2>
+    <h2>{t("Protokoll")}</h2>
     <div class="proto">
       <div>
-        <h3>Übergabe</h3>
+        <h3>{t("Übergabe")}</h3>
         <dl class="kv">
-          <dt>Zeit</dt>
-          <dd>{formatDateTime(handover?.datetime) || "–"}</dd>
+          <dt>{t("Zeit")}</dt>
+          <dd>{formatDateTime(handover?.datetime, null, lang) || "–"}</dd>
           <dt>km</dt>
           <dd class="mono">{km(handover?.odometerKm)}</dd>
-          <dt>Tank</dt>
+          <dt>{t("Tank")}</dt>
           <dd>{handover?.fuelLevel || "–"}</dd>
-          <dt>Schäden</dt>
-          <dd>{handover?.damages || "keine angegeben"}</dd>
+          <dt>{t("Schäden")}</dt>
+          <dd>{handover?.damages || t("keine angegeben")}</dd>
         </dl>
       </div>
       <div>
-        <h3>Rückgabe</h3>
+        <h3>{t("Rückgabe")}</h3>
         {
           ret ? (
             <dl class="kv">
-              <dt>Zeit</dt>
-              <dd>{formatDateTime(ret.datetime)}</dd>
+              <dt>{t("Zeit")}</dt>
+              <dd>{formatDateTime(ret.datetime, null, lang)}</dd>
               <dt>km</dt>
               <dd class="mono">{km(ret.odometerKm)}</dd>
-              <dt>Tank</dt>
+              <dt>{t("Tank")}</dt>
               <dd>{ret.fuelLevel || "–"}</dd>
-              <dt>Neue Schäden</dt>
-              <dd>{ret.damages || "keine angegeben"}</dd>
+              <dt>{t("Neue Schäden")}</dt>
+              <dd>{ret.damages || t("keine angegeben")}</dd>
             </dl>
           ) : (
-            <p class="muted small">Noch nicht zurückgegeben.</p>
+            <p class="muted small">{t("Noch nicht zurückgegeben.")}</p>
           )
         }
       </div>
@@ -95,10 +99,10 @@ const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} 
   {
     (handoverPhotos.length > 0 || returnPhotos.length > 0) && (
       <section class="card">
-        <h2>Fotos</h2>
+        <h2>{t("Fotos")}</h2>
         {[
-          ["Übergabe", handoverPhotos],
-          ["Rückgabe", returnPhotos],
+          [t("Übergabe"), handoverPhotos],
+          [t("Rückgabe"), returnPhotos],
         ].map(([label, list]) =>
           (list as typeof handoverPhotos).length ? (
             <>
@@ -106,7 +110,7 @@ const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} 
               <div class="thumbs">
                 {(list as typeof handoverPhotos).map((p, i) => (
                   <a class="thumb" href={photoUrl(p.id)} target="_blank" rel="noopener">
-                    <img src={photoUrl(p.id)} alt={`${label} Foto ${i + 1}, ${formatTimestamp(p.takenAt)}`} loading="lazy" />
+                    <img src={photoUrl(p.id)} alt={t("{label} Foto {n}, {time}", { label: label as string, n: i + 1, time: formatTimestamp(p.takenAt, lang) })} loading="lazy" />
                   </a>
                 ))}
               </div>
@@ -120,15 +124,15 @@ const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} 
   {
     (signatures.lender || signatures.borrower) && (
       <section class="card">
-        <h2>Unterschriften</h2>
+        <h2>{t("Unterschriften")}</h2>
         <p class="small muted">{loan.placeDate}</p>
         <div class="sigs">
           {[
-            ["Verleiher", signatures.lender],
-            ["Entleiher", signatures.borrower],
+            [t("Verleiher"), signatures.lender],
+            [t("Entleiher"), signatures.borrower],
           ].map(([label, s]) => (
             <figure>
-              {s ? <img src={`/media/signature/${(s as { id: string }).id}`} alt={`Unterschrift ${label}`} /> : <div class="nosig">nicht digital unterschrieben</div>}
+              {s ? <img src={`/media/signature/${(s as { id: string }).id}`} alt={t("Unterschrift {label}", { label: label as string })} /> : <div class="nosig">{t("nicht digital unterschrieben")}</div>}
               <figcaption class="small muted">{label as string}</figcaption>
             </figure>
           ))}
@@ -138,20 +142,21 @@ const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} 
   }
 
   <p id="status" role="status" aria-live="polite" class="small muted"></p>
-  <p class="small"><a href="/app">Zurück zu Mein Bereich</a></p>
+  <p class="small"><a href="/app">{t("Zurück zu Mein Bereich")}</a></p>
 
   <div class="dock" slot="after">
     <div class="in">
       {
         isLender && loan.status === "active" && (
           <a class="btn" href={`/app/loans/${loan.id}/return`}>
-            Rückgabe
+            {t("Rückgabe")}
           </a>
         )
       }
-      <button type="button" id="make-pdf" class="btn-primary js-only" data-loan={loan.id}>PDF herunterladen</button>
-      <p class="nojs-only small">Für das PDF bitte JavaScript aktivieren.</p>
+      <button type="button" id="make-pdf" class="btn-primary js-only" data-loan={loan.id}>{t("PDF herunterladen")}</button>
+      <p class="nojs-only small">{t("Für das PDF bitte JavaScript aktivieren.")}</p>
     </div>
+    {lang !== "de" && <p class="small muted pdf-lang">{t("Der Vertrag wird auf Deutsch erstellt. Die deutsche Fassung ist verbindlich.")}</p>}
   </div>
 </Base>
 
@@ -202,6 +207,10 @@ const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} 
     color: #5b6961;
     font-size: 0.85rem;
   }
+  .pdf-lang {
+    margin: 6px 0 0;
+    text-align: center;
+  }
   #status:empty {
     display: none;
   }
@@ -212,6 +221,7 @@ const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} 
 
 <script>
   import { downloadContract } from "../../../../scripts/pdf";
+  import { ct } from "../../../../i18n/client";
 
   const btn = document.getElementById("make-pdf") as HTMLButtonElement | null;
   const statusEl = document.getElementById("status")!;
@@ -223,9 +233,9 @@ const km = (n: number | null | undefined) => (n != null ? `${groupThousands(n)} 
     btn.disabled = true;
     try {
       await downloadContract(btn.dataset.loan!, status);
-      status("PDF erstellt.");
+      status(ct("PDF erstellt."));
     } catch (e) {
-      status(`PDF konnte nicht erstellt werden (${(e as Error)?.message || "Fehler"}).`, true);
+      status(ct("PDF konnte nicht erstellt werden ({reason}).", { reason: (e as Error)?.message || ct("Fehler") }), true);
     } finally {
       btn.disabled = false;
     }

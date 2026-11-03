@@ -1,5 +1,6 @@
 ---
 // One search result: cover photo, type chip, category, title, price, place and age.
+import { i18n } from "../i18n";
 import type { ListingCard } from "../lib/data/listings";
 import { placeLabel, priceLabel, relativeDate, STATUS_LABEL } from "../lib/listing-format";
 import TypeChip from "./TypeChip.astro";
@@ -14,6 +15,7 @@ interface Props {
 }
 
 const { listing: l, showStatus = false, tone = "light", headingLevel = 3 } = Astro.props;
+const { t, lang } = i18n(Astro.locals.lang);
 const H = `h${headingLevel}` as "h2" | "h3";
 const href = `/anzeigen/${l.id}`;
 ---
@@ -24,23 +26,23 @@ const href = `/anzeigen/${l.id}`;
       l.coverPhotoId ? (
         <img src={`/media/listing/${l.coverPhotoId}`} alt="" loading="lazy" width="400" height="300" />
       ) : (
-        <span class="lcard-nophoto">{l.categoryLabel}</span>
+        <span class="lcard-nophoto">{t(l.categoryLabel)}</span>
       )
     }
   </a>
   <div class="lcard-body">
     <div class="chips">
       <TypeChip type={l.type} category={l.categorySlug} />
-      <span class="chip chip-outline">{l.categoryLabel}</span>
-      {l.lent && <span class="chip chip-ink">verliehen</span>}
-      {showStatus && l.status !== "aktiv" && <span class="chip chip-outline">{STATUS_LABEL[l.status]}</span>}
+      <span class="chip chip-outline">{t(l.categoryLabel)}</span>
+      {l.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
+      {showStatus && l.status !== "aktiv" && <span class="chip chip-outline">{t(STATUS_LABEL[l.status])}</span>}
     </div>
     <H class="lcard-title"><a href={href}>{l.title}</a></H>
-    <p class="lcard-price">{priceLabel(l.priceKind, l.priceCents)}</p>
+    <p class="lcard-price">{priceLabel(l.priceKind, l.priceCents, lang)}</p>
     <p class="lcard-meta">
-      <span>{placeLabel(l) || "Ort nicht angegeben"}</span>
+      <span>{placeLabel(l, lang) || t("Ort nicht angegeben")}</span>
       <span aria-hidden="true">·</span>
-      <time datetime={l.createdAt.toISOString()}>{relativeDate(l.createdAt)}</time>
+      <time datetime={l.createdAt.toISOString()}>{relativeDate(l.createdAt, new Date(), lang)}</time>
     </p>
   </div>
 </article>

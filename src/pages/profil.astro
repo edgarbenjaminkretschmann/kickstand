@@ -4,10 +4,12 @@ import Base from "../layouts/Base.astro";
 import Field from "../components/Field.astro";
 import DateField from "../components/DateField.astro";
 import FormAlert from "../components/FormAlert.astro";
+import { i18n } from "../i18n";
 import { getProfile } from "../lib/data/profiles";
 import { fieldErrors, formError } from "../lib/form";
 import { submittedValues } from "../lib/submitted";
 
+const { t } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const result = Astro.getActionResult(actions.profile.save);
 if (result && !result.error) return Astro.redirect("/profil?gespeichert=1");
@@ -21,46 +23,46 @@ const saved = Astro.url.searchParams.has("gespeichert");
 const welcome = Astro.url.searchParams.has("willkommen");
 ---
 
-<Base title="Profil">
+<Base title={t("Profil")}>
   <div class="page-head">
-    <h1>Profil</h1>
-    <p>Dein Anzeigename ist öffentlich. Alles andere bleibt privat und füllt nur deine Leihverträge vor.</p>
+    <h1>{t("Profil")}</h1>
+    <p>{t("Dein Anzeigename ist öffentlich. Alles andere bleibt privat und füllt nur deine Leihverträge vor.")}</p>
   </div>
-  {welcome && <p class="notice">Willkommen bei Kickstand. Trag hier einmal deine Daten ein, dann geht jeder Leihvertrag schneller. Das geht auch später.</p>}
-  {saved && <p class="notice" role="status">Gespeichert.</p>}
+  {welcome && <p class="notice">{t("Willkommen bei Kickstand. Trag hier einmal deine Daten ein, dann geht jeder Leihvertrag schneller. Das geht auch später.")}</p>}
+  {saved && <p class="notice" role="status">{t("Gespeichert.")}</p>}
   <form method="POST" action={actions.profile.save} class="stack" novalidate>
     <FormAlert message={message} />
     <section class="card">
-      <h2>Öffentlich</h2>
+      <h2>{t("Öffentlich")}</h2>
       <Field
-        label="Anzeigename"
+        label={t("Anzeigename")}
         name="displayName"
         autocomplete="nickname"
         required
         value={v.displayName}
         error={errors.displayName}
-        hint="Andere sehen deinen Vornamen und seit wann du dabei bist."
+        hint={t("Andere sehen deinen Vornamen und seit wann du dabei bist.")}
       />
-      <Field label="Ort für Anzeigen" name="city" autocomplete="address-level2" value={v.city} hint="Wird in neuen Anzeigen vorgeschlagen." />
+      <Field label={t("Ort für Anzeigen")} name="city" autocomplete="address-level2" value={v.city} hint={t("Wird in neuen Anzeigen vorgeschlagen.")} />
     </section>
     <section class="card">
-      <h2>Für Leihverträge (privat)</h2>
-      <Field label="Name, Vorname" name="name" autocomplete="name" value={v.name} hint="Wie im Ausweis." />
-      <Field label="Straße, Hausnummer" name="street" autocomplete="street-address" value={v.street} />
-      <Field label="PLZ, Ort" name="zipCity" autocomplete="off" value={v.zipCity} />
+      <h2>{t("Für Leihverträge (privat)")}</h2>
+      <Field label={t("Name, Vorname")} name="name" autocomplete="name" value={v.name} hint={t("Wie im Ausweis.")} />
+      <Field label={t("Straße, Hausnummer")} name="street" autocomplete="street-address" value={v.street} />
+      <Field label={t("PLZ, Ort")} name="zipCity" autocomplete="off" value={v.zipCity} />
       <div class="row stack-sm">
-        <Field label="Telefon" name="phone" type="tel" inputmode="tel" autocomplete="tel" value={v.phone} />
-        <DateField label="Geburtsdatum" name="birthdate" value={v.birthdate} error={errors.birthdate} />
+        <Field label={t("Telefon")} name="phone" type="tel" inputmode="tel" autocomplete="tel" value={v.phone} />
+        <DateField label={t("Geburtsdatum")} name="birthdate" value={v.birthdate} error={errors.birthdate} />
       </div>
       <div class="row stack-sm">
-        <Field label="Führerschein-Nr." name="licenseNumber" mono value={v.licenseNumber} />
-        <Field label="Klasse A seit" name="licenseClassASince" inputmode="numeric" placeholder="z. B. 2015" value={v.licenseClassASince} />
+        <Field label={t("Führerschein-Nr.")} name="licenseNumber" mono value={v.licenseNumber} />
+        <Field label={t("Klasse A seit")} name="licenseClassASince" inputmode="numeric" placeholder={t("z. B. 2015")} value={v.licenseClassASince} />
       </div>
-      <p class="hint">Wenn du dir ein Motorrad leihst und der Verleiher den Vertrag aus eurer Unterhaltung startet, werden diese Angaben dort vorausgefüllt.</p>
+      <p class="hint">{t("Wenn du dir ein Motorrad leihst und der Verleiher den Vertrag aus eurer Unterhaltung startet, werden diese Angaben dort vorausgefüllt.")}</p>
     </section>
     <div class="actions">
-      <button type="submit" class="btn-primary">Speichern</button>
-      <a href="/app" class="btn">Zurück</a>
+      <button type="submit" class="btn-primary">{t("Speichern")}</button>
+      <a href="/app" class="btn">{t("Zurück")}</a>
     </div>
   </form>
 </Base>

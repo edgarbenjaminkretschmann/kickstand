@@ -1,6 +1,7 @@
 // Client side photo handling: shrink before upload (phones produce 5-10 MB files),
 // then upload one by one through the uploadPhoto action and show thumbnails.
 import { actions } from "astro:actions";
+import { ct } from "../i18n/client";
 
 const MAX_SIDE = 1600;
 
@@ -40,7 +41,7 @@ export function thumb(url: string, label: string, onRemove?: () => Promise<void>
     const b = document.createElement("button");
     b.type = "button";
     b.textContent = "×";
-    b.setAttribute("aria-label", `${label} entfernen`);
+    b.setAttribute("aria-label", ct("{label} entfernen", { label }));
     b.addEventListener("click", async () => {
       b.disabled = true;
       try {
@@ -77,7 +78,7 @@ export function wirePhotoInput(opts: {
 
   box.querySelectorAll<HTMLElement>("[data-photo-id]").forEach((el, i) => {
     const id = el.dataset.photoId!;
-    el.replaceWith(thumb(el.querySelector("img")!.src, `Foto ${i + 1}`, () => deletePhoto(id)));
+    el.replaceWith(thumb(el.querySelector("img")!.src, ct("Foto {n}", { n: i + 1 }), () => deletePhoto(id)));
   });
 
   input.addEventListener("change", async () => {
@@ -86,7 +87,7 @@ export function wirePhotoInput(opts: {
     if (!files.length) return;
     const loanId = await getLoanId();
     if (!loanId) {
-      status("Bitte erst speichern, dann Fotos hinzufügen.", true);
+      status(ct("Bitte erst speichern, dann Fotos hinzufügen."), true);
       return;
     }
     let ok = 0;
@@ -96,9 +97,9 @@ export function wirePhotoInput(opts: {
         bad++;
         continue;
       }
-      status(`Foto ${i + 1} von ${files.length} wird hochgeladen …`);
+      status(ct("Foto {n} von {total} wird hochgeladen …", { n: i + 1, total: files.length }));
       const preview = URL.createObjectURL(file);
-      const pending = thumb(preview, "Foto wird hochgeladen");
+      const pending = thumb(preview, ct("Foto wird hochgeladen"));
       pending.classList.add("pending");
       box.append(pending);
       try {
@@ -111,7 +112,7 @@ export function wirePhotoInput(opts: {
         const { data, error } = await actions.loans.uploadPhoto(fd);
         if (error) throw error;
         const n = box.children.length;
-        pending.replaceWith(thumb(data.url, `Foto ${n}`, () => deletePhoto(data.id)));
+        pending.replaceWith(thumb(data.url, ct("Foto {n}", { n }), () => deletePhoto(data.id)));
         ok++;
       } catch {
         pending.remove();
@@ -120,6 +121,9 @@ export function wirePhotoInput(opts: {
         URL.revokeObjectURL(preview);
       }
     }
-    status(bad ? `${ok} Foto(s) gespeichert, ${bad} übersprungen. Nur Fotos sind möglich.` : `${ok} Foto(s) gespeichert.`, bad > 0);
+    status(
+      bad ? ct("{ok} Foto(s) gespeichert, {bad} übersprungen. Nur Fotos sind möglich.", { ok, bad }) : ct("{ok} Foto(s) gespeichert.", { ok }),
+      bad > 0,
+    );
   });
 }

@@ -14,6 +14,7 @@ import {
   type ListingInput,
 } from "../lib/data/listings";
 import { setSaved } from "../lib/data/saved";
+import { tk } from "../i18n";
 import { parseNumber } from "../lib/form";
 import { euroToCents } from "../lib/listing-format";
 import { deleteFile, isImageFile, saveImage } from "../lib/storage";
@@ -23,16 +24,16 @@ import { badRequest, guard, newId, photoFiles, requireUser, s } from "./util";
 const text = (max: number) => z.string().max(max).optional();
 
 const listingFields = {
-  type: z.string({ required_error: "Bitte Biete oder Suche wählen.", invalid_type_error: "Bitte Biete oder Suche wählen." }),
-  categorySlug: z.string({ required_error: "Bitte eine Kategorie wählen.", invalid_type_error: "Bitte eine Kategorie wählen." }),
+  type: z.string({ required_error: tk("Bitte Biete oder Suche wählen."), invalid_type_error: tk("Bitte Biete oder Suche wählen.") }),
+  categorySlug: z.string({ required_error: tk("Bitte eine Kategorie wählen."), invalid_type_error: tk("Bitte eine Kategorie wählen.") }),
   title: z
-    .string({ required_error: "Bitte einen Titel angeben.", invalid_type_error: "Bitte einen Titel angeben." })
+    .string({ required_error: tk("Bitte einen Titel angeben."), invalid_type_error: tk("Bitte einen Titel angeben.") })
     .trim()
-    .min(3, "Bitte einen Titel angeben.")
-    .max(120, "Höchstens 120 Zeichen."),
+    .min(3, tk("Bitte einen Titel angeben."))
+    .max(120, tk("Höchstens 120 Zeichen.")),
   description: text(4000),
   priceKind: text(20),
-  price: z.string().refine((v) => !v || parseNumber(v) !== null, "Bitte einen Betrag angeben, z. B. 20 oder 12,50.").optional(),
+  price: z.string().refine((v) => !v || parseNumber(v) !== null, tk("Bitte einen Betrag angeben, z. B. 20 oder 12,50.")).optional(),
   zip: text(10),
   city: text(80),
   country: text(2),
@@ -60,7 +61,7 @@ function toInput(input: { [K in keyof typeof listingFields]?: unknown }): Listin
 async function storePhotos(userId: string, listingId: string, files: File[] | undefined) {
   const real = (files ?? []).filter((f) => f.size > 0);
   if (!real.length) return;
-  if (real.some((f) => !isImageFile(f))) badRequest("Nur Fotos können hochgeladen werden.");
+  if (real.some((f) => !isImageFile(f))) badRequest(tk("Nur Fotos können hochgeladen werden."));
   const room = MAX_PHOTOS - (await countListingPhotos(listingId));
   for (const file of real.slice(0, Math.max(0, room))) {
     await assertCanAddPhoto(userId, listingId);
@@ -76,7 +77,7 @@ export const listingActions = {
     handler: (input, context) =>
       guard(async () => {
         const user = requireUser(context);
-        if ((input.photos ?? []).some((f) => f.size > 0 && !isImageFile(f))) badRequest("Nur Fotos können hochgeladen werden.");
+        if ((input.photos ?? []).some((f) => f.size > 0 && !isImageFile(f))) badRequest(tk("Nur Fotos können hochgeladen werden."));
         // Check the bytes before creating anything, so a rejected photo leaves no listing behind.
         for (const f of input.photos ?? []) if (f.size > 0) await assertImageBytes(f);
         const id = await createListing(user.id, toInput(input));
@@ -115,7 +116,7 @@ export const listingActions = {
       guard(async () => {
         const user = requireUser(context);
         // The page shows a confirm step first; the second post carries confirm=ja.
-        if (input.confirm !== "ja") badRequest("Bitte das Löschen bestätigen.");
+        if (input.confirm !== "ja") badRequest(tk("Bitte das Löschen bestätigen."));
         for (const key of await deleteListing(user.id, input.id)) await deleteFile(key);
         return { ok: true };
       }),

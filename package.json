@@ -17,7 +17,8 @@
     "db:migrate-legacy": "tsx scripts/migrate-legacy.ts",
     "test": "vitest run",
     "check": "astro check",
-    "r2:upload": "node scripts/upload-r2.mjs"
+    "r2:upload": "node scripts/upload-r2.mjs",
+    "i18n:keys": "node scripts/i18n-keys.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.13",

@@ -9,11 +9,13 @@ import { getOwnListing, listCategories, listListingPhotos } from "../../../lib/d
 import { fieldErrors, formError } from "../../../lib/form";
 import { centsToInput } from "../../../lib/listing-format";
 import { submittedValues } from "../../../lib/submitted";
+import { i18n } from "../../../i18n";
 
+const { t } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const listing = await getOwnListing(Astro.params.id!, user.id);
 // Only the owner may edit; everyone else gets a plain 404.
-if (!listing) return new Response("Nicht gefunden", { status: 404 });
+if (!listing) return new Response(t("Nicht gefunden"), { status: 404 });
 const base = `/anzeigen/${listing.id}/bearbeiten`;
 
 const result = Astro.getActionResult(actions.listings.update);
@@ -44,9 +46,9 @@ const values: Record<string, string> = prev ?? {
 const changeHref = `${base}?${new URLSearchParams({ schritt: "1", typ: type, kategorie: categorySlug })}`;
 ---
 
-<Base title="Anzeige bearbeiten">
+<Base title={t("Anzeige bearbeiten")}>
   <div class="page-head">
-    <h1>Anzeige bearbeiten</h1>
+    <h1>{t("Anzeige bearbeiten")}</h1>
     <p><a href={`/anzeigen/${listing.id}`}>{listing.title}</a></p>
   </div>
 
@@ -57,26 +59,26 @@ const changeHref = `${base}?${new URLSearchParams({ schritt: "1", typ: type, kat
       <>
         {photos.length > 0 && (
           <section class="panel" id="fotos" aria-labelledby="h-fotos">
-            <h2 id="h-fotos">Fotos ({photos.length})</h2>
+            <h2 id="h-fotos">{t("Fotos ({n})", { n: photos.length })}</h2>
             <FormAlert message={formError(photoRemoved) ?? formError(photoCover)} />
             <ul class="photo-admin">
               {photos.map((p, i) => (
                 <li>
-                  <img src={`/media/listing/${p.id}`} alt={i === 0 ? "Titelbild" : `Foto ${i + 1}`} width="160" height="120" loading="lazy" />
+                  <img src={`/media/listing/${p.id}`} alt={i === 0 ? t("Titelbild") : t("Foto {n}", { n: i + 1 })} width="160" height="120" loading="lazy" />
                   {i === 0 ? (
-                    <span class="chip chip-biete">Titelbild</span>
+                    <span class="chip chip-biete">{t("Titelbild")}</span>
                   ) : (
                     <form method="POST" action={`${actions.listings.coverPhoto}`}>
                       <input type="hidden" name="photoId" value={p.id} />
                       <button type="submit" class="btn-link">
-                        Als Titelbild
+                        {t("Als Titelbild")}
                       </button>
                     </form>
                   )}
                   <form method="POST" action={`${actions.listings.removePhoto}`}>
                     <input type="hidden" name="photoId" value={p.id} />
-                    <button type="submit" class="btn-link danger-link" data-confirm="Wirklich entfernen?">
-                      Entfernen
+                    <button type="submit" class="btn-link danger-link" data-confirm={t("Wirklich entfernen?")}>
+                      {t("Entfernen")}
                     </button>
                   </form>
                 </li>

@@ -1,6 +1,7 @@
 ---
 // "Biete" in sky, "Suche" in the warm yellow. Help requests read "Hilfe gesucht".
 import { TYPE_LABEL } from "../lib/listing-format";
+import { i18n } from "../i18n";
 
 interface Props {
   type: string;
@@ -8,7 +9,9 @@ interface Props {
 }
 
 const { type, category } = Astro.props;
-const label = type === "suche" && category === "hilfe" ? "Hilfe gesucht" : (TYPE_LABEL[type] ?? type);
+const { t } = i18n(Astro.locals.lang);
+// TYPE_LABEL holds the German labels ("Biete", "Suche"), which are translation keys.
+const label = type === "suche" && category === "hilfe" ? t("Hilfe gesucht") : t(TYPE_LABEL[type] ?? type);
 ---
 
 <span class:list={["chip", type === "suche" ? "chip-suche" : "chip-biete"]}>{label}</span>

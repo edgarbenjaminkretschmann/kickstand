@@ -9,6 +9,7 @@ import { db } from "../../db/client";
 import { Account, Session, User, Verification } from "../../db/schema";
 import { ensureProfile } from "../data/profiles";
 import { env, isProd } from "../env";
+import { tk } from "../../i18n";
 
 /** Google login is offered only when both credentials are set. */
 export function isGoogleEnabled(): boolean {
@@ -91,7 +92,7 @@ export function getUser(context: { locals: App.Locals }): AuthUser | null {
 
 export class AuthRequiredError extends Error {
   constructor() {
-    super("Bitte zuerst anmelden.");
+    super(tk("Bitte zuerst anmelden."));
     this.name = "AuthRequiredError";
   }
 }
@@ -115,11 +116,11 @@ function applyCookies(headers: Headers, cookies: AstroCookies) {
 type Ctx = { request: Request; cookies: AstroCookies };
 
 const MESSAGES: Record<string, string> = {
-  INVALID_EMAIL_OR_PASSWORD: "E-Mail oder Passwort stimmt nicht.",
-  USER_ALREADY_EXISTS: "Diese E-Mail ist schon registriert.",
-  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "Diese E-Mail ist schon registriert.",
-  PASSWORD_TOO_SHORT: "Das Passwort braucht mindestens 8 Zeichen.",
-  INVALID_EMAIL: "Bitte eine gültige E-Mail angeben.",
+  INVALID_EMAIL_OR_PASSWORD: tk("E-Mail oder Passwort stimmt nicht."),
+  USER_ALREADY_EXISTS: tk("Diese E-Mail ist schon registriert."),
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: tk("Diese E-Mail ist schon registriert."),
+  PASSWORD_TOO_SHORT: tk("Das Passwort braucht mindestens 8 Zeichen."),
+  INVALID_EMAIL: tk("Bitte eine gültige E-Mail angeben."),
 };
 
 /** A sign-in problem with a German message for the form. */
@@ -133,8 +134,8 @@ export class AuthFailure extends Error {
 function translate(e: unknown): never {
   if (e instanceof APIError) {
     const code = (e.body as { code?: string } | undefined)?.code ?? "";
-    if (e.status === "TOO_MANY_REQUESTS") throw new AuthFailure("Zu viele Versuche. Bitte kurz warten.");
-    throw new AuthFailure(MESSAGES[code] ?? "Anmeldung fehlgeschlagen.");
+    if (e.status === "TOO_MANY_REQUESTS") throw new AuthFailure(tk("Zu viele Versuche. Bitte kurz warten."));
+    throw new AuthFailure(MESSAGES[code] ?? tk("Anmeldung fehlgeschlagen."));
   }
   throw e;
 }
@@ -170,7 +171,7 @@ export async function signInWithEmail(ctx: Ctx, input: { email: string; password
  * `next` is where the member lands afterwards; new members go to the profile first.
  */
 export async function startGoogleSignIn(ctx: Ctx, next: string): Promise<string> {
-  if (!isGoogleEnabled()) throw new AuthFailure("Google-Anmeldung ist nicht eingerichtet.");
+  if (!isGoogleEnabled()) throw new AuthFailure(tk("Google-Anmeldung ist nicht eingerichtet."));
   try {
     const { headers, response } = await getAuth().api.signInSocial({
       body: {
@@ -184,7 +185,7 @@ export async function startGoogleSignIn(ctx: Ctx, next: string): Promise<string>
       returnHeaders: true,
     });
     applyCookies(headers, ctx.cookies);
-    if (!response.url) throw new AuthFailure("Google-Anmeldung fehlgeschlagen.");
+    if (!response.url) throw new AuthFailure(tk("Google-Anmeldung fehlgeschlagen."));
     return response.url;
   } catch (e) {
     translate(e);

@@ -1,5 +1,6 @@
 ---
 import { actions } from "astro:actions";
+import { i18n } from "../../../../i18n";
 import Base from "../../../../layouts/Base.astro";
 import BikeForm from "../../../../components/BikeForm.astro";
 import { getOwnBike } from "../../../../lib/access";
@@ -7,9 +8,10 @@ import { fieldErrors, formError } from "../../../../lib/form";
 import { submittedValues } from "../../../../lib/submitted";
 import { bikePhotoUrl } from "../../../../lib/urls";
 
+const { t } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 const bike = await getOwnBike(Astro.params.id!, user.id);
-if (!bike) return new Response("Nicht gefunden", { status: 404 });
+if (!bike) return new Response(t("Nicht gefunden"), { status: 404 });
 
 const result = Astro.getActionResult(actions.bikes.save);
 if (result && !result.error) return Astro.redirect(`/app#motorraeder`);
@@ -18,10 +20,10 @@ const prev = await submittedValues(Astro.request, !!result?.error);
 const values = prev ?? bike;
 ---
 
-<Base title={`${bike.make} ${bike.model} bearbeiten`}>
+<Base title={t("{bike} bearbeiten", { bike: `${bike.make} ${bike.model}` })}>
   <div class="page-head">
     <h1>{bike.make} {bike.model}</h1>
-    <p>Fahrzeugdaten bearbeiten</p>
+    <p>{t("Fahrzeugdaten bearbeiten")}</p>
   </div>
   <BikeForm values={values} errors={fieldErrors(result)} message={formError(result)} id={bike.id} photoUrl={bikePhotoUrl(bike)} />
 </Base>

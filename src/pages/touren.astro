@@ -1,6 +1,12 @@
 ---
-// Edgar and his motorcycle journeys: the story behind Kickstand. Photos are pre-converted webp in public/images/touren.
+// Edgar and his motorcycle journeys: the story behind Kickstand. Facts come from his old blog vlogato
+// (recovered from the Internet Archive, see reference/vlogato-blog/) and his photo folders
+// (reference/touren-photos.json). Photos are pre-converted webp in public/images/touren.
+// Texts are German keys (tk) translated at render time (t), like the rest of the site.
 import Base from "../layouts/Base.astro";
+import { i18n, tk } from "../i18n";
+
+const { t } = i18n(Astro.locals.lang);
 
 interface Shot {
   slug: string;
@@ -9,101 +15,206 @@ interface Shot {
   h: number;
 }
 
-const trips: { title: string; note?: string; shots: Shot[] }[] = [
+interface Chapter {
+  id: string;
+  title: string;
+  when?: string;
+  text: string[];
+  shots: Shot[];
+}
+
+const chapters: Chapter[] = [
   {
-    title: "Philippinen 2019",
-    note: "21 Orte in 35 Tagen mit dem Motorrad.",
+    id: "vietnam",
+    title: tk("Vietnam"),
+    when: tk("22 Tage auf einer geliehenen Honda Win"),
+    text: [
+      tk("In Saigon habe ich mir eine chinesische Honda Win geliehen und sie nach 22 Tagen zurückgebracht. Sie ging ungefähr einmal am Tag kaputt. Das war halb so schlimm: An jeder Ecke saß ein Mechaniker, und eine Reparatur kostete selten mehr als zehn Dollar."),
+      tk("Vietnam ist für mich der Ort, an dem Natur, eine feine Kultur und eine bewegte jüngere Geschichte zusammenkommen."),
+    ],
     shots: [
-      { slug: "philippinen-2019-strasse", alt: "Blick über den Lenker auf eine leere Landstraße, im Hintergrund ein Vulkan", w: 1152, h: 864 },
-      { slug: "philippinen-2019-route", alt: "Karte der Tour vom Oktober 2019 mit allen Stationen auf den Philippinen", w: 1024, h: 768 },
+      { slug: "vietnam-2014-nebelpass", alt: tk("Leere Bergstrasse mit Leitplanke im Nebel"), w: 1280, h: 960 },
+      { slug: "vietnam-2014-stern", alt: tk("Roter Stern auf dem weissen Tank eines Motorrads, Blick vom Fahrersitz"), w: 1280, h: 960 },
+      { slug: "vietnam-2014-regen", alt: tk("Das mit Regenplanen verpackte Motorrad steht im Regen am Strassenrand"), w: 1280, h: 960 },
+      { slug: "vietnam-2014-regenstrasse", alt: tk("Nasse Strasse durch grüne Hügel, vorn am Motorrad hängen Bananen"), w: 1280, h: 960 },
     ],
   },
   {
-    title: "Myanmar 2019",
+    id: "myanmar",
+    title: tk("Myanmar 2017 und 2019"),
+    text: [
+      tk("Heiß. Wild. Myanmar. Das könnte man über viele Länder in Asien sagen, aber die Abgeschiedenheit und die Nähe zum Einfachen machen Myanmar besonders. Zweimal war ich dort mit dem Motorrad unterwegs: über leere Straßen unter Gewitterwolken, an die Küste und zu den Tempeln von Bagan."),
+    ],
     shots: [
-      { slug: "myanmar-2019-strand", alt: "Edgar am Strand zwischen Felsen, im Vordergrund Lenker und Spiegel der Enduro", w: 1021, h: 681 },
-      { slug: "myanmar-2019-bruecke", alt: "Motorrad auf einer langen Brücke über einen Fluss", w: 1021, h: 681 },
+      { slug: "myanmar-2017-dirtbike", alt: tk("Das Enduro mit Gepäck steht vor einer grünen Plane am Wegrand"), w: 1021, h: 681 },
+      { slug: "myanmar-2017-autobahn", alt: tk("Leere breite Strasse unter Gewitterwolken, im Rückspiegel ein Bein"), w: 1021, h: 681 },
+      { slug: "myanmar-2017-bagan", alt: tk("Sonnenuntergang über der Tempelebene von Bagan"), w: 1021, h: 681 },
+      { slug: "myanmar-2017-tempel", alt: tk("Edgar winkt vor einem roten Backsteintempel mit Gerüst"), w: 681, h: 1021 },
+      { slug: "myanmar-2017-karstfluss", alt: tk("Ruhiger Fluss vor bewaldeten Kalksteinfelsen im Abendlicht"), w: 1021, h: 681 },
+      { slug: "myanmar-2017-strand-bike", alt: tk("Das Motorrad mit blauem Gepäck steht auf Sand vor einer felsigen Küste"), w: 1021, h: 681 },
+      { slug: "myanmar-2019-strand", alt: tk("Edgar am Strand zwischen Felsen, im Vordergrund Lenker und Spiegel der Enduro"), w: 1021, h: 681 },
+      { slug: "myanmar-2019-bruecke", alt: tk("Motorrad auf einer langen Brücke über einen Fluss"), w: 1021, h: 681 },
     ],
   },
   {
-    title: "Alpen 2018",
+    id: "alpen",
+    title: tk("Alpen 2018"),
+    when: tk("Mit der Honda VFR 750 von 1995"),
+    text: [
+      tk("Meine VFR habe ich nach langer Suche für 1300 Euro gekauft: zuverlässig, kräftig, sparsam und schön, das Alter war mir egal. Nach etwa einem Jahr hatte ich das erste große Motorrad wirklich im Griff, und seitdem liebe ich den Klang des V4."),
+      tk("Im Juli 2018 bin ich allein durch Bayern, Österreich, die Schweiz und Frankreich gefahren, über einsame Pässe auf 2500 Metern. Die besten Straßen hatte für mich die Schweiz."),
+    ],
     shots: [
-      { slug: "alpen-2018-pass", alt: "Sporttourer am Straßenrand vor Felswänden und Schneefeldern", w: 1280, h: 622 },
-      { slug: "alpen-2018-tal", alt: "Bepacktes Motorrad über einem grünen Alpental", w: 622, h: 1280 },
-      { slug: "alpen-2018-honda", alt: "Edgar in Motorradjacke neben seiner Honda", w: 622, h: 1280 },
+      { slug: "alpen-2018-pass", alt: tk("Sporttourer am Straßenrand vor Felswänden und Schneefeldern"), w: 1280, h: 622 },
+      { slug: "alpen-2018-helm", alt: tk("Edgar im Helm mit getönter Brille auf einem Pass, im Hintergrund Berge mit Schneeflecken"), w: 960, h: 1280 },
+      { slug: "alpen-2018-kurve", alt: tk("Die Honda steht an einer Bergstrasse mit Leitplanke, dahinter ein grünes Alpental"), w: 1280, h: 622 },
+      { slug: "alpen-2018-spiegel", alt: tk("Blick über den Rückspiegel auf ein Hochgebirgstal mit Schnee und Gletscherresten"), w: 1280, h: 622 },
+      { slug: "alpen-2018-tal", alt: tk("Bepacktes Motorrad über einem grünen Alpental"), w: 622, h: 1280 },
+      { slug: "alpen-2018-see", alt: tk("Türkisfarbener Bergsee mit Badeplattform und Bergen im Hintergrund"), w: 1280, h: 622 },
+      { slug: "alpen-2018-selfie", alt: tk("Edgar mit Sonnenbrille und Schal neben seinem Motorrad, hinter ihm Berge mit Schneeresten"), w: 960, h: 1280 },
+      { slug: "alpen-2018-schneefelder", alt: tk("Steile grüne Berghänge mit Schneefeldern unter tiefen Wolken"), w: 1280, h: 622 },
+      { slug: "alpen-2018-honda", alt: tk("Edgar in Motorradjacke neben seiner Honda"), w: 622, h: 1280 },
     ],
   },
   {
-    title: "Portugal 2021",
+    id: "philippinen",
+    title: tk("Philippinen 2019"),
+    when: tk("21 Orte in 35 Tagen"),
+    text: [
+      tk("Die Philippinen waren lange mein Winterquartier: Das Visum war einfach, fast alle sprechen Englisch, und die Menschen sind sehr, sehr freundlich. Durch die Philippinen zu reisen ist, als würde man sich in eine wunderschöne, chaotische Freundin verlieben."),
+      tk("Mit meiner Yamaha SZ 150 bin ich 18 Monate über Panay, Mindoro und rund um Manila gefahren, und sie ist kein einziges Mal liegen geblieben. Für die große Tour im Oktober 2019 habe ich unter Zeitdruck eine gebrauchte Rusi mit 200 cm³ gekauft. Der falsche Vergaser hat uns tausend Kilometer lang begleitet, bis ihn eine Werkstatt auf Siquijor gegen einen passenden getauscht hat."),
+      tk("Die Route: von Iloilo nach Dumangas, mit der Fähre nach Bacolod, weiter nach Sipalay mit Sugar Beach und dem Wasserfall von HuyopHuyop, dann Dumaguete, Siquijor und Bohol mit den Chocolate Hills. Sipalay ist wirklich ein verstecktes Juwel am anderen Ende der Welt."),
+      tk("Unterwegs ist uns das Benzin ausgegangen, und ein Fremder hat mich zur Tankstelle gefahren. Ich habe am Straßenrand Zündkerzen gereinigt, ein Bauer in einem abgelegenen Dorf hat mir weitergeholfen, und bei den Chocolate Hills riss der Gaszug. Repariert wurde er in einer Werkstatt, in der ein echter Affe saß."),
+    ],
     shots: [
-      { slug: "portugal-2021-kueste", alt: "Edgar mit seinem Motorrad auf einer Klippe über dem Atlantik", w: 1280, h: 960 },
-      { slug: "portugal-2021-wiese", alt: "Reiseenduro mit Topcase auf einer blühenden Wiese", w: 1280, h: 960 },
+      { slug: "philippinen-2019-vulkan", alt: tk("Edgar steht mit dem beladenen Motorrad an einer Landstrasse, hinten ein Vulkan"), w: 1280, h: 720 },
+      { slug: "philippinen-2019-strasse", alt: tk("Blick über den Lenker auf eine leere Landstraße, im Hintergrund ein Vulkan"), w: 1152, h: 864 },
+      { slug: "philippinen-2019-route", alt: tk("Karte der Tour vom Oktober 2019 mit allen Stationen auf den Philippinen"), w: 1024, h: 768 },
     ],
   },
   {
-    title: "Indien 2024",
-    shots: [{ slug: "indien-2024-teeberge", alt: "Motorrad an einer Bergstraße durch Teeplantagen", w: 1280, h: 1082 }],
-  },
-  {
-    title: "Kolumbien, Tatacoa-Wüste",
-    shots: [{ slug: "kolumbien-tatacoa", alt: "Edgar auf dem Motorrad in der kargen Tatacoa-Wüste", w: 1280, h: 960 }],
-  },
-  {
-    title: "Unterwegs",
+    id: "portugal",
+    title: tk("Portugal 2021"),
+    text: [],
     shots: [
-      { slug: "unterwegs-markt", alt: "Geschmückte Royal Enfield auf einer belebten Straße", w: 1280, h: 850 },
-      { slug: "unterwegs-aussicht", alt: "Royal Enfield an einem Aussichtspunkt mit Felsen und Grün", w: 1280, h: 850 },
-      { slug: "unterwegs-werkstatt", alt: "Mechaniker repariert ein Motorrad am Straßenrand", w: 1280, h: 960 },
-      { slug: "unterwegs-weite", alt: "Weite Graslandschaft unter dunklen Wolken", w: 1280, h: 850 },
-      { slug: "unterwegs-pause", alt: "Edgar macht Pause vor einem kleinen Café", w: 1280, h: 857 },
+      { slug: "portugal-2021-kueste", alt: tk("Edgar mit seinem Motorrad auf einer Klippe über dem Atlantik"), w: 1280, h: 960 },
+      { slug: "portugal-2021-wiese", alt: tk("Reiseenduro mit Topcase auf einer blühenden Wiese"), w: 1280, h: 960 },
     ],
   },
+  {
+    id: "indien",
+    title: tk("Indien 2024"),
+    text: [],
+    shots: [
+      { slug: "indien-2024-teeberge", alt: tk("Motorrad an einer Bergstraße durch Teeplantagen"), w: 1280, h: 1082 },
+      { slug: "indien-2024-serpentine", alt: tk("Eine Strasse windet sich in Serpentinen durch Teeplantagen und bewaldete Hügel"), w: 1280, h: 850 },
+      { slug: "indien-2024-teefelder", alt: tk("Weite grüne Teeplantagen an einem Hang unter blauem Himmel"), w: 1280, h: 850 },
+      { slug: "indien-2024-hochland", alt: tk("Grasbewachsener Hügelkamm mit Pfad und weitem Blick über das Hochland"), w: 850, h: 1280 },
+      { slug: "indien-2024-wasserfall", alt: tk("Schmaler Wasserfall über dunklen Felsen im grünen Dschungel"), w: 832, h: 1253 },
+      { slug: "indien-2024-stausee", alt: tk("Ruhiger Fluss zwischen bewaldeten Hügeln in den Bergen"), w: 1280, h: 850 },
+      { slug: "indien-2024-fischerboot", alt: tk("Ein altes Holzboot liegt am Strand unter Palmen"), w: 1280, h: 850 },
+    ],
+  },
+  {
+    id: "kolumbien",
+    title: tk("Kolumbien 2024, Tatacoa-Wüste"),
+    text: [],
+    shots: [
+      { slug: "kolumbien-tatacoa", alt: tk("Edgar auf dem Motorrad in der kargen Tatacoa-Wüste"), w: 1280, h: 960 },
+      { slug: "kolumbien-kaktus", alt: tk("Ein runder Kaktus mit roter Frucht in der Tatacoa-Wüste"), w: 627, h: 836 },
+    ],
+  },
+  {
+    id: "unterwegs",
+    title: tk("Unterwegs"),
+    text: [],
+    shots: [
+      { slug: "unterwegs-markt", alt: tk("Geschmückte Royal Enfield auf einer belebten Straße"), w: 1280, h: 850 },
+      { slug: "unterwegs-aussicht", alt: tk("Royal Enfield an einem Aussichtspunkt mit Felsen und Grün"), w: 1280, h: 850 },
+      { slug: "unterwegs-werkstatt", alt: tk("Mechaniker repariert ein Motorrad am Straßenrand"), w: 1280, h: 960 },
+      { slug: "unterwegs-weite", alt: tk("Weite Graslandschaft unter dunklen Wolken"), w: 1280, h: 850 },
+      { slug: "unterwegs-pause", alt: tk("Edgar macht Pause vor einem kleinen Café"), w: 1280, h: 857 },
+    ],
+  },
+  {
+    id: "gs",
+    title: tk("Heute: die GS 1200"),
+    when: tk("2026"),
+    text: [tk("Mein aktuelles Motorrad ist eine rote BMW GS 1200 mit Alukoffern.")],
+    shots: [
+      { slug: "gs1200-2026-koffer", alt: tk("Die BMW GS 1200 mit Alukoffern, Helm auf dem Sitz, vor weitem Himmel"), w: 1280, h: 721 },
+      { slug: "gs1200-2026-front", alt: tk("Die BMW GS 1200 von vorn links, rot-silber mit Windschild und Topcase"), w: 720, h: 1280 },
+      { slug: "gs1200-2026-parkplatz", alt: tk("Die rote BMW GS 1200 mit Koffern und Topcase auf gepflastertem Platz"), w: 1280, h: 721 },
+      { slug: "gs1200-2026-heck", alt: tk("Die BMW GS 1200 von hinten mit Alukoffern und Topcase auf einem Parkplatz"), w: 1280, h: 720 },
+    ],
+  },
+];
+
+const lessons = [
+  tk("Zwischen 11 und 14 Uhr nicht fahren, wenn die Sonne scheint, und die Haut bedecken."),
+  tk("Streetfood essen spart Geld. Rechne aber damit, dass es meistens dasselbe gibt."),
+  tk("Das Motorrad ist die günstigste Art zu reisen, und die schönste."),
+  tk("Nichts unter Druck kaufen. Es gibt immer noch eine andere Möglichkeit, man muss sie nur finden."),
+  tk("Fast alles gebraucht kaufen: Das spart Geld und schont die Umwelt."),
 ];
 
 const src = (slug: string, size: 640 | 1280) => `/images/touren/${slug}-${size}.webp`;
 ---
 
-<Base title="Edgar & seine Motorradreisen" description="Edgar Kretschmann von Vlogato: Motorradreisen durch die Philippinen, Myanmar, Indien, Kolumbien, Portugal und die Alpen." wide>
+<Base
+  title={t("Edgar & seine Motorradreisen")}
+  description={t("Edgar Kretschmann: Motorradreisen durch Vietnam, Myanmar, die Alpen, die Philippinen, Portugal, Indien und Kolumbien.")}
+  wide
+>
   <section class="intro">
     <figure class="intro-photo">
       <div class="oval">
-        <img src="/images/rider-640.webp" alt="Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen" width="640" height="360" />
+        <img src="/images/rider-640.webp" alt={t("Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen")} width="640" height="360" />
       </div>
     </figure>
     <div class="intro-text">
-      <p class="eyebrow">Hinter Kickstand</p>
-      <h1>Edgar &amp; seine Motorradreisen</h1>
+      <p class="eyebrow">{t("Hinter Kickstand")}</p>
+      <h1>{t("Edgar & seine Motorradreisen")}</h1>
       <p class="lead">
-        Ich bin Edgar Kretschmann. Auf <a href="https://vlogato.com" rel="noopener">vlogato.com</a> erzähle ich von meinen Reisen mit dem
-        Motorrad: Philippinen, Myanmar, Indien, Kolumbien, Portugal und immer wieder die Alpen.
+        {t("Ich bin Edgar Kretschmann. Meine erste große Reise ging nach Australien. Dort habe ich genug gespart, um durch Südostasien zu reisen, und zurück war danach keine Option mehr. Ich konnte nicht zu Hause bleiben, nicht einmal in Europa. Ich musste den Rest der Party sehen.")}
       </p>
       <p class="lead">
-        Unterwegs habe ich gelernt, wie viel ein geliehenes Motorrad, ein Platz in der Garage oder eine helfende Hand wert sind. Daraus ist
-        Kickstand entstanden.
+        {t("Bezahlt habe ich das Reisen fast immer mit Unterrichten: Englisch und Deutsch, fast ein Jahr in Qingdao, danach in Südkorea und auf den Philippinen. Früher habe ich auf meinem Blog vlogato davon erzählt, heute erzähle ich hier weiter.")}
       </p>
       <div class="actions">
-        <a class="btn btn-primary" href="https://vlogato.com" rel="noopener">Zum Blog auf vlogato.com</a>
-        <a class="btn" href="/anzeigen">Anzeigen ansehen</a>
+        <a class="btn btn-primary" href="/anzeigen">{t("Anzeigen ansehen")}</a>
+        <a class="btn" href="#gelernt">{t("Was ich gelernt habe")}</a>
       </div>
     </div>
   </section>
 
+  <nav class="chapters" aria-label={t("Reisen")}>
+    {chapters.map((c) => <a href={`#${c.id}`}>{t(c.title)}</a>)}
+  </nav>
+
   {
-    trips.map((t) => (
-      <section class="trip" aria-labelledby={`t-${t.shots[0].slug}`}>
+    chapters.map((c) => (
+      <section class="trip" id={c.id} aria-labelledby={`h-${c.id}`}>
         <div class="trip-head">
-          <h2 id={`t-${t.shots[0].slug}`}>{t.title}</h2>
-          {t.note && <p class="muted">{t.note}</p>}
+          <h2 id={`h-${c.id}`}>{t(c.title)}</h2>
+          {c.when && <p class="muted">{t(c.when)}</p>}
         </div>
+        {c.text.length > 0 && (
+          <div class="story">
+            {c.text.map((p) => (
+              <p>{t(p)}</p>
+            ))}
+          </div>
+        )}
         <ul class="shots">
-          {t.shots.map((s) => (
+          {c.shots.map((s) => (
             <li class:list={{ tall: s.h > s.w }}>
-              <a href={src(s.slug, 1280)} aria-label={`${s.alt}, groß anzeigen`}>
+              <a href={src(s.slug, 1280)} aria-label={t("{alt}, groß anzeigen", { alt: t(s.alt) })}>
                 <img
                   src={src(s.slug, 1280)}
                   srcset={`${src(s.slug, 640)} 640w, ${src(s.slug, 1280)} ${s.w}w`}
                   sizes="(min-width: 1000px) 380px, (min-width: 560px) 46vw, 92vw"
-                  alt={s.alt}
+                  alt={t(s.alt)}
                   width={s.w}
                   height={s.h}
                   loading="lazy"
@@ -115,6 +226,27 @@ const src = (slug: string, size: 640 | 1280) => `/images/touren/${slug}-${size}.
       </section>
     ))
   }
+
+  <section class="lessons" id="gelernt" aria-labelledby="h-gelernt">
+    <h2 id="h-gelernt">{t("Was ich unterwegs gelernt habe")}</h2>
+    <ul>
+      {lessons.map((l) => <li>{t(l)}</li>)}
+    </ul>
+    <blockquote>
+      <p>{t("Eine Reise beginnt mit ein bisschen Vorbereitung und viel Mut.")}</p>
+    </blockquote>
+  </section>
+
+  <section class="why" aria-labelledby="h-why">
+    <h2 id="h-why">{t("Warum Kickstand")}</h2>
+    <p class="lead">
+      {t("Unterwegs habe ich gelernt, wie viel ein geliehenes Motorrad, ein Platz in der Garage oder eine helfende Hand wert sind: ein Fremder mit Benzin, ein Bauer, der weiterhilft, eine Werkstatt im Nirgendwo. Daraus ist Kickstand entstanden.")}
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/anzeigen/neu">{t("Anzeige aufgeben")}</a>
+      <a class="btn" href="/so-gehts">{t("So geht's")}</a>
+    </div>
+  </section>
 </Base>
 
 <style>
@@ -163,12 +295,31 @@ const src = (slug: string, size: 640 | 1280) => `/images/touren/${slug}-${size}.
     color: var(--text-2);
     max-width: 38em;
   }
-  .trip {
+  .chapters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chapters a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    padding: 0 14px;
+    border-radius: 999px;
+    background: var(--sky-wash);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 15px;
+  }
+  .trip,
+  .lessons,
+  .why {
     display: flex;
     flex-direction: column;
     gap: 14px;
     padding-top: 24px;
     border-top: 1px solid var(--line);
+    scroll-margin-top: 16px;
   }
   .trip-head {
     display: flex;
@@ -176,8 +327,19 @@ const src = (slug: string, size: 640 | 1280) => `/images/touren/${slug}-${size}.
     align-items: baseline;
     gap: 4px 16px;
   }
-  .trip h2 {
+  .trip h2,
+  .lessons h2,
+  .why h2 {
     font-size: clamp(1.4rem, 1.1rem + 1vw, 1.75rem);
+  }
+  .story {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 44em;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text-2);
   }
   .shots {
     list-style: none;
@@ -205,5 +367,22 @@ const src = (slug: string, size: 640 | 1280) => `/images/touren/${slug}-${size}.
   .shots a:focus-visible {
     outline: 3px solid var(--sky);
     outline-offset: 2px;
+  }
+  .lessons ul {
+    margin: 0;
+    padding-left: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 44em;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .lessons blockquote {
+    margin: 8px 0 0;
+    font-family: var(--script);
+    font-size: clamp(1.8rem, 1.4rem + 1.5vw, 2.4rem);
+    line-height: 1.2;
+    color: var(--ink);
   }
 </style>

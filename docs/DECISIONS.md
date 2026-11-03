@@ -125,6 +125,22 @@ The prompt assumed a move from Vercel. Kickstand was already live on Workers, so
 - **`npm run preview`** needs a libSQL server over HTTP (Docker). It was not run in this pass; the smoke test ran against the deployed Worker instead.
 - **Bugs found while smoke-testing production** (all older than this pass): `.gitignore`'s `data/` also matched `src/lib/data/`, so the whole data layer was missing from git; on Workers an empty multi-file input arrives as `""`, which made every listing and loan form without a photo fail with 400 (`photoFiles` in `src/actions/util.ts`); with JS, the listing form never submitted once a photo was chosen, because its `requestSubmit()` ran while the first submit event was still being dispatched.
 
+## Languages (November 2026)
+
+- **Six languages: DE, EN, FR, ES, IT, PT (Portugal)**, chosen by Edgar. German stays at the plain URLs, so no existing link breaks; the others get a path prefix (good for search engines and shareable links) instead of a cookie.
+- **No separate page files per language.** The middleware strips the prefix and renders the German route (`next(url)` rewrite); links and redirects are prefixed afterwards by rewriting `href`, `action`, `formaction` and `Location` (`src/i18n/links.ts`). Pages and actions did not have to learn about languages for their paths. Shared paths (`/media`, `/api`, `/_astro`, `/images`) are never prefixed. The cost is one string pass over each non-German HTML response, small for these pages.
+- **German text as the key** instead of ids like `listing.new.title`: the code stays readable, nothing ever shows a raw key, and server messages already thrown in German (actions, data layer) can be translated where they are displayed. `npm run i18n:keys` collects literal `t` / `tk` / `ct` calls, so keys must be literal strings; messages built with `${…}` were rewritten as fixed sentences where possible (e.g. "Höchstens 4000 Zeichen.").
+- **Tone:** informal like the German "du" in EN, ES, IT and PT; "vous" in French. Translations were written by Claude and should get a native read before a big launch.
+- **Dates:** German keeps "23.10.2026, 14:05 Uhr"; other languages show "23/10/2026, 14:05", always in Berlin time. Date fields accept "23.10.2026" and "23/10/2026".
+- **Binding texts stay German:** the Leihvertrag PDF (German law, §§ 598 ff. BGB), Impressum and Datenschutz. A machine translation of a contract can be wrong in ways that matter; the other languages show a note that the German text is binding.
+- **The message poll** (`/api/…`, no prefix) gets the language as `?lang=` for its formatted times.
+
+## The story page (`/touren`)
+
+- **Text from Edgar's old blog**, recovered from the Internet Archive (2022 snapshots) into `reference/vlogato-blog/`; nothing invented. Trips without recovered text (Portugal, India, Colombia) show photos only, until Edgar writes something.
+- **vlogato.com no longer belongs to Edgar** (it redirects to an unrelated site), so the page no longer links there; it mentions the blog by name only.
+- **28 new photos** from the trip folders (`reference/touren-photos.json` lists the source of each). Left out: strangers as the subject, children, other people's licence plates, documents.
+
 ## Seed
 
 - **13 listings** instead of "~12", so every category has at least one. Fixed join dates make "Mitglied seit" stable.

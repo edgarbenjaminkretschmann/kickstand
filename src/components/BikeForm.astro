@@ -4,6 +4,7 @@ import { actions } from "astro:actions";
 import Field from "./Field.astro";
 import DateField from "./DateField.astro";
 import FormAlert from "./FormAlert.astro";
+import { i18n } from "../i18n";
 
 interface Props {
   values: Record<string, unknown>;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 const { values: v, errors, message, id, photoUrl } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
 const str = (k: string) => (v[k] == null ? "" : String(v[k]));
 ---
 
@@ -23,82 +25,84 @@ const str = (k: string) => (v[k] == null ? "" : String(v[k]));
 
   <section class="zb" aria-labelledby="zb-title">
     <div class="zb-head">
-      <h2 id="zb-title">Zulassungsbescheinigung Teil I</h2>
-      <p>Abschreiben wie im Fahrzeugschein. Die Codes stehen dort links neben den Feldern. Kennzeichen und FIN bleiben privat und stehen nur im Leihvertrag.</p>
+      <h2 id="zb-title">{t("Zulassungsbescheinigung Teil I")}</h2>
+      <p>{t("Abschreiben wie im Fahrzeugschein. Die Codes stehen dort links neben den Feldern. Kennzeichen und FIN bleiben privat und stehen nur im Leihvertrag.")}</p>
     </div>
     <div class="zb-grid">
-      <Field class="span2" code="A" label="Kennzeichen" name="plate" mono value={str("plate")} autocapitalize="characters" placeholder="M-AB 123" />
-      <DateField code="B" label="Erstzulassung" name="firstRegistration" value={str("firstRegistration")} error={errors.firstRegistration} />
-      <Field code="D.1" label="Marke" name="make" required value={str("make")} error={errors.make} placeholder="Honda" />
-      <Field code="D.2" label="Typ" name="typeCode" mono value={str("typeCode")} placeholder="RC36" />
-      <Field class="span2" code="D.3" label="Handelsbezeichnung" name="model" required value={str("model")} error={errors.model} placeholder="VFR 750 F" />
-      <Field class="span2" code="E" label="Fahrzeug-Ident.-Nr." name="vin" mono value={str("vin")} autocapitalize="characters" maxlength={17} />
-      <Field code="P.1" label="Hubraum ccm" name="displacementCcm" mono inputmode="numeric" value={str("displacementCcm")} error={errors.displacementCcm} />
-      <Field code="P.2" label="Leistung kW" name="powerKw" mono inputmode="numeric" value={str("powerKw")} error={errors.powerKw} />
-      <Field code="P.3" label="Kraftstoff" name="fuel" value={str("fuel")} placeholder="Benzin" />
+      <Field class="span2" code="A" label={t("Kennzeichen")} name="plate" mono value={str("plate")} autocapitalize="characters" placeholder="M-AB 123" />
+      <DateField code="B" label={t("Erstzulassung")} name="firstRegistration" value={str("firstRegistration")} error={errors.firstRegistration} />
+      <Field code="D.1" label={t("Marke")} name="make" required value={str("make")} error={errors.make} placeholder="Honda" />
+      <Field code="D.2" label={t("Typ")} name="typeCode" mono value={str("typeCode")} placeholder="RC36" />
+      <Field class="span2" code="D.3" label={t("Handelsbezeichnung")} name="model" required value={str("model")} error={errors.model} placeholder="VFR 750 F" />
+      <Field class="span2" code="E" label={t("Fahrzeug-Ident.-Nr.")} name="vin" mono value={str("vin")} autocapitalize="characters" maxlength={17} />
+      <Field code="P.1" label={t("Hubraum ccm")} name="displacementCcm" mono inputmode="numeric" value={str("displacementCcm")} error={errors.displacementCcm} />
+      <Field code="P.2" label={t("Leistung kW")} name="powerKw" mono inputmode="numeric" value={str("powerKw")} error={errors.powerKw} />
+      <Field code="P.3" label={t("Kraftstoff")} name="fuel" value={str("fuel")} placeholder={t("Benzin")} />
       <Field
         class="span2"
         code="22"
-        label="Bemerkungen und Ausnahmen"
+        label={t("Bemerkungen und Ausnahmen")}
         name="conditions"
         multiline
         value={str("conditions")}
-        placeholder="z. B. Beifahrer nur mit Fußrasten"
-        hint="Kommt als Auflage in den Leihvertrag (§ 4)."
+        placeholder={t("z. B. Beifahrer nur mit Fußrasten")}
+        hint={t("Kommt als Auflage in den Leihvertrag (§ 4).")}
       />
     </div>
   </section>
 
   <section class="card">
-    <h2>Versicherung und Haftung</h2>
+    <h2>{t("Versicherung und Haftung")}</h2>
     <div class="row stack-sm">
-      <Field label="Haftpflichtversicherer" name="insurer" value={str("insurer")} />
-      <Field label="Versicherungsschein-Nr." name="policyNumber" mono value={str("policyNumber")} />
+      <Field label={t("Haftpflichtversicherer")} name="insurer" value={str("insurer")} />
+      <Field label={t("Versicherungsschein-Nr.")} name="policyNumber" mono value={str("policyNumber")} />
     </div>
     <Field
-      label="Haftungsgrenze Entleiher in €"
+      label={t("Haftungsgrenze Entleiher in €")}
       name="liabilityCapEur"
       mono
       inputmode="decimal"
       value={str("liabilityCapEur") || "1000"}
       error={errors.liabilityCapEur}
-      hint="Höchstbetrag je Schaden, den der Entleiher zahlt. Vorschlag für jeden neuen Vertrag."
+      hint={t("Höchstbetrag je Schaden, den der Entleiher zahlt. Vorschlag für jeden neuen Vertrag.")}
     />
   </section>
 
   <section class="card">
-    <h2>Foto</h2>
+    <h2>{t("Foto")}</h2>
     {
       photoUrl && (
         <>
-          <img src={photoUrl} alt="Aktuelles Foto" class="current" width="320" height="240" loading="lazy" />
+          <img src={photoUrl} alt={t("Aktuelles Foto")} class="current" width="320" height="240" loading="lazy" />
           <label class="check">
             <input type="checkbox" name="removePhoto" />
-            Foto entfernen
+            {t("Foto entfernen")}
           </label>
         </>
       )
     }
     <label class="photo-btn">
-      {photoUrl ? "Anderes Foto wählen" : "+ Foto aufnehmen oder hochladen"}
+      {photoUrl ? t("Anderes Foto wählen") : t("+ Foto aufnehmen oder hochladen")}
       <input type="file" name="photo" accept="image/*" data-preview />
     </label>
-    <p class="hint">Wird auf max. 1600 px verkleinert. Nur du siehst es. Für eine Anzeige lädst du dort eigene Fotos hoch.</p>
+    <p class="hint">{t("Wird auf max. 1600 px verkleinert. Nur du siehst es. Für eine Anzeige lädst du dort eigene Fotos hoch.")}</p>
   </section>
 
   <div class="actions">
-    <button type="submit" class="btn-primary">Speichern</button>
-    <a href="/app" class="btn">Abbrechen</a>
+    <button type="submit" class="btn-primary">{t("Speichern")}</button>
+    <a href="/app" class="btn">{t("Abbrechen")}</a>
   </div>
 </form>
 
 <script>
+  import { ct } from "../i18n/client";
+
   // Show the chosen file name on the photo button (the native input is hidden when JS runs).
   document.querySelectorAll<HTMLInputElement>("input[data-preview]").forEach((input) => {
     input.addEventListener("change", () => {
       const label = input.closest("label");
       const f = input.files?.[0];
-      if (label?.firstChild && f) label.firstChild.textContent = `Gewählt: ${f.name} `;
+      if (label?.firstChild && f) label.firstChild.textContent = `${ct("Gewählt: {name}", { name: f.name })} `;
     });
   });
 </script>

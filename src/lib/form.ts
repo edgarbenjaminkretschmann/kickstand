@@ -1,4 +1,5 @@
 import { isInputError } from "astro:actions";
+import { tk } from "../i18n";
 
 /** Turns empty strings into null and trims, for optional text fields. */
 export const blankToNull = (v: string | null | undefined) => {
@@ -25,5 +26,6 @@ export function fieldErrors(result: AnyResult): Record<string, string> {
 export function formError(result: AnyResult): string | null {
   const e = result?.error as { message?: string } | undefined;
   if (!e || isInputError(e)) return null;
-  return e.message || "Das hat nicht geklappt. Bitte nochmal versuchen.";
+  // German message; FormAlert translates it.
+  return e.message || tk("Das hat nicht geklappt. Bitte nochmal versuchen.");
 }

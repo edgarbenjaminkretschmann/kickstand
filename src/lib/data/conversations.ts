@@ -3,8 +3,10 @@ import { and, asc, count, desc, eq, gt, inArray, isNull, ne, or } from "drizzle-
 import { db } from "../../db/client";
 import { Conversation, Listing, ListingPhoto, Message, User } from "../../db/schema";
 import { getActiveLoan } from "./bikes";
+import { tk } from "../../i18n";
 import { badRequest, newId, notFound } from "./errors";
 
+// The limit is also spelled out in the message "Höchstens 4000 Zeichen." (a translation key); change both together.
 export const MAX_MESSAGE_LENGTH = 4000;
 
 export interface ConversationListing {
@@ -82,7 +84,7 @@ export async function getConversationForUser(conversationId: string, userId: str
   const role = row.c.buyerId === userId ? "buyer" : "seller";
   const otherId = role === "buyer" ? row.c.sellerId : row.c.buyerId;
   const [other] = await db.select({ id: User.id, name: User.name }).from(User).where(eq(User.id, otherId));
-  return { ...row.c, role, other: other ?? { id: otherId, name: "Mitglied" }, listing: toListing(row.l, await coverOf([row.l.id])) };
+  return { ...row.c, role, other: other ?? { id: otherId, name: tk("Mitglied") }, listing: toListing(row.l, await coverOf([row.l.id])) };
 }
 
 export async function findConversation(listingId: string, buyerId: string): Promise<string | null> {
@@ -95,8 +97,8 @@ export async function findConversation(listingId: string, buyerId: string): Prom
 
 function checkBody(body: string): string {
   const text = body.replace(/\r\n/g, "\n").trim();
-  if (!text) badRequest("Bitte eine Nachricht schreiben.");
-  if (text.length > MAX_MESSAGE_LENGTH) badRequest(`Höchstens ${MAX_MESSAGE_LENGTH} Zeichen.`);
+  if (!text) badRequest(tk("Bitte eine Nachricht schreiben."));
+  if (text.length > MAX_MESSAGE_LENGTH) badRequest(tk("Höchstens 4000 Zeichen."));
   return text;
 }
 
@@ -106,15 +108,15 @@ function checkBody(body: string): string {
  */
 export async function startConversation(listingId: string, buyerId: string, body: string): Promise<string> {
   const [listing] = await db.select().from(Listing).where(eq(Listing.id, listingId));
-  if (!listing) notFound("Anzeige nicht gefunden.");
-  if (listing.userId === buyerId) badRequest("Das ist deine eigene Anzeige.");
+  if (!listing) notFound(tk("Anzeige nicht gefunden."));
+  if (listing.userId === buyerId) badRequest(tk("Das ist deine eigene Anzeige."));
   const existing = await findConversation(listingId, buyerId);
   if (existing) {
     await sendMessage(existing, buyerId, body);
     return existing;
   }
-  if (listing.status !== "aktiv") badRequest("Diese Anzeige ist nicht mehr aktiv.");
-  if (listing.bikeId && (await getActiveLoan(listing.bikeId))) badRequest("Das Motorrad ist gerade verliehen. Bitte später nochmal schauen.");
+  if (listing.status !== "aktiv") badRequest(tk("Diese Anzeige ist nicht mehr aktiv."));
+  if (listing.bikeId && (await getActiveLoan(listing.bikeId))) badRequest(tk("Das Motorrad ist gerade verliehen. Bitte später nochmal schauen."));
   const text = checkBody(body);
   const id = newId();
   const now = new Date();
@@ -129,7 +131,7 @@ export async function sendMessage(conversationId: string, senderId: string, body
     .select()
     .from(Conversation)
     .where(and(eq(Conversation.id, conversationId), isMember(senderId)));
-  if (!c) notFound("Unterhaltung nicht gefunden.");
+  if (!c) notFound(tk("Unterhaltung nicht gefunden."));
   const text = checkBody(body);
   const msg: MessageRecord = { id: newId(), conversationId: c.id, senderId, body: text, createdAt: new Date(), readAt: null };
   await db.insert(Message).values(msg);
@@ -224,7 +226,7 @@ export async function listConversations(userId: string, opts: { listingId?: stri
     return {
       ...c,
       role,
-      other: { id: otherId, name: names.get(otherId) ?? "Mitglied" },
+      other: { id: otherId, name: names.get(otherId) ?? tk("Mitglied") },
       listing: toListing(l, covers),
       lastMessage: last.get(c.id) ?? "",
       unread: unread.get(c.id) ?? 0,

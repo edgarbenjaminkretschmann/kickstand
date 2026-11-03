@@ -1,5 +1,6 @@
 // Listing photos: shrink in the browser right after choosing, then put the small JPEGs back into the
 // file input so the normal form post uploads them. Without JS the originals are posted and shrunk on the server.
+import { ct } from "../i18n/client";
 import { shrink } from "./photos";
 
 export function wireListingPhotos(input: HTMLInputElement, box: HTMLElement, statusEl: HTMLElement) {
@@ -18,7 +19,7 @@ export function wireListingPhotos(input: HTMLInputElement, box: HTMLElement, sta
         statusEl.textContent = defaultText;
         return;
       }
-      statusEl.textContent = `${picked.length} Foto(s) werden verkleinert …`;
+      statusEl.textContent = ct("{n} Foto(s) werden verkleinert …", { n: picked.length });
       const dt = new DataTransfer();
       for (const [i, file] of picked.entries()) {
         let out: File = file;
@@ -33,13 +34,16 @@ export function wireListingPhotos(input: HTMLInputElement, box: HTMLElement, sta
         d.className = "thumb";
         const im = document.createElement("img");
         im.src = URL.createObjectURL(out);
-        im.alt = i === 0 ? "Titelbild" : `Foto ${i + 1}`;
+        im.alt = i === 0 ? ct("Titelbild") : ct("Foto {n}", { n: i + 1 });
         d.append(im);
         box.append(d);
       }
       input.files = dt.files;
       const skipped = files.length - picked.length;
-      statusEl.textContent = `${picked.length} Foto(s) bereit${skipped > 0 ? `, ${skipped} übersprungen (höchstens ${room})` : ""}. Sie werden beim Speichern hochgeladen.`;
+      statusEl.textContent =
+        skipped > 0
+          ? ct("{n} Foto(s) bereit, {skipped} übersprungen (höchstens {room}). Sie werden beim Speichern hochgeladen.", { n: picked.length, skipped, room })
+          : ct("{n} Foto(s) bereit. Sie werden beim Speichern hochgeladen.", { n: picked.length });
     })().finally(() => {
       if (busy === job) busy = null;
     });

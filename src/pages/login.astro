@@ -4,9 +4,12 @@ import Base from "../layouts/Base.astro";
 import Field from "../components/Field.astro";
 import FormAlert from "../components/FormAlert.astro";
 import GoogleButton from "../components/GoogleButton.astro";
+import { i18n, tk } from "../i18n";
 import { env } from "../lib/env";
 import { fieldErrors, formError } from "../lib/form";
 import { safeNext, submittedValues } from "../lib/submitted";
+
+const { t } = i18n(Astro.locals.lang);
 
 // The seeded demo accounts: always in dev, in production only while SHOW_DEMO_LOGINS=true.
 const showDemoLogins = import.meta.env.DEV || env("SHOW_DEMO_LOGINS") === "true";
@@ -21,25 +24,25 @@ const result = Astro.getActionResult(actions.auth.login);
 if (result && !result.error) return Astro.redirect(next);
 
 const errors = fieldErrors(result);
-const googleFailed = Astro.url.searchParams.has("fehler") ? "Die Anmeldung mit Google hat nicht geklappt. Bitte nochmal versuchen." : null;
+const googleFailed = Astro.url.searchParams.has("fehler") ? tk("Die Anmeldung mit Google hat nicht geklappt. Bitte nochmal versuchen.") : null;
 const message = formError(result) ?? formError(google) ?? googleFailed;
 const prev = await submittedValues(Astro.request, !!result?.error);
 ---
 
-<Base title="Anmelden">
+<Base title={t("Anmelden")}>
   <div class="auth">
     <div class="page-head">
-      <h1>Anmelden</h1>
-      <p>Noch kein Konto? <a href={`/registrieren?next=${encodeURIComponent(next)}`}>Registrieren</a></p>
+      <h1>{t("Anmelden")}</h1>
+      <p>{t("Noch kein Konto?")} <a href={`/registrieren?next=${encodeURIComponent(next)}`}>{t("Registrieren")}</a></p>
     </div>
     <div class="card">
       <FormAlert message={message} />
       <GoogleButton next={next} />
       <form method="POST" action={`${actions.auth.login}&next=${encodeURIComponent(next)}`} class="stack" novalidate>
-        <Field label="E-Mail" name="email" type="email" autocomplete="email" required value={prev?.email} error={errors.email} />
-        <Field label="Passwort" name="password" type="password" autocomplete="current-password" required error={errors.password} />
-        <button type="submit" class="btn-primary btn-block">Anmelden</button>
-        <p class="small"><a href="/passwort-vergessen">Passwort vergessen?</a></p>
+        <Field label={t("E-Mail")} name="email" type="email" autocomplete="email" required value={prev?.email} error={errors.email} />
+        <Field label={t("Passwort")} name="password" type="password" autocomplete="current-password" required error={errors.password} />
+        <button type="submit" class="btn-primary btn-block">{t("Anmelden")}</button>
+        <p class="small"><a href="/passwort-vergessen">{t("Passwort vergessen?")}</a></p>
       </form>
     </div>
     {

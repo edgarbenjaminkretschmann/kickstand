@@ -1,4 +1,5 @@
 ---
+import { i18n } from "../../i18n";
 import Base from "../../layouts/Base.astro";
 import ListingCard from "../../components/ListingCard.astro";
 import { lentBikeIds, listOwnBikes } from "../../lib/data/bikes";
@@ -11,6 +12,7 @@ import { formatDate } from "../../lib/dates";
 import { LOAN_STATUS } from "../../lib/labels";
 import { relativeDate } from "../../lib/listing-format";
 
+const { t, lang } = i18n(Astro.locals.lang);
 const user = Astro.locals.user!;
 
 const [profile, bikes, listings, { lending, borrowing, past }, conversations, saved] = await Promise.all([
@@ -27,34 +29,36 @@ const profileIncomplete = !profile?.street || !profile?.licenseNumber || !profil
 const unread = conversations.reduce((n, c) => n + c.unread, 0);
 ---
 
-<Base title="Mein Bereich">
+<Base title={t("Mein Bereich")}>
   <div class="page-head">
-    <h1>Hallo {user.name.split(/\s+/)[0]}</h1>
-    <p>Deine Anzeigen, Motorräder, Leihen und Nachrichten.</p>
+    <h1>{t("Hallo {name}", { name: user.name.split(/\s+/)[0] })}</h1>
+    <p>{t("Deine Anzeigen, Motorräder, Leihen und Nachrichten.")}</p>
   </div>
   {
     profileIncomplete && (
-      <p class="notice">
-        Dein <a href="/profil">Profil</a> ist noch unvollständig. Mit vollem Namen, Anschrift, Geburtsdatum und Führerschein-Nr. sind Leihverträge schneller
-        ausgefüllt.
-      </p>
+      <p
+        class="notice"
+        set:html={t("Dein {link} ist noch unvollständig. Mit vollem Namen, Anschrift, Geburtsdatum und Führerschein-Nr. sind Leihverträge schneller ausgefüllt.", {
+          link: `<a href="/profil">${t("Profil")}</a>`,
+        })}
+      />
     )
   }
 
-  <nav class="jump" aria-label="Bereiche">
-    <a href="#anzeigen">Anzeigen <span class="count">{listings.length}</span></a>
-    <a href="#motorraeder">Motorräder <span class="count">{bikes.length}</span></a>
-    <a href="#leihen">Leihen <span class="count">{lending.length + borrowing.length}</span></a>
-    <a href="#nachrichten">Nachrichten {unread > 0 && <span class="count count-hot">{unread}</span>}</a>
-    <a href="#merkliste">Merkliste <span class="count">{saved.length}</span></a>
+  <nav class="jump" aria-label={t("Bereiche")}>
+    <a href="#anzeigen">{t("Anzeigen")} <span class="count">{listings.length}</span></a>
+    <a href="#motorraeder">{t("Motorräder")} <span class="count">{bikes.length}</span></a>
+    <a href="#leihen">{t("Leihen")} <span class="count">{lending.length + borrowing.length}</span></a>
+    <a href="#nachrichten">{t("Nachrichten")} {unread > 0 && <span class="count count-hot">{unread}</span>}</a>
+    <a href="#merkliste">{t("Merkliste")} <span class="count">{saved.length}</span></a>
   </nav>
 
   <section class="panel" id="anzeigen" aria-labelledby="h-anzeigen">
     <div class="panel-head">
-      <h2 id="h-anzeigen">Meine Anzeigen</h2>
-      <a class="btn btn-small" href="/anzeigen/neu">Anzeige aufgeben</a>
+      <h2 id="h-anzeigen">{t("Meine Anzeigen")}</h2>
+      <a class="btn btn-small" href="/anzeigen/neu">{t("Anzeige aufgeben")}</a>
     </div>
-    {listings.length === 0 && <p class="empty">Noch keine Anzeigen. Biete deine Garage an, verleih dein Motorrad oder frag nach Hilfe.</p>}
+    {listings.length === 0 && <p class="empty">{t("Noch keine Anzeigen. Biete deine Garage an, verleih dein Motorrad oder frag nach Hilfe.")}</p>}
     <div class="cards">
       {listings.map((l) => <ListingCard listing={l} showStatus />)}
     </div>
@@ -62,10 +66,10 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
 
   <section class="panel" id="motorraeder" aria-labelledby="h-bikes">
     <div class="panel-head">
-      <h2 id="h-bikes">Meine Motorräder</h2>
-      <a class="btn btn-small" href="/app/bikes/new">Motorrad eintragen</a>
+      <h2 id="h-bikes">{t("Meine Motorräder")}</h2>
+      <a class="btn btn-small" href="/app/bikes/new">{t("Motorrad eintragen")}</a>
     </div>
-    {bikes.length === 0 && <p class="empty">Noch kein Motorrad eingetragen.</p>}
+    {bikes.length === 0 && <p class="empty">{t("Noch kein Motorrad eingetragen.")}</p>}
     <ul class="list">
       {
         bikes.map((b) => {
@@ -76,24 +80,24 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
                 <span class="item-title">
                   {b.make} {b.model}
                 </span>
-                {lent.has(b.id) ? <span class="chip chip-ink">verliehen</span> : l ? <span class="chip chip-biete">in Anzeige</span> : null}
+                {lent.has(b.id) ? <span class="chip chip-ink">{t("verliehen")}</span> : l ? <span class="chip chip-biete">{t("in Anzeige")}</span> : null}
               </div>
               <p class="small mono muted">{[b.plate, b.typeCode].filter(Boolean).join(" · ")}</p>
               <div class="actions">
                 <a class="btn btn-small" href={`/app/loans/new?bike=${b.id}${l ? `&listing=${l.id}` : ""}`}>
-                  Leihvertrag
+                  {t("Leihvertrag")}
                 </a>
                 {l ? (
                   <a class="btn-link" href={`/anzeigen/${l.id}`}>
-                    Zur Anzeige
+                    {t("Zur Anzeige")}
                   </a>
                 ) : (
                   <a class="btn-link" href={`/anzeigen/neu?typ=biete&kategorie=motorrad-leihen&bike=${b.id}`}>
-                    Zum Leihen anbieten
+                    {t("Zum Leihen anbieten")}
                   </a>
                 )}
                 <a class="btn-link" href={`/app/bikes/${b.id}/edit`}>
-                  Bearbeiten
+                  {t("Bearbeiten")}
                 </a>
               </div>
             </li>
@@ -104,8 +108,8 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
   </section>
 
   <section class="panel" id="leihen" aria-labelledby="h-loans">
-    <h2 id="h-loans">Aktive Leihen</h2>
-    {lending.length === 0 && borrowing.length === 0 && <p class="empty">Gerade nichts verliehen oder geliehen.</p>}
+    <h2 id="h-loans">{t("Aktive Leihen")}</h2>
+    {lending.length === 0 && borrowing.length === 0 && <p class="empty">{t("Gerade nichts verliehen oder geliehen.")}</p>}
     <ul class="list">
       {
         lending.map(({ loan, bike }) => (
@@ -114,17 +118,22 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
               <a class="item-title" href={loan.status === "draft" ? `/app/loans/new?loan=${loan.id}` : `/app/loans/${loan.id}`}>
                 {bike.make} {bike.model}
               </a>
-              <span class:list={["chip", loan.status === "active" ? "chip-ink" : "chip-suche"]}>{LOAN_STATUS[loan.status]}</span>
+              <span class:list={["chip", loan.status === "active" ? "chip-ink" : "chip-suche"]}>{t(LOAN_STATUS[loan.status])}</span>
             </div>
             <p class="small muted">
-              an {loan.borrowerName || "(noch kein Name)"}
-              {loan.startDate && <> · seit {formatDate(loan.startDate)}</>}
-              {loan.status === "active" && (loan.endMode === "fixed" ? <> · bis {formatDate(loan.endDate)}</> : <> · spätestens {formatDate(loan.latestEndDate)}</>)}
+              {t("an {name}", { name: loan.borrowerName || t("(noch kein Name)") })}
+              {loan.startDate && <> · {t("seit {date}", { date: formatDate(loan.startDate, lang) })}</>}
+              {loan.status === "active" &&
+                (loan.endMode === "fixed" ? (
+                  <> · {t("bis {date}", { date: formatDate(loan.endDate, lang) })}</>
+                ) : (
+                  <> · {t("spätestens {date}", { date: formatDate(loan.latestEndDate, lang) })}</>
+                ))}
             </p>
             {loan.status === "active" && (
               <div class="actions">
                 <a class="btn btn-small" href={`/app/loans/${loan.id}/return`}>
-                  Rückgabe
+                  {t("Rückgabe")}
                 </a>
               </div>
             )}
@@ -138,9 +147,13 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
               <a class="item-title" href={`/app/loans/${loan.id}`}>
                 {bike.make} {bike.model}
               </a>
-              <span class="chip chip-biete">Geliehen</span>
+              <span class="chip chip-biete">{t("Geliehen")}</span>
             </div>
-            <p class="small muted">Rückgabe {loan.endMode === "fixed" ? `am ${formatDate(loan.endDate)}` : `spätestens ${formatDate(loan.latestEndDate)}`}</p>
+            <p class="small muted">
+              {loan.endMode === "fixed"
+                ? t("Rückgabe am {date}", { date: formatDate(loan.endDate, lang) })
+                : t("Rückgabe spätestens {date}", { date: formatDate(loan.latestEndDate, lang) })}
+            </p>
           </li>
         ))
       }
@@ -148,7 +161,7 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
     {
       past.length > 0 && (
         <details class="past">
-          <summary>Abgeschlossen ({past.length})</summary>
+          <summary>{t("Abgeschlossen ({n})", { n: past.length })}</summary>
           <ul class="list">
             {past.map(({ loan, bike }) => (
               <li class="item">
@@ -156,10 +169,10 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
                   <a class="item-title" href={`/app/loans/${loan.id}`}>
                     {bike.make} {bike.model}
                   </a>
-                  <span class="chip chip-outline">{LOAN_STATUS[loan.status]}</span>
+                  <span class="chip chip-outline">{t(LOAN_STATUS[loan.status])}</span>
                 </div>
                 <p class="small muted">
-                  an {loan.borrowerName} · ab {formatDate(loan.startDate)}
+                  {t("an {name}", { name: loan.borrowerName })} · {t("ab {date}", { date: formatDate(loan.startDate, lang) })}
                 </p>
               </li>
             ))}
@@ -171,10 +184,10 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
 
   <section class="panel" id="nachrichten" aria-labelledby="h-msg">
     <div class="panel-head">
-      <h2 id="h-msg">Nachrichten</h2>
-      <a class="btn-link" href="/nachrichten">Alle</a>
+      <h2 id="h-msg">{t("Nachrichten")}</h2>
+      <a class="btn-link" href="/nachrichten">{t("Alle")}</a>
     </div>
-    {conversations.length === 0 && <p class="empty">Noch keine Nachrichten.</p>}
+    {conversations.length === 0 && <p class="empty">{t("Noch keine Nachrichten.")}</p>}
     <ul class="list">
       {
         conversations.slice(0, 5).map((c) => (
@@ -183,11 +196,11 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
               <a class="item-title" href={`/nachrichten/${c.id}`}>
                 {c.other.name}
               </a>
-              <span class="small muted">{relativeDate(c.lastMessageAt)}</span>
+              <span class="small muted">{relativeDate(c.lastMessageAt, undefined, lang)}</span>
             </div>
             <p class="small muted">
               {c.listing.title}
-              {c.unread > 0 && <span class="count count-hot">{c.unread} neu</span>}
+              {c.unread > 0 && <span class="count count-hot">{t("{n} neu", { n: c.unread })}</span>}
             </p>
           </li>
         ))
@@ -197,14 +210,14 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
 
   <section class="panel" id="merkliste" aria-labelledby="h-saved">
     <div class="panel-head">
-      <h2 id="h-saved">Merkliste</h2>
-      <a class="btn-link" href="/merkliste">Alle</a>
+      <h2 id="h-saved">{t("Merkliste")}</h2>
+      <a class="btn-link" href="/merkliste">{t("Alle")}</a>
     </div>
-    {saved.length === 0 && <p class="empty">Noch nichts gemerkt. Tipp auf das Herz bei einer Anzeige.</p>}
+    {saved.length === 0 && <p class="empty">{t("Noch nichts gemerkt. Tipp auf das Herz bei einer Anzeige.")}</p>}
     <div class="cards">
       {saved.slice(0, 3).map((l) => <ListingCard listing={l} showStatus />)}
     </div>
   </section>
 
-  <p class="small"><a href="/profil">Profil bearbeiten</a></p>
+  <p class="small"><a href="/profil">{t("Profil bearbeiten")}</a></p>
 </Base>

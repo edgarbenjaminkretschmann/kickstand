@@ -1,6 +1,6 @@
 # Kickstand
 
-A small marketplace for motorcyclists. People post what they offer (*Biete*) and what they are looking for (*Suche*): a motorcycle to borrow, a garage spot, tools, parts, help with a repair, a tour partner. Lending a motorcycle ends in a free Leihvertrag (§§ 598 ff. BGB) with handover protocol, photos, signatures and a PDF. Mobile first, German UI, small enough for one person on one VPS.
+A small marketplace for motorcyclists. People post what they offer (*Biete*) and what they are looking for (*Suche*): a motorcycle to borrow, a garage spot, tools, parts, help with a repair, a tour partner. Lending a motorcycle ends in a free Leihvertrag (§§ 598 ff. BGB) with handover protocol, photos, signatures and a PDF. Mobile first, in six languages (German, English, French, Spanish, Italian, Portuguese), small enough for one person to run.
 
 - Astro 5 (SSR), Astro Actions for every form. Production runs on Cloudflare Workers (`@astrojs/cloudflare`); `npm run dev`, the tests and the Docker image run on Node
 - Drizzle ORM on libSQL / SQLite (`drizzle-kit` migrations), written to stay portable to Postgres
@@ -8,7 +8,7 @@ A small marketplace for motorcyclists. People post what they offer (*Biete*) and
 - Photos resized to max 1600 px (`sharp` on Node, Cloudflare Images on Workers), stored through a small storage adapter (local disk or Cloudflare R2)
 - Production: Cloudflare Workers + Turso + R2 (see "Deploying to Cloudflare"). Local dev needs no accounts and no env vars
 - Contract PDF built in the browser with jsPDF (`src/lib/contract-pdf.ts`)
-- No analytics. Fonts from Google Fonts (Mr Dafoe, Roboto Slab, Open Sans). Design borrowed from vlogato.com
+- No analytics. Fonts from Google Fonts (Mr Dafoe, Roboto Slab, Open Sans). Design borrowed from Edgar's old blog vlogato (the domain no longer belongs to him)
 
 ## Setup
 
@@ -166,6 +166,16 @@ LEGACY_DATABASE_URL=file:./data/astro-db-legacy.db npm run db:migrate-legacy
 ```
 
 Members, sessions, bikes, loans, protocols, photos and signatures are copied with the same ids (photo files stay where they are). Board posts become listings, every lendable bike becomes a "Motorrad zum Leihen" listing, and loan requests become conversations about that listing. Running it twice changes nothing. Details in `docs/DECISIONS.md`.
+
+## Languages
+
+German is the source language and lives at the plain URLs (`/anzeigen`). English, French, Spanish, Italian and Portuguese (Portugal) live under a prefix (`/en/anzeigen`, `/fr/…`, `/es/…`, `/it/…`, `/pt/…`). The footer has a language switcher, and every page lists its versions as `hreflang` links.
+
+- **How it works:** the middleware reads the prefix, sets `locals.lang` and renders the same page as the German URL. On the way out, `src/i18n/links.ts` prefixes in-site links, form targets and redirects, so pages and actions keep using plain German paths. `/de/…` redirects to the plain URL (the switcher uses it).
+- **Texts:** looked up by their German wording. `const { t } = i18n(Astro.locals.lang)` and `t("Anzeige aufgeben")` in templates; `t(lang, "…")` in TypeScript; `tk("…")` marks German messages that are thrown or stored and translated where they are shown; `ct("…")` in browser scripts (Base.astro embeds just those strings). A missing translation falls back to German.
+- **Dictionaries:** `src/i18n/locales/<lang>.json`. After adding or changing a German string, run `npm run i18n:keys`: it rewrites `src/i18n/keys.json` (every source string and where it is used) and lists missing translations per language. `npm run i18n:keys -- --check` fails if any are missing.
+- **"So geht's":** `src/content/pages/so-gehts-<lang>.md`, falling back to `so-gehts.md`.
+- **Stays German on purpose:** the Leihvertrag PDF, Impressum and Datenschutz. They are the binding texts under German law; other languages show a note saying so. Listings and messages are shown as their authors wrote them.
 
 ## How things fit together
 
