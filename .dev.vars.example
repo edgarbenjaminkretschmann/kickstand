@@ -1,0 +1,14 @@
+# Values for `npm run preview` (wrangler dev). Copy to .dev.vars (git-ignored).
+# Bindings (R2 PHOTOS, IMAGES, rate limits) are simulated locally by wrangler; vars from wrangler.jsonc
+# apply too, and anything here overrides them.
+
+# Workers cannot open file: URLs. Use a local libSQL server (see README) or a Turso test database.
+DATABASE_URL=http://127.0.0.1:8088
+DATABASE_AUTH_TOKEN=
+BETTER_AUTH_SECRET=any-long-random-string-for-local-preview
+SITE_URL=http://127.0.0.1:8787
+BETTER_AUTH_URL=http://127.0.0.1:8787
+SHOW_DEMO_LOGINS=true
+# Optional; Google login only works on URLs registered in the OAuth client.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

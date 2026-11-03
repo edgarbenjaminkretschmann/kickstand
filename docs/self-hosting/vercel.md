@@ -1,3 +1,5 @@
+> **Superseded, never implemented.** Kickstand runs on Cloudflare Workers + Turso + R2 (see README, "Deploying to Cloudflare"). Kept for reference; the Turso steps below still apply.
+
 # Prompt: Kickstand auf Vercel + Turso + Vercel Blob bringen
 
 Same setup as `Flor del Pato`, which already runs this way:

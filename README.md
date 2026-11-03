@@ -2,13 +2,13 @@
 
 A small marketplace for motorcyclists. People post what they offer (*Biete*) and what they are looking for (*Suche*): a motorcycle to borrow, a garage spot, tools, parts, help with a repair, a tour partner. Lending a motorcycle ends in a free Leihvertrag (§§ 598 ff. BGB) with handover protocol, photos, signatures and a PDF. Mobile first, German UI, small enough for one person on one VPS.
 
-- Astro 5 (SSR, `@astrojs/node` standalone), Astro Actions for every form
+- Astro 5 (SSR), Astro Actions for every form. Production runs on Cloudflare Workers (`@astrojs/cloudflare`); `npm run dev`, the tests and the Docker image run on Node
 - Drizzle ORM on libSQL / SQLite (`drizzle-kit` migrations), written to stay portable to Postgres
 - Better Auth: email + password, and Google login when configured
 - Photos resized to max 1600 px (`sharp` on Node, Cloudflare Images on Workers), stored through a small storage adapter (local disk or Cloudflare R2)
-- Runs on Node (dev, Docker) or on Cloudflare Workers with Turso + R2 (see "Deploy to Cloudflare Workers")
+- Production: Cloudflare Workers + Turso + R2 (see "Deploying to Cloudflare"). Local dev needs no accounts and no env vars
 - Contract PDF built in the browser with jsPDF (`src/lib/contract-pdf.ts`)
-- No paid services, no analytics. Fonts from Google Fonts (Mr Dafoe, Roboto Slab, Open Sans)
+- No analytics. Fonts from Google Fonts (Mr Dafoe, Roboto Slab, Open Sans). Design borrowed from vlogato.com
 
 ## Setup
 
@@ -38,33 +38,39 @@ Every form works without JavaScript. JS adds the signature pads, client-side pho
 | Script | What it does |
 |---|---|
 | `npm run db:generate` | After changing `src/db/schema.ts`: writes a new SQL migration to `./drizzle` |
-| `npm run db:migrate` | Applies pending migrations (`scripts/migrate.mjs`, plain JS, also used in Docker) |
-| `npm run db:seed` | Wipes all rows and inserts the demo data. Refuses with `NODE_ENV=production` unless `--force` |
+| `npm run db:migrate` | Applies pending migrations (`scripts/migrate.mjs`, plain JS, also used in Docker). `-- --remote`: against Turso, credentials from `.env.turso` |
+| `npm run db:seed` | Wipes all rows and inserts the demo data. Refuses with `NODE_ENV=production` unless `--force`. `-- --remote`: seeds Turso (asks first, `--yes` skips the question) and writes the photos to `./data/seed-uploads` for `npm run r2:upload` |
 | `npm run db:migrate-legacy` | One-off: copies a Phase 1 Astro DB file into the new schema (see below) |
 
 ### Tests
 
 ```sh
-npm test        # Vitest: contract PDF, euro words, dates, listing search and rules, conversation access
-npm run check   # astro check (types)
+npm test               # Vitest: contract PDF, euro words, dates, listing search and rules, conversation access, platform bits
+npm run check          # astro check (types)
+npm run check:bundle   # builds the Worker, wrangler dry-run, fails if native libSQL, sharp or node:fs is in the bundle
 ```
 
 Tests run on a fresh in-memory database with the real migrations.
 
 ## Environment variables
 
-| Variable | Needed | What it does |
-|---|---|---|
-| `DATABASE_URL` | optional | libSQL URL. Default `file:./data/kickstand.db`. Turso: `libsql://<db>-<org>.turso.io`. Read at runtime. |
-| `DATABASE_AUTH_TOKEN` | Turso only | Auth token for a remote libSQL database. |
-| `BETTER_AUTH_SECRET` | production | Long random string for signing sessions, e.g. `openssl rand -hex 32`. The server refuses to start in production without it. |
-| `SITE_URL` | production (build) | Public URL, e.g. `https://kickstand.example`. Astro only trusts the `Host` header for listed domains; without it every form POST fails the origin check. Also the fallback for `BETTER_AUTH_URL`. |
-| `BETTER_AUTH_URL` | optional | Base URL for Better Auth (OAuth callbacks). Defaults to `SITE_URL`. |
-| `GOOGLE_CLIENT_ID` | optional | Google OAuth client id. Together with the secret this shows "Mit Google anmelden". |
-| `GOOGLE_CLIENT_SECRET` | optional | Google OAuth client secret. If either Google variable is empty the button is hidden and nothing breaks. |
-| `UPLOAD_DIR` | optional | Where photos are stored on Node. Default `./uploads`. On Workers photos go to the R2 binding `PHOTOS` instead. |
+`npm run dev` needs none of these. All of them are read at request time through `src/lib/env.ts`, never at import.
 
-Copy `.env.example` to `.env` for local use.
+| Name | Kind | Local (`npm run dev`) | Cloudflare |
+|---|---|---|---|
+| `DATABASE_URL` | var | `file:./data/kickstand.db` (default) | `libsql://kickstand-kickstand.aws-eu-west-1.turso.io` |
+| `DATABASE_AUTH_TOKEN` | secret | – | Turso read & write token |
+| `BETTER_AUTH_SECRET` | secret | any string (a dev default is used if empty) | `openssl rand -hex 32` |
+| `SITE_URL` | var | `http://localhost:4321` (default) | the workers.dev URL, later the custom domain. Also read by `astro.config.mjs` at build time |
+| `BETTER_AUTH_URL` | var | optional, defaults to `SITE_URL` | same as `SITE_URL` |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | secret | optional | from Google Cloud Console. Both set: "Mit Google anmelden" shows |
+| `SHOW_DEMO_LOGINS` | var | always shown in dev | `true` for the demo, `false` once real members use it |
+| `UPLOAD_DIR` | var | `./uploads` (default) | – (photos go to R2) |
+| `PHOTOS` | R2 binding | – (disk) | bucket `kickstand-photos`, private |
+| `IMAGES` | Images binding | – (sharp) | resizes uploads |
+| `LOGIN_IP_LIMITER`, `LOGIN_EMAIL_LIMITER`, `MESSAGE_LIMITER` | rate-limit bindings | – (in memory) | declared in `wrangler.jsonc` |
+
+On Cloudflare, plain vars live in `wrangler.jsonc` → `vars`; secrets are set with `npx wrangler secret put <NAME>`. Never commit tokens: `.env*` (except `.env.example`), `.dev.vars` and `.wrangler/` are git-ignored. Copy `.env.example` to `.env` for local overrides, and `.dev.vars.example` to `.dev.vars` for `npm run preview`. With `--remote`, the database scripts read the Turso credentials from `.env.turso`.
 
 ## Google login
 
@@ -79,63 +85,50 @@ Copy `.env.example` to `.env` for local use.
 
 The first Google login creates the member with the display name from Google and sends them to `/profil`, where they add the private contract fields (full name, address, birth date, licence) later. A Google login with the same verified e-mail as an existing email + password account joins that account.
 
-## Production without Docker
+## Production without Docker (Node)
 
 ```sh
 export SITE_URL=https://kickstand.example
 export DATABASE_URL=file:./data/kickstand.db      # or a Turso URL + DATABASE_AUTH_TOKEN
-npm run build
+KICKSTAND_TARGET=node npm run build                # the default build is the Worker
 npm run db:migrate
 BETTER_AUTH_SECRET=... UPLOAD_DIR=./data/uploads PORT=4321 HOST=0.0.0.0 npm start
 ```
 
 Seed demo data into a production database only if you really want it: `NODE_ENV=production npm run db:seed -- --force`.
 
-## Deploy to Cloudflare Workers
+## Deploying to Cloudflare
 
-The production setup: the app runs as a Worker, the database is Turso (hosted libSQL/SQLite), photos live in a private R2 bucket and are resized by Cloudflare Images. Needs the Workers Paid plan ($5/month): password hashing and photo handling go past the free plan's 10 ms CPU limit.
+Production: the app runs as a Worker on the Workers Paid plan, the database is Turso (AWS eu-west-1), and photos live in the private R2 bucket `kickstand-photos`. Live at https://kickstand.jolly-wildflower-4370.workers.dev.
 
-The same code builds for both platforms. `astro.config.cloudflare.mjs` swaps the adapter, and the `#platform` import (`package.json` → `imports`) resolves to `src/platform/cloudflare.ts` (R2, Cloudflare Images) in the Workers build and to `src/platform/node.ts` (local disk, sharp) everywhere else. `@libsql/client` picks its web (HTTP) client on Workers by itself, so `DATABASE_URL` must be a `libsql://` or `https://` URL there; `file:` URLs only work on Node.
+There is one `astro.config.mjs`. It builds for Cloudflare by default; `KICKSTAND_TARGET=node` builds the Node server for Docker. The `#platform` import (`package.json` → `imports`) resolves to `src/platform/cloudflare.ts` in the Worker bundle (HTTP-only libSQL client, R2, Cloudflare Images, rate-limit bindings) and to `src/platform/node.ts` everywhere else (full libSQL client with `file:` URLs, disk, sharp). So the native libSQL client, sharp and `node:fs` never reach the Worker, and `npm run check:bundle` proves it.
 
-**Once:**
+| Script | What it does |
+|---|---|
+| `npm run dev` | `astro dev` on Node, local SQLite file and photos on disk. No Wrangler, no accounts |
+| `npm run preview` | Build + `wrangler dev` (local R2 and Images simulation, values from `.dev.vars`) |
+| `npm run deploy` | Build + `wrangler deploy` |
 
-1. `npx wrangler login` (the account with the Workers Paid plan).
-2. Turso: create a database (region AWS Frankfurt or Ireland) and a read & write token.
-3. R2: `npx wrangler r2 bucket create kickstand-photos --location weur` (or in the dashboard). Leave public access off.
-4. In `wrangler.jsonc`, set `vars.DATABASE_URL` to the Turso URL and `SITE_URL` / `BETTER_AUTH_URL` to the public URL (e.g. `https://kickstand.example`).
-5. Secrets (typed in, never stored in the repo):
-   ```sh
-   npx wrangler secret put BETTER_AUTH_SECRET     # openssl rand -hex 32
-   npx wrangler secret put DATABASE_AUTH_TOKEN    # the Turso token
-   npx wrangler secret put GOOGLE_CLIENT_ID       # optional
-   npx wrangler secret put GOOGLE_CLIENT_SECRET   # optional
-   ```
-6. Domain: Workers & Pages → kickstand → Settings → Domains & Routes → add a custom domain (e.g. `kickstand.example`) on a zone in the same account.
+**Set up once:**
 
-**Every deploy:**
+1. **Git:** work on a branch; `main` stays deployable.
+2. **Login:** `npx wrangler login` with the Cloudflare account that has Workers Paid (Workers & Pages → Plans). `npx wrangler whoami` should show `hello@deutschacademy.com`.
+3. **Bucket:** `npx wrangler r2 bucket create kickstand-photos --location weur`. Leave public access **off**: every photo goes through `/media/*`, which checks access first (listing photos are public there; loan and bike photos are not).
+4. **Turso:** a database in AWS eu-west-1 and a read & write token. Put both into `.env.turso` (git-ignored) as `DATABASE_URL=libsql://...` and `DATABASE_AUTH_TOKEN=...`, then run `npm run db:migrate -- --remote`. For demo data: `npm run db:seed -- --remote`, then `UPLOAD_DIR=./data/seed-uploads npm run r2:upload`.
+5. **Secrets:** `npx wrangler secret put DATABASE_AUTH_TOKEN`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+6. **Deploy:** `npm run deploy`.
+7. **Google OAuth:** add the origin `https://kickstand.jolly-wildflower-4370.workers.dev` and the redirect URI `https://kickstand.jolly-wildflower-4370.workers.dev/api/auth/callback/google` to the OAuth client. Preview version URLs (`<version>-kickstand...workers.dev`) do not work for Google login, because Google only accepts listed redirect URIs; use email login there.
+8. **Custom domain (later):** Workers & Pages → kickstand → Settings → Domains & Routes. Then change `SITE_URL` and `BETTER_AUTH_URL` in `wrangler.jsonc`, add the new Google redirect URI, and deploy again.
 
-```sh
-# 1. schema changes go to Turso first (run from your machine, not the Worker)
-DATABASE_URL=libsql://... DATABASE_AUTH_TOKEN=... npm run db:migrate
-# 2. build with the public URL and upload
-SITE_URL=https://kickstand.example npm run deploy:cf
-```
+**Later schema changes:** `npm run db:generate` → `npm run db:migrate -- --remote` → `npm run deploy`. Migrations never run inside the Worker.
 
-**Demo data on a preview (optional):** the seed writes photos to disk, so seed against Turso and then copy the files into R2:
-
-```sh
-DATABASE_URL=libsql://... DATABASE_AUTH_TOKEN=... UPLOAD_DIR=./data/seed-uploads npm run db:seed
-UPLOAD_DIR=./data/seed-uploads npm run r2:upload
-```
-
-`npm run r2:upload` also moves an existing server's `uploads/` folder into R2 (keys stay the same).
-
-**Try the Worker locally:** `npm run preview:cf` runs the build in `wrangler dev` (local R2, local low-fidelity Images). Put `DATABASE_URL`, `BETTER_AUTH_SECRET`, `SITE_URL` and `BETTER_AUTH_URL` into `.dev.vars` (git-ignored). The database must be reachable over HTTP, e.g. a local libSQL server: `docker run -d -p 127.0.0.1:8088:8080 ghcr.io/tursodatabase/libsql-server` with `DATABASE_URL=http://127.0.0.1:8088`, then `npm run db:migrate` against that URL. Build with `SITE_URL=http://127.0.0.1:8787`.
+**Try the Worker locally:** `npm run preview` needs a database reachable over HTTP (Workers cannot open `file:` URLs), e.g. a local libSQL server: `docker run -d -p 127.0.0.1:8088:8080 ghcr.io/tursodatabase/libsql-server`, then `DATABASE_URL=http://127.0.0.1:8088 npm run db:migrate`, with the values from `.dev.vars.example` in `.dev.vars`.
 
 **Differences from the Node server:**
-- Uploads are limited to 20 MB per photo (Cloudflare Images input limit; 25 MB on Node). With JS, photos are shrunk in the browser first anyway.
-- Rate limits are counted per Worker instance, so they are looser than on one Node process.
-- Migrations never run inside the Worker; run `npm run db:migrate` against Turso before deploying.
+- Uploads: max 20 MB per photo (Cloudflare Images input limit; 25 MB on Node). With JS, photos are shrunk in the browser first anyway. Without JS, the Images binding resizes and rotates and a small JS step removes EXIF/GPS (`stripJpegMetadata`).
+- Rate limits use the Workers Rate Limiting binding, which only knows 10 s or 60 s windows: 20 login attempts per IP and 5 per e-mail a minute, 10 messages a minute. The hourly message limit stays in memory per isolate.
+- Dates and times are always formatted in `Europe/Berlin`; Workers run in UTC.
+- Caching: `/` and `/so-gehts` send `s-maxage=60, stale-while-revalidate=600` to logged-out visitors; personal pages and `/api/*` send `private, no-store`. Workers on workers.dev do not cache responses by themselves, so this only matters once a cache sits in front.
 
 ## Docker deploy
 
@@ -151,7 +144,7 @@ ENV
 docker compose up -d --build
 ```
 
-On every start the container applies pending migrations (`node scripts/migrate.mjs`), then starts the Node server on port 4321. `SITE_URL` is a build argument, so rebuild after changing it. Put a reverse proxy with TLS (Caddy, nginx) in front, forwarding `Host` and `X-Forwarded-Proto`:
+The image builds with `KICKSTAND_TARGET=node`. On every start the container applies pending migrations (`node scripts/migrate.mjs`), then starts the Node server on port 4321. `SITE_URL` is a build argument, so rebuild after changing it. Put a reverse proxy with TLS (Caddy, nginx) in front, forwarding `Host` and `X-Forwarded-Proto`:
 
 ```
 kickstand.example {
@@ -179,13 +172,14 @@ Members, sessions, bikes, loans, protocols, photos and signatures are copied wit
 ```
 src/db/schema.ts        all tables (Better Auth, Profile, Bike, Loan, Protocol, Photo, Signature,
                         category, listing, listing_photo, saved_listing, conversation, message)
-src/db/client.ts        the one database connection (only src/lib/data and src/lib/auth use it)
+src/db/client.ts        the one database connection, created on first use (only src/lib/data and src/lib/auth use it)
+src/lib/env.ts          the one place that reads vars, secrets and bindings (lazily)
 src/db/seed-data.ts     demo data (scripts/seed.ts)
 drizzle/                SQL migrations (0001 inserts the categories)
 src/lib/data/           ALL database access: listings, conversations, bikes, loans, profiles, saved
 src/lib/auth/           ALL auth: getUser, requireUser, sign-in/up/out, Google
 src/lib/storage/        StorageAdapter: local.ts (disk), r2.ts (Cloudflare R2), google.ts (stub)
-src/platform/           node.ts (sharp + disk) / cloudflare.ts (Images + R2), imported as "#platform"
+src/platform/           node.ts (libSQL + sharp + disk) / cloudflare.ts (libSQL web + Images + R2), imported as "#platform"
 src/middleware.ts       session -> locals.user, guards /app, /nachrichten, /merkliste, /profil, posting
 src/actions/            form handlers (auth, profile, bikes, loans, listings, messages)
 src/pages/anzeigen/     search, detail, neu, bearbeiten
@@ -207,7 +201,7 @@ Actions and pages never import Drizzle, the schema or Better Auth directly; they
 - **One active loan per bike.** Finalising a contract checks this.
 - **Dates** are stored as ISO strings and shown as `DD.MM.YYYY`. Date and time fields are text inputs (`TT.MM.JJJJ`, `HH:MM`) parsed on the server, because `<input type="date">` follows the browser locale.
 - **Drafts:** the contract wizard autosaves as a draft (debounced, and immediately when the tab is hidden). "Abschließen" sets the loan `active`; the return protocol sets it `returned`.
-- **Rate limits** (in memory, per process): 10 login attempts per e-mail and 30 per IP in 10 minutes; 10 messages a minute and 120 an hour per member.
+- **Rate limits** (`src/lib/rate-limit.ts`): locally in memory, 10 login attempts per e-mail and 30 per IP in 10 minutes, 10 messages a minute and 120 an hour per member. On Workers see "Differences from the Node server".
 - **Notifications:** none yet. `notifyNewMessage()` in `src/lib/notify.ts` is the hook for e-mail or push later.
 
 Astro's action body limit is raised to 80 MB (`astro.config.mjs`) so phones without JS can upload full-size photos; with JS, photos are shrunk before upload.

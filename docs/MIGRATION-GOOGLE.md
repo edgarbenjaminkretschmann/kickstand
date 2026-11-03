@@ -10,6 +10,10 @@ Phase 2 put all database, auth and file access behind three folders. Pages, acti
 
 The access-checked media endpoints (`src/pages/media/*`) read through `readFileByKey` and stay as they are in both options.
 
+### From Cloudflare/Turso/R2 to Google
+
+Today production runs on Cloudflare Workers with Turso and one private R2 bucket. Moving to Google means: pick option (a) or (b) below for data and auth; implement `GoogleCloudStorage` and copy the R2 objects with the same keys (`rclone copy r2:kickstand-photos gcs:<bucket>`; the keys in the database stay valid); build with `KICKSTAND_TARGET=node` and deploy the existing Dockerfile to Cloud Run. Everything Workers-specific sits in `src/platform/cloudflare.ts` and `wrangler.jsonc`; `src/platform/node.ts` is what Cloud Run would use. Two things to replace on the way: the Workers rate-limit bindings (in memory per Cloud Run instance, or Redis), and Cloudflare Images (sharp on Node already does the same: resize, rotate, strip metadata).
+
 Before either move: freeze writes (maintenance page), take a backup of `data/kickstand.db` and `uploads/`, and run `npm test` against the new backend before switching DNS.
 
 ---
