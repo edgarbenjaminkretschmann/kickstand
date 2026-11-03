@@ -1,5 +1,7 @@
 // Demo data: `npm run db:seed`. Wipes all rows first, so only use it on a dev or demo database.
 // Refuses to run with NODE_ENV=production unless called with --force.
+// `npm run db:seed -- --remote` seeds Turso (asks first, or --yes) and writes the photos to ./data/seed-uploads,
+// to be copied into R2 afterwards with `npm run r2:upload` (the command is printed at the end).
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
@@ -26,7 +28,13 @@ import {
 } from "../src/db/schema";
 import { DEMO_PASSWORD, demoBike, demoConversation, demoListings, demoLoan, demoProtocols, demoSaved, demoUsers } from "../src/db/seed-data";
 import { searchKey } from "../src/lib/data/listings";
-import { storage } from "../src/lib/storage";
+import { getStorage } from "../src/lib/storage";
+import { confirmRemote, isRemote, loadRemoteEnv } from "./remote-env.mjs";
+
+// The DB client and storage are created on first use, so loading the remote env here is early enough.
+const dbUrl = loadRemoteEnv();
+if (isRemote) process.env.UPLOAD_DIR ||= "./data/seed-uploads";
+await confirmRemote(`This deletes ALL rows in ${dbUrl.replace(/\?.*$/, "")} and inserts demo data.`);
 
 if (process.env.NODE_ENV === "production" && !process.argv.includes("--force")) {
   console.error("Refusing to seed with NODE_ENV=production. Pass --force if you really want demo data there.");
@@ -64,7 +72,7 @@ for (const { photo, ...l } of demoListings) {
   if (photo) {
     const source = await readFile(path.resolve("public/images", photo));
     const jpeg = await sharp(source).jpeg({ quality: 82, mozjpeg: true }).toBuffer();
-    const key = await storage.save(jpeg, { dir: `listings/${l.id}`, name: `seed-${path.parse(photo).name}`, contentType: "image/jpeg" });
+    const key = await getStorage().save(jpeg, { dir: `listings/${l.id}`, name: `seed-${path.parse(photo).name}`, contentType: "image/jpeg" });
     await db.insert(ListingPhoto).values({ id: `photo_${l.id}`, listingId: l.id, key, sort: 0 });
   }
 }
@@ -89,3 +97,4 @@ await db.insert(Protocol).values(demoProtocols);
 for (const s of demoSaved) await db.insert(SavedListing).values(s);
 
 console.log(`Seeded ${demoUsers.length} users, ${demoListings.length} listings, 1 conversation, 1 loan.`);
+if (isRemote) console.log(`Photos are in ${process.env.UPLOAD_DIR}. Copy them into R2: UPLOAD_DIR=${process.env.UPLOAD_DIR} npm run r2:upload`);
