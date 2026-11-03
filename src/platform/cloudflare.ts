@@ -8,7 +8,7 @@ import { drizzle } from "drizzle-orm/libsql/web";
 import * as schema from "../db/schema";
 import { R2Storage } from "../lib/storage/r2";
 import type { StorageAdapter } from "../lib/storage/types";
-import { assertImageBytes, assertUploadSize, JPEG_QUALITY, MAX_SIDE } from "../lib/uploads";
+import { assertImageBytes, assertUploadSize, JPEG_QUALITY, MAX_SIDE, stripJpegMetadata } from "../lib/uploads";
 
 export const platform = "cloudflare";
 
@@ -34,7 +34,11 @@ export function createStorage(): StorageAdapter {
   return new R2Storage(bucket);
 }
 
-/** Same result as the sharp version: max 1600 px, EXIF rotation applied, metadata stripped, JPEG. */
+/**
+ * Same result as the sharp version: max 1600 px, EXIF rotation applied, metadata stripped, JPEG.
+ * The Images binding rotates upright but copies EXIF (GPS included) into its output, so the metadata
+ * segments are removed afterwards in plain JS. Listing photos are public.
+ */
 export async function prepareImage(file: File): Promise<Buffer> {
   // Cloudflare Images accepts at most 20 MB per input.
   assertUploadSize(file, 20 * 1024 * 1024);
@@ -43,5 +47,5 @@ export async function prepareImage(file: File): Promise<Buffer> {
   const result = await (env.IMAGES as ImagesBinding).input(file.stream())
     .transform({ width: MAX_SIDE, height: MAX_SIDE, fit: "scale-down" })
     .output({ format: "image/jpeg", quality: JPEG_QUALITY });
-  return Buffer.from(await result.response().arrayBuffer());
+  return Buffer.from(stripJpegMetadata(new Uint8Array(await result.response().arrayBuffer())));
 }

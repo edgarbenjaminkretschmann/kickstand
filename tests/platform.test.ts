@@ -66,3 +66,26 @@ describe("pollMessages", () => {
     expect((await pollMessages(conversationId, MAX, since))?.map((m) => m.body)).toEqual(["Ja, ist noch da."]);
   });
 });
+
+describe("stripJpegMetadata", () => {
+  it("removes EXIF and GPS but keeps a valid image", async () => {
+    const sharp = (await import("sharp")).default;
+    const { stripJpegMetadata } = await import("../src/lib/uploads");
+    const withGps = await sharp({ create: { width: 64, height: 48, channels: 3, background: { r: 200, g: 120, b: 40 } } })
+      .withExif({ IFD0: { Make: "TestCam" }, IFD3: { GPSLatitudeRef: "N", GPSLatitude: "52/1 31/1 0/1" } })
+      .jpeg()
+      .toBuffer();
+    expect((await sharp(withGps).metadata()).exif).toBeDefined();
+    const clean = Buffer.from(stripJpegMetadata(new Uint8Array(withGps)));
+    const meta = await sharp(clean).metadata();
+    expect(meta.exif).toBeUndefined();
+    expect([meta.width, meta.height]).toEqual([64, 48]);
+    const { data } = await sharp(clean).raw().toBuffer({ resolveWithObject: true });
+    expect(data.length).toBe(64 * 48 * 3);
+  });
+  it("leaves non-JPEG input alone", async () => {
+    const { stripJpegMetadata } = await import("../src/lib/uploads");
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+    expect(stripJpegMetadata(png)).toBe(png);
+  });
+});
