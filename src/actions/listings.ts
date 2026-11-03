@@ -17,7 +17,7 @@ import { setSaved } from "../lib/data/saved";
 import { parseNumber } from "../lib/form";
 import { euroToCents } from "../lib/listing-format";
 import { deleteFile, isImageFile, saveImage } from "../lib/storage";
-import { badRequest, guard, newId, requireUser, s } from "./util";
+import { badRequest, guard, newId, photoFiles, requireUser, s } from "./util";
 
 const text = (max: number) => z.string().max(max).optional();
 
@@ -36,7 +36,7 @@ const listingFields = {
   city: text(80),
   country: text(2),
   bikeId: text(100),
-  photos: z.array(z.instanceof(File)).optional(),
+  photos: photoFiles,
 };
 
 function toInput(input: { [K in keyof typeof listingFields]?: unknown }): ListingInput {

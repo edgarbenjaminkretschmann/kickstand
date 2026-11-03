@@ -21,7 +21,7 @@ import { parseDate, parseTime } from "../lib/dates";
 import { groupThousands } from "../lib/euro-words";
 import { parseNumber } from "../lib/form";
 import { deleteFile, isImageFile, saveImage } from "../lib/storage";
-import { badRequest, guard, newId, notFound, requireUser, s } from "./util";
+import { badRequest, guard, newId, notFound, photoFiles, requireUser, s } from "./util";
 
 const opt = z.string().max(2000).optional();
 const SIG_PREFIX = "data:image/png;base64,";
@@ -91,7 +91,7 @@ const loanInput = z.object({
   placeDate: opt,
   sigLender: z.string().max(MAX_SIG_LENGTH).optional(),
   sigBorrower: z.string().max(MAX_SIG_LENGTH).optional(),
-  photos: z.array(z.instanceof(File)).optional(),
+  photos: photoFiles,
 });
 
 export const loanActions = {
@@ -225,7 +225,7 @@ export const loanActions = {
       odometerKm: z.string().refine((v) => !v || parseNumber(v) !== null, "Bitte eine Zahl angeben.").optional(),
       fuelLevel: opt,
       damages: z.string().max(5000).optional(),
-      photos: z.array(z.instanceof(File)).optional(),
+      photos: photoFiles,
     }),
     handler: (input, context) =>
       guard(async () => {

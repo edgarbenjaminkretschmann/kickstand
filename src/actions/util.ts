@@ -1,4 +1,5 @@
 import { ActionError, type ActionAPIContext } from "astro:actions";
+import { z } from "astro:schema";
 import { AuthFailure, AuthRequiredError, requireUser as requireAuthUser } from "../lib/auth";
 import { DataError } from "../lib/data/errors";
 import { UploadError } from "../lib/uploads";
@@ -36,3 +37,10 @@ export { newId } from "../lib/data/errors";
 
 /** Plain string from an optional form field. */
 export const s = (v: string | null | undefined) => (v ?? "").trim();
+
+/**
+ * A multi-file input (`<input type="file" multiple>`). With no file chosen, browsers still send an empty
+ * part: Node parses it as an empty File, Cloudflare Workers as "". Both are accepted; the handlers only use
+ * entries with `size > 0`, which "" never has.
+ */
+export const photoFiles = z.array(z.custom<File>((v) => v instanceof File || v === "", "Nur Fotos können hochgeladen werden.")).optional();
