@@ -21,6 +21,7 @@ import { parseDate, parseTime } from "../lib/dates";
 import { groupThousands } from "../lib/euro-words";
 import { parseNumber } from "../lib/form";
 import { deleteFile, isImageFile, saveImage } from "../lib/storage";
+import { assertImageBytes } from "../lib/uploads";
 import { badRequest, guard, newId, notFound, photoFiles, requireUser, s } from "./util";
 
 const opt = z.string().max(2000).optional();
@@ -109,6 +110,7 @@ export const loanActions = {
         const sigBorrower = checkSignature(input.sigBorrower);
         for (const file of input.photos ?? []) {
           if (file.size > 0 && !isImageFile(file)) badRequest("Nur Fotos können hochgeladen werden.");
+          if (file.size > 0) await assertImageBytes(file);
         }
 
         let loan = input.loanId ? await getOwnLoan(input.loanId, user.id) : null;

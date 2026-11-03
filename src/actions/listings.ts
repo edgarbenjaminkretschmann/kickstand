@@ -17,6 +17,7 @@ import { setSaved } from "../lib/data/saved";
 import { parseNumber } from "../lib/form";
 import { euroToCents } from "../lib/listing-format";
 import { deleteFile, isImageFile, saveImage } from "../lib/storage";
+import { assertImageBytes } from "../lib/uploads";
 import { badRequest, guard, newId, photoFiles, requireUser, s } from "./util";
 
 const text = (max: number) => z.string().max(max).optional();
@@ -76,6 +77,8 @@ export const listingActions = {
       guard(async () => {
         const user = requireUser(context);
         if ((input.photos ?? []).some((f) => f.size > 0 && !isImageFile(f))) badRequest("Nur Fotos können hochgeladen werden.");
+        // Check the bytes before creating anything, so a rejected photo leaves no listing behind.
+        for (const f of input.photos ?? []) if (f.size > 0) await assertImageBytes(f);
         const id = await createListing(user.id, toInput(input));
         await storePhotos(user.id, id, input.photos);
         return { id };
