@@ -1,4 +1,5 @@
 // Display helpers for listings. Pure, so they run anywhere and are easy to test.
+import { berlinParts, TIME_ZONE } from "./dates";
 import { parseNumber } from "./numbers";
 
 export const TYPE_LABEL: Record<string, string> = { biete: "Biete", suche: "Suche" };
@@ -39,19 +40,24 @@ export function euroToCents(v: string | null | undefined): number | null {
 
 /** "heute", "gestern", "vor 3 Tagen", "vor 2 Wochen", then the date. */
 export function relativeDate(date: Date, now: Date = new Date()): string {
-  const day = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  // Calendar days in Berlin, so "gestern" flips at German midnight, not at UTC midnight.
+  const day = (d: Date) => {
+    const b = berlinParts(d);
+    return Date.UTC(b.year, b.month - 1, b.day);
+  };
   const days = Math.round((day(now) - day(date)) / 86_400_000);
   if (days <= 0) return "heute";
   if (days === 1) return "gestern";
   if (days < 14) return `vor ${days} Tagen`;
   if (days < 60) return `vor ${Math.floor(days / 7)} Wochen`;
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `am ${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+  const b = berlinParts(date);
+  return `am ${pad(b.day)}.${pad(b.month)}.${b.year}`;
 }
 
 /** "Mitglied seit März 2024". */
 export function memberSince(date: Date): string {
-  return `Mitglied seit ${new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric" }).format(date)}`;
+  return `Mitglied seit ${new Intl.DateTimeFormat("de-DE", { month: "long", year: "numeric", timeZone: TIME_ZONE }).format(date)}`;
 }
 
 /** "12345 Musterstadt" / "Lissabon, Portugal". */

@@ -7,6 +7,32 @@ const TIME = /^([01]?\d|2[0-3])[:.]?([0-5]\d)$/;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+/** Every wall-clock time Kickstand shows is German time. Servers (Workers) run in UTC, so never rely on their zone. */
+export const TIME_ZONE = "Europe/Berlin";
+
+const berlinFormat = new Intl.DateTimeFormat("en-GB", {
+  timeZone: TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+/** Calendar date and clock time of an instant in Berlin. */
+export function berlinParts(d: Date): { year: number; month: number; day: number; hour: number; minute: number } {
+  const p: Record<string, string> = {};
+  for (const part of berlinFormat.formatToParts(d)) p[part.type] = part.value;
+  return { year: Number(p.year), month: Number(p.month), day: Number(p.day), hour: Number(p.hour), minute: Number(p.minute) };
+}
+
+/** "14:05" for an instant, in Berlin time. */
+export function berlinTime(d: Date = new Date()): string {
+  const b = berlinParts(d);
+  return `${pad(b.hour)}:${pad(b.minute)}`;
+}
+
 function isValidYmd(y: number, m: number, d: number): boolean {
   if (m < 1 || m > 12 || d < 1) return false;
   const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
@@ -29,11 +55,12 @@ export function formatDateTime(date: string | null | undefined, time?: string | 
   return [formatDate(date), time ? `${time} Uhr` : ""].filter(Boolean).join(", ");
 }
 
-/** A Date (or epoch ms) in local time -> "23.10.2026, 14:05 Uhr". */
+/** A Date (or epoch ms) in Berlin time -> "23.10.2026, 14:05 Uhr". */
 export function formatTimestamp(value: Date | number | string): string {
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return "";
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())} Uhr`;
+  const b = berlinParts(d);
+  return `${pad(b.day)}.${pad(b.month)}.${b.year}, ${pad(b.hour)}:${pad(b.minute)} Uhr`;
 }
 
 /**
@@ -66,9 +93,10 @@ export function parseTime(input: string | null | undefined): string | null {
   return m ? `${pad(Number(m[1]))}:${m[2]}` : null;
 }
 
-/** Today as ISO date in local time. */
+/** Today as ISO date in Berlin. */
 export function todayIso(now: Date = new Date()): string {
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const b = berlinParts(now);
+  return `${b.year}-${pad(b.month)}-${pad(b.day)}`;
 }
 
 /** Adds days to an ISO date. */

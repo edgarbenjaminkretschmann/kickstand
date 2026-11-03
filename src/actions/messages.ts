@@ -2,7 +2,7 @@ import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { getConversationForUser, MAX_MESSAGE_LENGTH, sendMessage, startConversation } from "../lib/data/conversations";
 import { notifyNewMessage } from "../lib/notify";
-import { hit } from "../lib/rate-limit";
+import { allow, RULES } from "../lib/rate-limit";
 import { guard, requireUser } from "./util";
 
 const body = z
@@ -12,8 +12,8 @@ const body = z
   .max(MAX_MESSAGE_LENGTH, `Höchstens ${MAX_MESSAGE_LENGTH} Zeichen.`);
 
 // Per member: a burst of 10 messages a minute, 120 an hour.
-function limitMessages(userId: string) {
-  if (!hit(`msg:min:${userId}`, 10, 60_000) || !hit(`msg:hour:${userId}`, 120, 3_600_000)) {
+async function limitMessages(userId: string) {
+  if (!(await allow(RULES.messageMinute, userId)) || !(await allow(RULES.messageHour, userId))) {
     throw new ActionError({ code: "TOO_MANY_REQUESTS", message: "Du schreibst gerade sehr viele Nachrichten. Bitte kurz warten." });
   }
 }
@@ -31,7 +31,7 @@ export const messageActions = {
     handler: (input, context) =>
       guard(async () => {
         const user = requireUser(context);
-        limitMessages(user.id);
+        await limitMessages(user.id);
         const conversationId = await startConversation(input.listingId, user.id, input.body);
         await notify(conversationId, user.id, user.name);
         return { conversationId };
@@ -44,7 +44,7 @@ export const messageActions = {
     handler: (input, context) =>
       guard(async () => {
         const user = requireUser(context);
-        limitMessages(user.id);
+        await limitMessages(user.id);
         const msg = await sendMessage(input.conversationId, user.id, input.body);
         await notify(input.conversationId, user.id, user.name);
         return { conversationId: input.conversationId, id: msg.id, createdAt: msg.createdAt.toISOString() };

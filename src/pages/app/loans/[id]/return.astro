@@ -8,7 +8,7 @@ import FormAlert from "../../../../components/FormAlert.astro";
 import TimeField from "../../../../components/TimeField.astro";
 import { getLoanForUser } from "../../../../lib/access";
 import { loadLoanParts } from "../../../../lib/contract-data";
-import { formatDateTime, formatTimestamp, todayIso } from "../../../../lib/dates";
+import { berlinTime, formatDateTime, formatTimestamp, todayIso } from "../../../../lib/dates";
 import { groupThousands } from "../../../../lib/euro-words";
 import { fieldErrors, formError } from "../../../../lib/form";
 import { submittedValues } from "../../../../lib/submitted";
@@ -27,7 +27,7 @@ const now = new Date();
 const prev = await submittedValues(Astro.request, !!result?.error);
 const v = prev ?? {
   returnDate: ret?.datetime?.slice(0, 10) ?? todayIso(now),
-  returnTime: ret?.datetime?.slice(11, 16) ?? `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+  returnTime: ret?.datetime?.slice(11, 16) ?? berlinTime(now),
   odometerKm: ret?.odometerKm != null ? String(ret.odometerKm) : "",
   fuelLevel: ret?.fuelLevel ?? "",
   damages: ret?.damages ?? "",

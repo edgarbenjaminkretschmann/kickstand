@@ -1,18 +1,15 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { signInWithEmail, signOut, signUpWithEmail, startGoogleSignIn } from "../lib/auth";
-import { clientIp, hit } from "../lib/rate-limit";
+import { allow, clientIp, RULES } from "../lib/rate-limit";
 import { safeNext } from "../lib/submitted";
 import { guard } from "./util";
 
 const required = (msg: string) => ({ required_error: msg, invalid_type_error: msg });
 
-const LOGIN_LIMIT = 10;
-const LOGIN_WINDOW_MS = 10 * 60 * 1000;
-
-function limitLogin(request: Request, clientAddress: string, email: string) {
+async function limitLogin(request: Request, clientAddress: string, email: string) {
   const ip = clientIp(request, clientAddress);
-  if (!hit(`login:ip:${ip}`, LOGIN_LIMIT * 3, LOGIN_WINDOW_MS) || !hit(`login:email:${email.toLowerCase()}`, LOGIN_LIMIT, LOGIN_WINDOW_MS)) {
+  if (!(await allow(RULES.loginIp, ip)) || !(await allow(RULES.loginEmail, email.toLowerCase()))) {
     throw new ActionError({ code: "TOO_MANY_REQUESTS", message: "Zu viele Anmeldeversuche. Bitte in ein paar Minuten nochmal." });
   }
 }
@@ -27,7 +24,7 @@ export const authActions = {
     }),
     handler: (input, context) =>
       guard(async () => {
-        limitLogin(context.request, context.clientAddress, input.email);
+        await limitLogin(context.request, context.clientAddress, input.email);
         await signUpWithEmail(context, input);
         return { ok: true };
       }),
@@ -41,7 +38,7 @@ export const authActions = {
     }),
     handler: (input, context) =>
       guard(async () => {
-        limitLogin(context.request, context.clientAddress, input.email);
+        await limitLogin(context.request, context.clientAddress, input.email);
         await signInWithEmail(context, input);
         return { ok: true };
       }),
