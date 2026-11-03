@@ -61,7 +61,7 @@ Tests run on a fresh in-memory database with the real migrations.
 | `DATABASE_URL` | var | `file:./data/kickstand.db` (default) | `libsql://kickstand-kickstand.aws-eu-west-1.turso.io` |
 | `DATABASE_AUTH_TOKEN` | secret | – | Turso read & write token |
 | `BETTER_AUTH_SECRET` | secret | any string (a dev default is used if empty) | `openssl rand -hex 32` |
-| `SITE_URL` | var | `http://localhost:4321` (default) | the workers.dev URL, later the custom domain. Also read by `astro.config.mjs` at build time |
+| `SITE_URL` | var | `http://localhost:4321` (default) | `https://kickstand.deutschacademy.com`. Also read by `astro.config.mjs` at build time |
 | `BETTER_AUTH_URL` | var | optional, defaults to `SITE_URL` | same as `SITE_URL` |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | secret | optional | from Google Cloud Console. Both set: "Mit Google anmelden" shows |
 | `SHOW_DEMO_LOGINS` | var | always shown in dev | `true` for the demo, `false` once real members use it |
@@ -99,7 +99,7 @@ Seed demo data into a production database only if you really want it: `NODE_ENV=
 
 ## Deploying to Cloudflare
 
-Production: the app runs as a Worker on the Workers Paid plan, the database is Turso (AWS eu-west-1), and photos live in the private R2 bucket `kickstand-photos`. Live at https://kickstand.jolly-wildflower-4370.workers.dev.
+Production: the app runs as a Worker on the Workers Paid plan, the database is Turso (AWS eu-west-1), and photos live in the private R2 bucket `kickstand-photos`. Live at https://kickstand.deutschacademy.com (custom domain on the deutschacademy.com zone, set in `wrangler.jsonc` → `routes`). The old address https://kickstand.jolly-wildflower-4370.workers.dev stays on and 301-redirects there.
 
 There is one `astro.config.mjs`. It builds for Cloudflare by default; `KICKSTAND_TARGET=node` builds the Node server for Docker. The `#platform` import (`package.json` → `imports`) resolves to `src/platform/cloudflare.ts` in the Worker bundle (HTTP-only libSQL client, R2, Cloudflare Images, rate-limit bindings) and to `src/platform/node.ts` everywhere else (full libSQL client with `file:` URLs, disk, sharp). So the native libSQL client, sharp and `node:fs` never reach the Worker, and `npm run check:bundle` proves it.
 
@@ -117,8 +117,8 @@ There is one `astro.config.mjs`. It builds for Cloudflare by default; `KICKSTAND
 4. **Turso:** a database in AWS eu-west-1 and a read & write token. Put both into `.env.turso` (git-ignored) as `DATABASE_URL=libsql://...` and `DATABASE_AUTH_TOKEN=...`, then run `npm run db:migrate -- --remote`. For demo data: `npm run db:seed -- --remote`, then `UPLOAD_DIR=./data/seed-uploads npm run r2:upload`.
 5. **Secrets:** `npx wrangler secret put DATABASE_AUTH_TOKEN`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
 6. **Deploy:** `npm run deploy`.
-7. **Google OAuth:** add the origin `https://kickstand.jolly-wildflower-4370.workers.dev` and the redirect URI `https://kickstand.jolly-wildflower-4370.workers.dev/api/auth/callback/google` to the OAuth client. Preview version URLs (`<version>-kickstand...workers.dev`) do not work for Google login, because Google only accepts listed redirect URIs; use email login there.
-8. **Custom domain (later):** Workers & Pages → kickstand → Settings → Domains & Routes. Then change `SITE_URL` and `BETTER_AUTH_URL` in `wrangler.jsonc`, add the new Google redirect URI, and deploy again.
+7. **Google OAuth:** add the origin `https://kickstand.deutschacademy.com` and the redirect URI `https://kickstand.deutschacademy.com/api/auth/callback/google` to the OAuth client. Preview version URLs (`<version>-kickstand...workers.dev`) do not work for Google login, because Google only accepts listed redirect URIs; use email login there.
+8. **Another domain:** change `routes`, `SITE_URL` and `BETTER_AUTH_URL` in `wrangler.jsonc`, add the new Google redirect URI, and deploy. Wrangler creates the DNS record and certificate if the zone is on the same account.
 
 **Later schema changes:** `npm run db:generate` → `npm run db:migrate -- --remote` → `npm run deploy`. Migrations never run inside the Worker.
 

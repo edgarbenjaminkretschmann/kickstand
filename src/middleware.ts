@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { getSession } from "./lib/auth";
+import { env } from "./lib/env";
 
 // Paths that need a logged-in member.
 const PROTECTED = [/^\/app(\/|$)/, /^\/nachrichten(\/|$)/, /^\/merkliste(\/|$)/, /^\/profil(\/|$)/, /^\/anzeigen\/neu(\/|$)/, /^\/anzeigen\/[^/]+\/bearbeiten(\/|$)/];
@@ -29,8 +30,22 @@ function applyCacheHeader(response: Response, pathname: string, loggedIn: boolea
   }
 }
 
+/**
+ * The old address kickstand.<account>.workers.dev sends visitors to SITE_URL, so sessions and Google login
+ * live on one origin. Preview versions (<version>-kickstand.<account>.workers.dev) are left alone.
+ */
+function canonicalRedirect(url: URL): Response | null {
+  const site = env("SITE_URL");
+  if (!site || !url.hostname.endsWith(".workers.dev") || !url.hostname.startsWith("kickstand.")) return null;
+  const target = new URL(url.pathname + url.search, site);
+  if (target.host === url.host) return null;
+  return new Response(null, { status: 301, headers: { Location: target.toString() } });
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
+  const redirect = canonicalRedirect(context.url);
+  if (redirect) return redirect;
 
   // Static assets and public listing photos never need a session lookup.
   if (pathname.startsWith("/_astro/") || pathname.startsWith("/images/") || pathname === "/favicon.svg" || pathname.startsWith("/media/listing/")) {

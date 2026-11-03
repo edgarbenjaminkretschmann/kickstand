@@ -12,12 +12,16 @@
   "observability": { "enabled": true },
   // Turso sits in AWS eu-west-1 and one page runs several queries: run the Worker near the database.
   "placement": { "mode": "smart" },
+  // Custom domain on the deutschacademy.com zone (same account). Wrangler creates the DNS record and
+  // certificate. The workers.dev address stays on and redirects here (src/middleware.ts).
+  "routes": [{ "pattern": "kickstand.deutschacademy.com", "custom_domain": true }],
+  "workers_dev": true,
   "vars": {
     // Turso (libsql://<db>-<org>.aws-eu-west-1.turso.io). The token is the secret DATABASE_AUTH_TOKEN.
     "DATABASE_URL": "libsql://kickstand-kickstand.aws-eu-west-1.turso.io",
     // Public URL. Also read by astro.config.mjs at build time, so it is the one place to change it.
-    "SITE_URL": "https://kickstand.jolly-wildflower-4370.workers.dev",
-    "BETTER_AUTH_URL": "https://kickstand.jolly-wildflower-4370.workers.dev",
+    "SITE_URL": "https://kickstand.deutschacademy.com",
+    "BETTER_AUTH_URL": "https://kickstand.deutschacademy.com",
     // Shows the demo accounts on /login. "false" once real members use the site.
     "SHOW_DEMO_LOGINS": "true"
   },
