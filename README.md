@@ -1,6 +1,6 @@
 # Kickstand
 
-A small marketplace for motorcyclists, a sister project of [vlogato.com](https://vlogato.com). People post what they offer (*Biete*) and what they are looking for (*Suche*): a motorcycle to borrow, a garage spot, tools, parts, help with a repair, a tour partner. Lending a motorcycle ends in a free Leihvertrag (§§ 598 ff. BGB) with handover protocol, photos, signatures and a PDF. Mobile first, German UI, small enough for one person on one VPS.
+A small marketplace for motorcyclists. People post what they offer (*Biete*) and what they are looking for (*Suche*): a motorcycle to borrow, a garage spot, tools, parts, help with a repair, a tour partner. Lending a motorcycle ends in a free Leihvertrag (§§ 598 ff. BGB) with handover protocol, photos, signatures and a PDF. Mobile first, German UI, small enough for one person on one VPS.
 
 - Astro 5 (SSR, `@astrojs/node` standalone), Astro Actions for every form
 - Drizzle ORM on libSQL / SQLite (`drizzle-kit` migrations), written to stay portable to Postgres
