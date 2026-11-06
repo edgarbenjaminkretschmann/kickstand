@@ -141,6 +141,23 @@ The prompt assumed a move from Vercel. Kickstand was already live on Workers, so
 - **vlogato.com no longer belongs to Edgar** (it redirects to an unrelated site), so the page no longer links there; it mentions the blog by name only.
 - **28 new photos** from the trip folders (`reference/touren-photos.json` lists the source of each). Left out: strangers as the subject, children, other people's licence plates, documents.
 
+## Public contract generator (`/leihvertrag`, November 2026)
+
+- **"PublicLayout" is `Base.astro`.** The prompt names a layout that does not exist; Base already is design A. New prop `dockFooter`: the sticky bar stays, and so do Impressum and the language switch, which a public page needs. The wizard keeps hiding the footer.
+- **Shared parts:** the wizard's cards became `LoanBorrowerFields`, `LoanPeriodFields`, `LoanItemsFields`, `LoanHandoverFields`, `LoanSignatures`. `src/lib/contract-form.ts` maps form fields to `ContractData` and holds the rules (moved from `finalizeProblems` in the action). `saveContractPdf()` in `src/scripts/pdf.ts` is the one way out for both paths, and the contract text stays only in `buildContractPdf()`.
+- **The form cannot post.** `method="dialog"`, all buttons `type="button"`, the photo inputs have no `name`. Without JS, a plain form would send every field in a GET URL to the server and its logs when someone presses Enter. `photo-utils.ts` holds the photo helpers without the `astro:actions` import, and the save code (`contract-save.ts`) only loads when a member taps the button.
+- **Privacy check (6 Nov 2026, Playwright against the Node build, phone profile):** logged out, from page load through filling in, 2 photos, 2 signatures and the downloaded PDF: 11 same-origin requests, all `GET` for the page or `/_astro/*`, no POST, no form data in any URL. Plus 4 requests to Google Fonts, as on every page. Those carry no form data but do show Google the visitor's IP. To be repeated on production after deploying.
+- **Lender snapshot on `Loan`** (`lenderName`, `lenderStreet`, `lenderZipCity`, migration `0002`). The generator allows any lender, while saved contracts took the lender from the profile, so the saved PDF could have named someone other than the signed one. Null on older loans: they keep using the profile.
+- **Saving is two steps:** `saveGenerated` writes bike and draft, the photos go up through the existing `uploadPhoto`, then `activate` runs the same checks as "Abschließen". A dropped connection leaves a draft to resume, and tapping again continues. Return photos follow after `activate`, because the server only takes them on an active loan.
+- **Existing bike:** same FIN, or same plate when one side has no FIN. Two different FINs never join through a plate. The form's data wins, so the saved PDF matches the signed one; the bike's default cap, photo and free text in Feld 22 are kept. A bike with an active loan is refused.
+- **Feld 22 wording:** the switch gives the sentence from the contract template in § 4 Abs. 3 (`reference/leihvertrag-ausfuellen.md`). The code had a generic § 4 Abs. 5 instead. The exact condition "Beifahrer nur mit Fußrasten" now gets the template sentence in the wizard too; any other free text stays Abs. 5.
+- **No made-up time in the protocol:** a loan without a start time used to print "00:00 Uhr" in the handover column. It now prints the date alone, on both paths.
+- **Missing required fields** (template, Teil 2) are listed once; a second tap builds the PDF with blanks to fill in by hand. Unparseable dates, times and numbers always block, because they would silently vanish from the contract.
+- **Marke and Modell are two fields**, as in the bike form (D.1, D.3), not the template's single field, because `Bike` stores them apart.
+- **iOS:** always a Blob with `<a download>`; iPhones and iPads also get a visible "PDF öffnen" link, since a new tab opened after async work is blocked as a popup.
+- **Header:** "Leihvertrag" is the first item, also on phones. The prompt says "before So geht's", but the header has no "So geht's" (see Design), so it sits before "Suchen".
+- **Start page:** generator first, as in the prompt. The "Garagen & Hilfe" section now shows 3 listings instead of 6, as the prompt asks, although it also lists the section as "unchanged".
+
 ## Seed
 
 - **13 listings** instead of "~12", so every category has at least one. Fixed join dates make "Mitglied seit" stable.

@@ -28,6 +28,19 @@ export async function updateBike(id: string, values: BikeValues): Promise<void> 
   await db.update(Bike).set(values).where(eq(Bike.id, id));
 }
 
+/**
+ * Picks the member's bike a contract is about: same FIN, or same plate when one of the two has no FIN.
+ * A plate alone never joins two different FINs, since plates move on when a bike is sold.
+ */
+export function matchBike<T extends { vin: string; plate: string }>(bikes: T[], vin: string, plate: string): T | null {
+  const same = (a: string, b: string) => a.trim().toUpperCase() === b.trim().toUpperCase();
+  return (
+    (vin && bikes.find((b) => b.vin && same(b.vin, vin))) ||
+    (plate && bikes.find((b) => b.plate && same(b.plate, plate) && (!vin || !b.vin))) ||
+    null
+  );
+}
+
 /** The active loan of a bike, if any. */
 export async function getActiveLoan(bikeId: string) {
   const [loan] = await db.select().from(Loan).where(and(eq(Loan.bikeId, bikeId), eq(Loan.status, "active")));

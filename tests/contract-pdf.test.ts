@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildContractPdf, contractFileName, nameFirstLast, nameLastFirst, type ContractData } from "../src/lib/contract-pdf";
+import { contractDataFromForm, type ContractFormValues } from "../src/lib/contract-form";
 import { demoBike, demoLoan, demoProtocols, demoUsers } from "../src/db/seed-data";
 
 // 1x1 white PNG and JPEG, enough to exercise the image paths.
@@ -53,6 +54,69 @@ describe("buildContractPdf", () => {
 
   it("names the file after bike, cap and borrower", () => {
     expect(contractFileName(seedContract())).toBe("Leihvertrag_VFR-750-F_1000EUR_Beispiel_2026-05-01.pdf");
+  });
+});
+
+describe("contract variants", () => {
+  // Fictional data from reference/leihvertrag-ausfuellen.md.
+  const form: ContractFormValues = {
+    lenderName: "Hoffmann, Jana",
+    lenderStreet: "Kastanienallee 12",
+    lenderZipCity: "10435 Berlin",
+    borrowerName: "Brandt, Lukas",
+    borrowerStreet: "Lindenstraße 7",
+    borrowerZipCity: "50674 Köln",
+    make: "Yamaha",
+    model: "XT 660 R",
+    plate: "K-LB 660",
+    vin: "JYADM010000123456",
+    insurer: "Musterversicherung AG",
+    policyNumber: "MV-2026-004711",
+    liabilityChoice: "1500",
+    startDate: "01.11.2026",
+    startTime: "10:00",
+    keys: true,
+    keyCount: "2",
+    registration: true,
+    returnPlace: "Kastanienallee 12, 10435 Berlin",
+    placeDate: "Berlin, 01.11.2026",
+  };
+  const OPEN_PARAGRAPH = "Die Leihe ist unbefristet";
+  const PASSENGER = "Ein Beifahrer darf nur";
+  const build = (over: Partial<ContractFormValues>) => buildContractPdf(contractDataFromForm({ ...form, ...over }));
+
+  it("open loan: says when it ends at the latest", () => {
+    const doc = build({ endMode: "open", latestEndDate: "31.12.2026" });
+    const raw = doc.output();
+    expect(doc.getNumberOfPages()).toBe(3);
+    expect(raw).toContain("unbefristet\\), sp");
+    expect(raw).toContain("31.12.2026");
+    expect(raw).toContain(OPEN_PARAGRAPH);
+    expect(raw).toContain("1.500,00");
+    expect(raw).toContain("Hoffmann, Jana");
+  });
+
+  it("fixed end: no open-ended paragraph", () => {
+    const doc = build({ endMode: "fixed", endDate: "15.11.2026", endTime: "18:00" });
+    const raw = doc.output();
+    expect(doc.getNumberOfPages()).toBe(3);
+    expect(raw).toContain("15.11.2026, 18:00 Uhr");
+    expect(raw).not.toContain(OPEN_PARAGRAPH);
+  });
+
+  it("footpeg clause only with the switch on, in § 4 Abs. 3 as in the template", () => {
+    expect(build({ footpegs: false }).output()).not.toContain(PASSENGER);
+    const raw = build({ footpegs: true }).output();
+    expect(raw).toContain(`\\(3\\) ${PASSENGER}`);
+    expect(raw).not.toContain("Der Entleiher beachtet die Auflagen");
+  });
+
+  it("other Feld 22 text stays its own paragraph", () => {
+    const data = contractDataFromForm(form);
+    data.bike.conditions = "Nur mit Soziusgriff";
+    const raw = buildContractPdf(data).output();
+    expect(raw).toContain("Der Entleiher beachtet die Auflagen");
+    expect(raw).not.toContain(PASSENGER);
   });
 });
 

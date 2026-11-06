@@ -1,6 +1,7 @@
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { getActiveLoan, getOwnBike } from "../lib/data/bikes";
+import { bikeFromForm, FOOTPEG_CONDITION, handoverFromForm, invalidFields, lenderFromForm, loanFromForm, loanProblems, returnFromForm, saveProblems } from "../lib/contract-form";
+import { createBike, getActiveLoan, getOwnBike, listOwnBikes, matchBike, updateBike } from "../lib/data/bikes";
 import {
   addPhoto,
   createLoan,
@@ -16,7 +17,6 @@ import {
   upsertProtocol,
   type ProtocolKind,
 } from "../lib/data/loans";
-import type { Loan } from "../lib/data/types";
 import { tk } from "../i18n";
 import { parseDate, parseTime } from "../lib/dates";
 import { parseNumber } from "../lib/form";
@@ -41,24 +41,6 @@ function checkSignature(dataUrl: string | undefined): string {
   const v = s(dataUrl);
   if (v && (!v.startsWith(SIG_PREFIX) || v.length > MAX_SIG_LENGTH)) badRequest(tk("Unterschrift ist ungültig."));
   return v;
-}
-
-/** Checks a loan is complete enough to become a contract. Returns German messages (keys; the page translates them). */
-function finalizeProblems(loan: Loan): string[] {
-  const p: string[] = [];
-  if (!loan.borrowerName) p.push(tk("Name des Entleihers fehlt."));
-  if (!loan.borrowerStreet || !loan.borrowerZipCity) p.push(tk("Anschrift des Entleihers fehlt."));
-  if (!loan.licenseNumber) p.push(tk("Führerschein-Nr. fehlt."));
-  if (!loan.startDate) p.push(tk("Beginn der Leihe fehlt."));
-  if (loan.endMode === "fixed") {
-    if (!loan.endDate) p.push(tk("Ende der Leihe fehlt."));
-    else if (loan.startDate && loan.endDate < loan.startDate) p.push(tk("Das Ende liegt vor dem Beginn."));
-  } else {
-    if (!loan.latestEndDate) p.push(tk("Bei offener Leihe ist „spätestens am“ Pflicht."));
-    else if (loan.startDate && loan.latestEndDate < loan.startDate) p.push(tk("„Spätestens am“ liegt vor dem Beginn."));
-  }
-  if (!loan.returnPlace) p.push(tk("Rückgabeort fehlt."));
-  return p;
 }
 
 const loanInput = z.object({
@@ -95,6 +77,30 @@ const loanInput = z.object({
   photos: photoFiles,
 });
 
+const generatedInput = loanInput.omit({ bikeId: true, listingId: true, conversationId: true, intent: true, photos: true }).extend({
+  liabilityChoice: opt,
+  lenderName: opt,
+  lenderStreet: opt,
+  lenderZipCity: opt,
+  make: opt,
+  model: opt,
+  typeCode: opt,
+  plate: opt,
+  vin: opt,
+  firstRegistration: opt,
+  powerKw: opt,
+  displacementCcm: opt,
+  fuel: opt,
+  footpegs: z.boolean(),
+  insurer: opt,
+  policyNumber: opt,
+  returnDate: opt,
+  returnTime: opt,
+  returnKm: opt,
+  returnFuel: opt,
+  returnDamages: z.string().max(5000).optional(),
+});
+
 export const loanActions = {
   /** Saves the contract wizard. Called debounced by JS on every change, and by the form buttons without JS. */
   save: defineAction({
@@ -123,39 +129,13 @@ export const loanActions = {
             ? { listingId: loan.listingId, conversationId: loan.conversationId }
             : await resolveLoanLinks(user.id, bike.id, input.listingId, input.conversationId);
 
-        const keyCount = Math.min(9, Math.max(1, Math.round(parseNumber(input.keyCount) ?? 1)));
-        const cap = parseNumber(input.liabilityCapEur);
-        const values = {
-          borrowerName: s(input.borrowerName),
-          borrowerStreet: s(input.borrowerStreet),
-          borrowerZipCity: s(input.borrowerZipCity),
-          borrowerBirthdate: parseDate(input.borrowerBirthdate),
-          borrowerPhone: s(input.borrowerPhone),
-          licenseNumber: s(input.licenseNumber),
-          licenseClassASince: s(input.licenseClassASince),
-          startDate: parseDate(input.startDate),
-          startTime: parseTime(input.startTime),
-          endMode: input.endMode ?? "open",
-          endDate: parseDate(input.endDate),
-          endTime: parseTime(input.endTime),
-          latestEndDate: parseDate(input.latestEndDate),
-          returnPlace: s(input.returnPlace),
-          liabilityCapEur: cap !== null && cap >= 0 && cap <= 100_000 ? Math.round(cap) : bike.liabilityCapEur,
-          handedOverItems: { keys: input.keys, keyCount, registration: input.registration, other: s(input.otherItems) },
-          placeDate: s(input.placeDate),
-          ...links,
-        };
+        const values = { ...loanFromForm(input, bike.liabilityCapEur), ...links };
 
         const loanId = loan?.id ?? newId();
         if (loan) await updateLoan(loanId, values);
         else await createLoan(loanId, bike.id, user.id, values);
 
-        const protocolId = await upsertProtocol(loanId, "handover", {
-          datetime: values.startDate ? `${values.startDate}T${values.startTime ?? "00:00"}` : null,
-          odometerKm: parseNumber(input.odometerKm),
-          fuelLevel: s(input.fuelLevel),
-          damages: s(input.damages),
-        });
+        const protocolId = await upsertProtocol(loanId, "handover", handoverFromForm(input));
         await setSignature(loanId, "lender", sigLender);
         await setSignature(loanId, "borrower", sigBorrower);
         for (const file of input.photos ?? []) {
@@ -166,13 +146,91 @@ export const loanActions = {
 
         // Problems are returned (not thrown) so the page keeps the saved draft's id.
         loan = await getOwnLoan(loanId, user.id);
-        const problems = finalizeProblems(loan!);
+        const problems = loanProblems(loan!).map((p) => p.message);
         const active = await getActiveLoan(bike.id);
         if (active && active.id !== loanId) problems.push(tk("Dieses Motorrad ist gerade verliehen. Erst die Rückgabe abschließen."));
         if (problems.length) return { loanId, status: "draft" as const, problems };
 
         await updateLoan(loanId, { status: "active" });
         return { loanId, status: "active" as const, problems: [] as string[] };
+      }),
+  }),
+
+  /**
+   * "In meinem Konto speichern" on /leihvertrag: creates or updates the bike and writes the whole form as a draft.
+   * The page then uploads the photos and calls `activate`, so a dropped connection leaves a draft to resume, not a
+   * half-documented active loan. Problems are returned as German keys; the browser translates them.
+   */
+  saveGenerated: defineAction({
+    accept: "form",
+    input: generatedInput,
+    handler: (input, context) =>
+      guard(async () => {
+        const user = requireUser(context);
+        const sigLender = checkSignature(input.sigLender);
+        const sigBorrower = checkSignature(input.sigBorrower);
+        const invalid = invalidFields(input);
+        if (invalid.length) badRequest(invalid[0].message);
+
+        const draft = input.loanId ? await getOwnLoan(input.loanId, user.id) : null;
+        if (input.loanId && !draft) notFound(tk("Vertrag nicht gefunden."));
+        if (draft && draft.status !== "draft") badRequest(tk("Dieser Vertrag ist schon abgeschlossen."));
+
+        const form = bikeFromForm(input);
+        const bike = draft ? await getOwnBike(draft.bikeId, user.id) : matchBike(await listOwnBikes(user.id), form.vin, form.plate);
+        const problems = saveProblems(input).map((p) => p.message);
+        const active = bike ? await getActiveLoan(bike.id) : null;
+        if (active) problems.push(tk("Dieses Motorrad ist gerade verliehen. Erst die Rückgabe abschließen."));
+        if (problems.length) return { loanId: null, problems };
+
+        const loan = loanFromForm(input);
+        const bikeId = bike?.id ?? newId();
+        if (bike) {
+          // The contract's data wins, so the saved PDF matches the signed one. Free text in Feld 22 is not ours to
+          // delete: the generator only has a switch for the footpeg condition.
+          const customConditions = bike.conditions && bike.conditions !== FOOTPEG_CONDITION;
+          await updateBike(bikeId, {
+            ...form,
+            conditions: customConditions ? bike.conditions : form.conditions,
+            liabilityCapEur: bike.liabilityCapEur,
+            photoPath: bike.photoPath,
+            lendable: bike.lendable,
+          });
+        } else {
+          await createBike(user.id, bikeId, { ...form, liabilityCapEur: loan.liabilityCapEur, photoPath: null, lendable: false });
+        }
+
+        const lender = lenderFromForm(input);
+        const values = { ...loan, lenderName: lender.name, lenderStreet: lender.street, lenderZipCity: lender.zipCity };
+        const loanId = draft?.id ?? newId();
+        if (draft) await updateLoan(loanId, values);
+        else await createLoan(loanId, bikeId, user.id, values);
+
+        await upsertProtocol(loanId, "handover", handoverFromForm(input));
+        const ret = returnFromForm(input);
+        if (ret) await upsertProtocol(loanId, "return", ret);
+        await setSignature(loanId, "lender", sigLender);
+        await setSignature(loanId, "borrower", sigBorrower);
+        return { loanId, problems: [] as string[] };
+      }),
+  }),
+
+  /** Second step of saveGenerated, after the handover photos are up: the same checks as "Abschließen" in the wizard. */
+  activate: defineAction({
+    accept: "form",
+    input: z.object({ loanId: z.string() }),
+    handler: (input, context) =>
+      guard(async () => {
+        const user = requireUser(context);
+        const loan = await getOwnLoan(input.loanId, user.id);
+        if (!loan) notFound(tk("Vertrag nicht gefunden."));
+        if (loan.status !== "draft") badRequest(tk("Dieser Vertrag ist schon abgeschlossen."));
+        const problems = loanProblems(loan).map((p) => p.message);
+        const active = await getActiveLoan(loan.bikeId);
+        if (active) problems.push(tk("Dieses Motorrad ist gerade verliehen. Erst die Rückgabe abschließen."));
+        if (problems.length) return { problems };
+        await updateLoan(loan.id, { status: "active" });
+        return { problems };
       }),
   }),
 

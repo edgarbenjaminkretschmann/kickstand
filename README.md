@@ -31,7 +31,7 @@ Open http://localhost:4321.
 
 `npm run db:reset` deletes the local SQLite file and runs migrate + seed again (stop the dev server first on Windows).
 
-Every form works without JavaScript. JS adds the signature pads, client-side photo resizing, draft autosave, sending messages without reload, the 15 s message poll and the PDF button.
+Every form works without JavaScript, except the public generator `/leihvertrag`, which builds its PDF in the browser. JS adds the signature pads, client-side photo resizing, draft autosave, sending messages without reload, the 15 s message poll and the PDF button.
 
 ### Database scripts
 
@@ -45,7 +45,7 @@ Every form works without JavaScript. JS adds the signature pads, client-side pho
 ### Tests
 
 ```sh
-npm test               # Vitest: contract PDF, euro words, dates, listing search and rules, conversation access, platform bits
+npm test               # Vitest: contract PDF, form mapper, euro words, dates, listing search and rules, conversation access, platform bits
 npm run check          # astro check (types)
 npm run check:bundle   # builds the Worker, wrangler dry-run, fails if native libSQL, sharp or node:fs is in the bundle
 ```
@@ -195,8 +195,10 @@ src/actions/            form handlers (auth, profile, bikes, loans, listings, me
 src/pages/anzeigen/     search, detail, neu, bearbeiten
 src/pages/nachrichten/  conversations list and thread
 src/pages/app/          Mein Bereich, bikes, loan wizard, return protocol
+src/pages/leihvertrag.astro  public contract generator, browser only until a member saves
 src/pages/media/        listing photos (public), bike/protocol photos and signatures (access-checked)
 src/lib/contract-pdf.ts buildContractPdf(data): pure, runs in browser and in Vitest
+src/lib/contract-form.ts form fields -> contract data and the checks, shared by generator and actions
 docs/                   MIGRATION-GOOGLE.md, DECISIONS.md
 ```
 
@@ -206,6 +208,7 @@ Actions and pages never import Drizzle, the schema or Better Auth directly; they
 
 - **Search** shows only `aktiv` listings, newest first, 20 per page. Keyword matches title and description (every word must appear), Ort/PLZ matches as a prefix.
 - **Bike listings:** "Motorrad zum Leihen" + "Biete" must link one of your own bikes and is always free. While the bike has an active loan the listing shows "verliehen" and takes no new messages.
+- **Leihvertrag ohne Konto (`/leihvertrag`):** works for any motorcycle, lender and borrower, with no login. Privacy: until a member taps "In meinem Konto speichern", no form field leaves the browser. Texts and switches are a draft in `localStorage`; photos and signatures stay in memory; the PDF is built on the device. The form cannot post (`method="dialog"`). Saving creates the bike if it is new (same FIN or plate as one of your bikes: that bike, updated) and an `active` loan, then uploads the photos. The page itself loads only static assets, plus the Google Fonts every page uses.
 - **Leihvertrag starten:** the owner starts the loan wizard from the listing or from a conversation about it; the wizard is prefilled from the other member's profile. The borrower can also have no account.
 - **Access:** only the owner edits a listing. A conversation is visible only to its two members. Loan photos, signatures and the contract data are served only to the lender and to the member of the conversation linked to the loan.
 - **One active loan per bike.** Finalising a contract checks this.

@@ -1,0 +1,47 @@
+---
+// Leihdauer card, shared by the contract wizard and the public generator.
+// The "return-place" slot sits under the Rückgabeort field (the generator's address buttons).
+import DateField from "./DateField.astro";
+import Field from "./Field.astro";
+import TimeField from "./TimeField.astro";
+import { i18n } from "../i18n";
+
+interface Props {
+  values: {
+    startDate?: string;
+    startTime?: string;
+    endMode?: string;
+    endDate?: string;
+    endTime?: string;
+    latestEndDate?: string;
+    returnPlace?: string;
+  };
+}
+
+const { values: v } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
+---
+
+<section class="card">
+  <h2>{t("Leihdauer")}</h2>
+  <div class="row">
+    <DateField label={t("Beginn Datum")} name="startDate" value={v.startDate} />
+    <TimeField label={t("Uhrzeit")} name="startTime" value={v.startTime} />
+  </div>
+  <div class="seg" role="radiogroup" aria-label={t("Ende der Leihe")}>
+    <label><input type="radio" name="endMode" value="open" checked={v.endMode !== "fixed"} /><span>{t("Offen")}</span></label>
+    <label><input type="radio" name="endMode" value="fixed" checked={v.endMode === "fixed"} /><span>{t("Festes Ende")}</span></label>
+  </div>
+  <div class="open-only stack">
+    <DateField label={t("Offen (unbefristet), spätestens am")} name="latestEndDate" value={v.latestEndDate} required />
+    <p class="hint">
+      {t("Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.")}
+    </p>
+  </div>
+  <div class="fixed-only row">
+    <DateField label={t("Ende Datum")} name="endDate" value={v.endDate} />
+    <TimeField label={t("Uhrzeit")} name="endTime" id="f-endTime" value={v.endTime} />
+  </div>
+  <Field label={t("Rückgabeort")} name="returnPlace" value={v.returnPlace} />
+  <slot name="return-place" />
+</section>

@@ -188,9 +188,9 @@ export async function loadLoanParts(loanId: string) {
     loan,
     bike,
     lender: {
-      name: lenderProfile?.name || lenderUser?.name || "",
-      street: lenderProfile?.street ?? "",
-      zipCity: lenderProfile?.zipCity ?? "",
+      name: loan.lenderName || lenderProfile?.name || lenderUser?.name || "",
+      street: loan.lenderName ? (loan.lenderStreet ?? "") : (lenderProfile?.street ?? ""),
+      zipCity: loan.lenderName ? (loan.lenderZipCity ?? "") : (lenderProfile?.zipCity ?? ""),
       city: lenderProfile?.city ?? "",
     },
     handover,

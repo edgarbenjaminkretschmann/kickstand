@@ -11,7 +11,7 @@ const { t, lang } = i18n(Astro.locals.lang);
 const loggedOut = Astro.getActionResult(actions.auth.logout);
 if (loggedOut && !loggedOut.error) return Astro.redirect("/");
 const user = Astro.locals.user;
-const latest = await latestListings(6);
+const latest = await latestListings(3);
 const joinHref = user ? "/anzeigen/neu" : "/registrieren";
 ---
 
@@ -19,15 +19,15 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
   <section class="hero wrap wide">
     <div class="hero-text">
       <p class="eyebrow">{t("Motorräder teilen · Garagen teilen")}</p>
-      <h1>{t("Dein Motorrad steht rum? Leih es aus – mit Vertrag aus dem Handy.")}</h1>
+      <h1>{t("Leihvertrag fürs Motorrad – in 5 Minuten am Handy.")}</h1>
       <svg class="stroke" width="260" height="18" viewBox="0 0 260 18" aria-hidden="true">
         <path d="M2 12 C40 6 90 5 140 7 S220 9 258 4 L256 11 C210 15 150 13 100 14 S30 17 4 17 Z" fill="currentColor"></path>
       </svg>
       <p class="lead">
-        {t("Kickstand ist für Leute, die sich gegenseitig aushelfen: ein Motorrad für ein paar Wochen, ein Platz in der Garage, Werkzeug für den Kettenwechsel. Den Leihvertrag füllst du zusammen am Handy aus, mit Fotos und Unterschrift.")}
+        {t("Kostenlos, ohne Anmeldung. Mit Übergabeprotokoll, Fotos und Unterschrift. Fertig als PDF.")}
       </p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="/app/bikes/new">{t("Motorrad eintragen")}</a>
+        <a class="btn btn-primary btn-lg" href="/leihvertrag">{t("Leihvertrag erstellen")}</a>
         <a class="btn btn-sky btn-lg" href="#so">{t("So geht's")}</a>
       </div>
     </div>
@@ -47,29 +47,6 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
       <span class="hero-caption">{t("Philippinen 2019 – 21 Orte in 35 Tagen mit dem Motorrad.")}</span>
       <span class="btn btn-outline btn-small hero-more">{t("Edgar & seine Motorradreisen")}</span>
     </a>
-  </section>
-
-  <section id="so" class="band-wash">
-    <div class="wrap wide section">
-      <h2 class="h-section">{t("So geht's")}</h2>
-      <ol class="steps">
-        <li class="step">
-          <span class="step-num" aria-hidden="true">1</span>
-          <h3>{t("Motorrad eintragen")}</h3>
-          <p>{t("Daten aus dem Fahrzeugschein, Versicherung und wie viel der Entleiher im Schadensfall höchstens zahlt.")}</p>
-        </li>
-        <li class="step">
-          <span class="step-num" aria-hidden="true">2</span>
-          <h3>{t("Leihvertrag am Handy")}</h3>
-          <p>{t("Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.")}</p>
-        </li>
-        <li class="step">
-          <span class="step-num" aria-hidden="true">3</span>
-          <h3>{t("Übergabe & Rückgabe")}</h3>
-          <p>{t("Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.")}</p>
-        </li>
-      </ol>
-    </div>
   </section>
 
   <section class="wrap wide section contract">
@@ -93,6 +70,35 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
         <strong>§ 6 Haftung des Entleihers</strong><br />
         Die Haftung ist auf höchstens <strong>1.000,00 €</strong> (in Worten: eintausend Euro) je Schadensfall begrenzt.
       </div>
+      <ul class="checks">
+        <li>{t("Offen oder festes Ende")}</li>
+        <li>{t("Haftungsgrenze frei wählbar")}</li>
+        <li>{t("Fotos & Unterschrift")}</li>
+      </ul>
+      <a class="btn btn-primary contract-cta" href="/leihvertrag">{t("Jetzt Vertrag erstellen")}</a>
+    </div>
+  </section>
+
+  <section id="so" class="band-wash">
+    <div class="wrap wide section">
+      <h2 class="h-section">{t("So geht's")}</h2>
+      <ol class="steps">
+        <li class="step">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3>{t("Motorrad eintragen")}</h3>
+          <p>{t("Daten aus dem Fahrzeugschein, Versicherung und wie viel der Entleiher im Schadensfall höchstens zahlt.")}</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3>{t("Leihvertrag am Handy")}</h3>
+          <p>{t("Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.")}</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3>{t("Übergabe & Rückgabe")}</h3>
+          <p>{t("Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.")}</p>
+        </li>
+      </ol>
     </div>
   </section>
 
@@ -321,6 +327,47 @@ const joinHref = user ? "/anzeigen/neu" : "/registrieren";
     font-size: 15px;
     line-height: 1.55;
     background: var(--surface);
+  }
+
+  .checks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .checks li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  /* A check mark drawn with two borders, on a sky dot. */
+  .checks li::before {
+    content: "";
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background:
+      linear-gradient(var(--sky), var(--sky));
+  }
+  .checks li::after {
+    content: "";
+    order: -1;
+    flex: none;
+    width: 6px;
+    height: 11px;
+    margin-right: -24px;
+    margin-left: 8px;
+    border: solid var(--ink);
+    border-width: 0 2px 2px 0;
+    transform: translateY(-1px) rotate(45deg);
+    z-index: 1;
+  }
+  .contract-cta {
+    align-self: flex-start;
   }
 
   /* Garagen & Hilfe */

@@ -8,7 +8,7 @@ import { env } from "./lib/env";
 const PROTECTED = [/^\/app(\/|$)/, /^\/nachrichten(\/|$)/, /^\/merkliste(\/|$)/, /^\/profil(\/|$)/, /^\/anzeigen\/neu(\/|$)/, /^\/anzeigen\/[^/]+\/bearbeiten(\/|$)/];
 
 // Public pages a shared cache may keep briefly. Only for logged-out visitors: the header shows the member.
-const SHORT_CACHE = new Set(["/", "/so-gehts"]);
+const SHORT_CACHE = new Set(["/", "/so-gehts", "/leihvertrag"]);
 const SHORT_CACHE_VALUE = "public, s-maxage=60, stale-while-revalidate=600";
 // Personal or changing pages: never cached anywhere.
 const NO_CACHE = [/^\/anzeigen/, /^\/nachrichten/, /^\/merkliste/, /^\/profil/, /^\/app(\/|$)/, /^\/login/, /^\/registrieren/, /^\/api\//];

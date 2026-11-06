@@ -3,7 +3,7 @@
     "src/pages/touren.astro"
   ],
   "„Spätestens am“ liegt vor dem Beginn.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
   ],
   "(noch kein Name)": [
     "src/pages/app/index.astro"
@@ -21,13 +21,16 @@
     "src/pages/anzeigen/[id]/index.astro"
   ],
   "{label} entfernen": [
-    "src/scripts/photos.ts"
+    "src/scripts/photo-utils.ts"
   ],
   "{label} Foto {n}, {time}": [
     "src/pages/app/loans/[id]/index.astro"
   ],
   "{n} Anzeigen": [
     "src/pages/anzeigen/index.astro"
+  ],
+  "{n} Datei(en) übersprungen. Nur Fotos sind möglich.": [
+    "src/scripts/contract-generator.ts"
   ],
   "{n} Foto(s) bereit, {skipped} übersprungen (höchstens {room}). Sie werden beim Speichern hochgeladen.": [
     "src/scripts/listing-photos.ts"
@@ -69,8 +72,15 @@
   ],
   "+ Fotos aufnehmen oder hochladen": [
     "src/components/ListingForm.astro",
+    "src/components/LoanHandoverFields.astro",
     "src/pages/app/loans/[id]/return.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/leihvertrag.astro"
+  ],
+  "= Adresse Entleiher": [
+    "src/pages/leihvertrag.astro"
+  ],
+  "= Adresse Verleiher": [
+    "src/pages/leihvertrag.astro"
   ],
   "1 Anzeige": [
     "src/pages/anzeigen/index.astro"
@@ -101,6 +111,9 @@
   ],
   "Abschließen": [
     "src/pages/app/loans/new.astro"
+  ],
+  "Abschreiben wie im Fahrzeugschein. Die Codes stehen dort links neben den Feldern.": [
+    "src/pages/leihvertrag.astro"
   ],
   "Abschreiben wie im Fahrzeugschein. Die Codes stehen dort links neben den Feldern. Kennzeichen und FIN bleiben privat und stehen nur im Leihvertrag.": [
     "src/components/BikeForm.astro"
@@ -145,6 +158,9 @@
   "Andere sehen deinen Vornamen und seit wann du dabei bist.": [
     "src/pages/profil.astro"
   ],
+  "anderer Betrag": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Anderes Foto wählen": [
     "src/components/BikeForm.astro"
   ],
@@ -162,17 +178,25 @@
     "src/pages/login.astro",
     "src/pages/registrieren.astro"
   ],
+  "Anmelden, um zu speichern": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Anmeldung fehlgeschlagen.": [
     "src/lib/auth/index.ts"
   ],
   "Anschrift des Entleihers fehlt.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts",
+    "src/scripts/contract-generator.ts"
+  ],
+  "Anschrift des Verleihers fehlt.": [
+    "src/lib/contract-form.ts",
+    "src/scripts/contract-generator.ts"
   ],
   "Antwort": [
     "src/pages/nachrichten/[id].astro"
   ],
   "Anzahl": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanItemsFields.astro"
   ],
   "Anzeige": [
     "src/components/ListingForm.astro"
@@ -230,6 +254,9 @@
   "Auflage": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
+  "Auflage Beifahrer-Fußrasten (Feld 22)": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Aus dem Profil von {name} vorausgefüllt. Bitte mit Ausweis und Führerschein vergleichen.": [
     "src/pages/app/loans/new.astro"
   ],
@@ -241,16 +268,16 @@
     "src/pages/app/loans/[id]/index.astro"
   ],
   "Beginn Datum": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro"
   ],
   "Beginn der Leihe fehlt.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
   ],
   "Bei Festpreis Pflicht, bei VB optional.": [
     "src/components/ListingForm.astro"
   ],
   "Bei offener Leihe ist „spätestens am“ Pflicht.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
   ],
   "Bei Übergabe": [
     "src/pages/app/loans/[id]/return.astro"
@@ -259,7 +286,8 @@
     "src/components/BikeForm.astro"
   ],
   "Benzin": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Bepackte Enduro auf dem Seitenständer vor einem grünen Bauzaun in Myanmar": [
     "src/pages/index.astro"
@@ -278,7 +306,8 @@
   ],
   "Betrag in €": [
     "src/components/ListingForm.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Bezahlt habe ich das Reisen fast immer mit Unterrichten: Englisch und Deutsch, fast ein Jahr in Qingdao, danach in Südkorea und auf den Philippinen. Früher habe ich auf meinem Blog vlogato davon erzählt, heute erzähle ich hier weiter.": [
     "src/pages/touren.astro"
@@ -320,7 +349,8 @@
     "src/actions/listings.ts"
   ],
   "Bitte das Modell angeben.": [
-    "src/actions/bikes.ts"
+    "src/actions/bikes.ts",
+    "src/lib/contract-form.ts"
   ],
   "Bitte das Passwort angeben.": [
     "src/actions/auth.ts"
@@ -332,7 +362,11 @@
     "src/actions/auth.ts"
   ],
   "Bitte die Marke angeben.": [
-    "src/actions/bikes.ts"
+    "src/actions/bikes.ts",
+    "src/lib/contract-form.ts"
+  ],
+  "Bitte die markierten Felder korrigieren.": [
+    "src/scripts/contract-generator.ts"
   ],
   "Bitte ein Foto als JPEG, PNG oder WebP hochladen.": [
     "src/lib/uploads.ts"
@@ -361,7 +395,8 @@
   ],
   "Bitte eine Zahl angeben.": [
     "src/actions/bikes.ts",
-    "src/actions/loans.ts"
+    "src/actions/loans.ts",
+    "src/lib/contract-form.ts"
   ],
   "Bitte einen Anzeigenamen angeben.": [
     "src/actions/profile.ts"
@@ -370,7 +405,8 @@
     "src/actions/listings.ts"
   ],
   "Bitte einen Betrag angeben.": [
-    "src/actions/bikes.ts"
+    "src/actions/bikes.ts",
+    "src/scripts/contract-generator.ts"
   ],
   "Bitte einen Preis angeben.": [
     "src/lib/data/listings.ts"
@@ -378,6 +414,9 @@
   "Bitte einen Titel angeben.": [
     "src/actions/listings.ts",
     "src/lib/data/listings.ts"
+  ],
+  "Bitte ergänzen: {list}": [
+    "src/scripts/contract-generator.ts"
   ],
   "Bitte erst speichern, dann Fotos hinzufügen.": [
     "src/scripts/photos.ts"
@@ -400,7 +439,7 @@
     "src/components/ListingForm.astro"
   ],
   "Das Ende liegt vor dem Beginn.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
   ],
   "Das Enduro mit Gepäck steht vor einer grünen Plane am Wegrand": [
     "src/pages/touren.astro"
@@ -435,6 +474,9 @@
   "Das Passwort braucht mindestens 8 Zeichen.": [
     "src/lib/auth/index.ts"
   ],
+  "Das PDF wird in deinem Browser erstellt. Dafür braucht diese Seite JavaScript.": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Das Zurücksetzen per E-Mail kommt bald. Kickstand verschickt noch keine E-Mails.": [
     "src/pages/passwort-vergessen.astro"
   ],
@@ -449,7 +491,8 @@
     "src/pages/datenschutz.astro"
   ],
   "Datum": [
-    "src/pages/app/loans/[id]/return.astro"
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Datum als TT.MM.JJJJ": [
     "src/components/DateField.astro"
@@ -457,16 +500,15 @@
   "Datum als TT.MM.JJJJ angeben.": [
     "src/actions/bikes.ts",
     "src/actions/loans.ts",
-    "src/actions/profile.ts"
+    "src/actions/profile.ts",
+    "src/lib/contract-form.ts",
+    "src/scripts/contract-generator.ts"
   ],
   "Dein {link} ist noch unvollständig. Mit vollem Namen, Anschrift, Geburtsdatum und Führerschein-Nr. sind Leihverträge schneller ausgefüllt.": [
     "src/pages/app/index.astro"
   ],
   "Dein Anzeigename ist öffentlich. Alles andere bleibt privat und füllt nur deine Leihverträge vor.": [
     "src/pages/profil.astro"
-  ],
-  "Dein Motorrad steht rum? Leih es aus – mit Vertrag aus dem Handy.": [
-    "src/pages/index.astro"
   ],
   "Deine Anzeige": [
     "src/pages/anzeigen/[id]/index.astro"
@@ -477,11 +519,18 @@
   "Deine Anzeigen, Motorräder, Leihen und Nachrichten.": [
     "src/pages/app/index.astro"
   ],
+  "Deine Daten bleiben auf deinem Gerät, bis du dich anmeldest und speicherst.": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Deine Unterhaltungen zu Anzeigen.": [
     "src/pages/nachrichten/index.astro"
   ],
   "Der Entleiher zahlt den tatsächlichen Schaden, höchstens diesen Betrag. Bei Vorsatz, grober Fahrlässigkeit, Alkohol oder Fahren ohne Führerschein haftet er voll.": [
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
+  ],
+  "Der Entwurf bleibt beim Anmelden erhalten, Fotos und Unterschriften nicht.": [
+    "src/pages/leihvertrag.astro"
   ],
   "Der Kilometerstand ist kleiner als bei der Übergabe.": [
     "src/actions/loans.ts"
@@ -491,7 +540,8 @@
   ],
   "Der Vertrag wird auf Deutsch erstellt. Die deutsche Fassung ist verbindlich.": [
     "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Der Vertrag, den wir selbst benutzen": [
     "src/pages/index.astro"
@@ -509,7 +559,8 @@
     "src/pages/touren.astro"
   ],
   "Die Haftungsgrenze muss zwischen 0 und 100.000 € liegen.": [
-    "src/actions/bikes.ts"
+    "src/actions/bikes.ts",
+    "src/lib/contract-form.ts"
   ],
   "Die Honda steht an einer Bergstrasse mit Leitplanke, dahinter ein grünes Alpental": [
     "src/pages/touren.astro"
@@ -550,7 +601,8 @@
     "src/pages/app/loans/new.astro"
   ],
   "Dieses Motorrad ist gerade verliehen. Erst die Rückgabe abschließen.": [
-    "src/actions/loans.ts"
+    "src/actions/loans.ts",
+    "src/scripts/contract-save.ts"
   ],
   "Du hast noch kein Motorrad eingetragen.": [
     "src/components/ListingForm.astro"
@@ -614,7 +666,7 @@
     "src/pages/touren.astro"
   ],
   "Ein Konto braucht der Entleiher nicht. Daten vom Führerschein und Ausweis abschreiben.": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanBorrowerFields.astro"
   ],
   "Ein runder Kaktus mit roter Frucht in der Tatacoa-Wüste": [
     "src/pages/touren.astro"
@@ -635,20 +687,21 @@
     "src/pages/app/loans/[id]/index.astro"
   ],
   "Ende Datum": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro"
   ],
   "Ende der Leihe": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro"
   ],
   "Ende der Leihe fehlt.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
   ],
   "Entfernen": [
     "src/pages/anzeigen/[id]/bearbeiten.astro"
   ],
   "Entleiher": [
-    "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanBorrowerFields.astro",
+    "src/components/LoanSignatures.astro",
+    "src/pages/app/loans/[id]/index.astro"
   ],
   "Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.": [
     "src/pages/index.astro"
@@ -682,7 +735,11 @@
   ],
   "Erstzulassung": [
     "src/components/BikeForm.astro",
-    "src/pages/anzeigen/[id]/index.astro"
+    "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/leihvertrag.astro"
+  ],
+  "Es fehlt noch: {list} Nochmal tippen erstellt das PDF trotzdem, die Lücken kannst du von Hand ausfüllen.": [
+    "src/scripts/contract-generator.ts"
   ],
   "Es gibt schon einen Entwurf für dieses Motorrad (an {name}).": [
     "src/pages/app/loans/new.astro"
@@ -697,7 +754,8 @@
     "src/components/BikeDoc.astro"
   ],
   "Fahrzeug-Ident.-Nr.": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Fahrzeugdaten": [
     "src/components/BikeDoc.astro"
@@ -710,10 +768,11 @@
   ],
   "Fehler": [
     "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/scripts/contract-generator.ts"
   ],
   "Festes Ende": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro"
   ],
   "Festpreis": [
     "src/lib/listing-format.ts"
@@ -724,17 +783,28 @@
   "FIN": [
     "src/components/BikeDoc.astro"
   ],
+  "FIN fehlt.": [
+    "src/lib/contract-form.ts"
+  ],
+  "Formular geleert.": [
+    "src/scripts/contract-generator.ts"
+  ],
   "Foto": [
     "src/components/BikeForm.astro"
   ],
   "Foto {n}": [
     "src/pages/anzeigen/[id]/bearbeiten.astro",
     "src/pages/anzeigen/[id]/index.astro",
+    "src/scripts/contract-generator.ts",
     "src/scripts/listing-photos.ts",
     "src/scripts/photos.ts"
   ],
   "Foto {n} von {total} wird hochgeladen …": [
+    "src/scripts/contract-save.ts",
     "src/scripts/photos.ts"
+  ],
+  "Foto {n} von {total} wird verkleinert …": [
+    "src/scripts/contract-generator.ts"
   ],
   "Foto {n}, {time}": [
     "src/pages/app/loans/[id]/return.astro",
@@ -764,6 +834,9 @@
   "Fotos ({n})": [
     "src/pages/anzeigen/[id]/bearbeiten.astro"
   ],
+  "Fotos & Unterschrift": [
+    "src/pages/index.astro"
+  ],
   "Fotos können hier nicht mehr geändert werden.": [
     "src/actions/loans.ts"
   ],
@@ -771,11 +844,11 @@
     "src/pages/anzeigen/[id]/index.astro"
   ],
   "Führerschein-Nr.": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
     "src/pages/profil.astro"
   ],
   "Führerschein-Nr. fehlt.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
   ],
   "Für „Motorrad zum Leihen“ bitte eins deiner Motorräder wählen.": [
     "src/lib/data/listings.ts"
@@ -797,7 +870,7 @@
     "src/pages/index.astro"
   ],
   "Geburtsdatum": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
     "src/pages/profil.astro"
   ],
   "Geliehen": [
@@ -837,17 +910,22 @@
     "src/pages/touren.astro"
   ],
   "Haftpflichtversicherer": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Haftung": [
     "src/pages/anzeigen/[id]/index.astro",
     "src/pages/app/loans/[id]/index.astro"
   ],
   "Haftungsgrenze Entleiher": [
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Haftungsgrenze Entleiher in €": [
     "src/components/BikeForm.astro"
+  ],
+  "Haftungsgrenze frei wählbar": [
+    "src/pages/index.astro"
   ],
   "Hallo {name}": [
     "src/pages/app/index.astro"
@@ -859,7 +937,8 @@
     "src/pages/anzeigen/[id]/index.astro"
   ],
   "Handelsbezeichnung": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Hauptnavigation": [
     "src/layouts/Base.astro"
@@ -888,7 +967,9 @@
   "höchstens {amount} je Schaden": [
     "src/pages/anzeigen/[id]/index.astro",
     "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro",
+    "src/scripts/contract-generator.ts"
   ],
   "Höchstens 120 Zeichen.": [
     "src/actions/listings.ts"
@@ -902,7 +983,8 @@
     "src/lib/data/listings.ts"
   ],
   "Hubraum ccm": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Ich bin Edgar Kretschmann. Meine erste große Reise ging nach Australien. Dort habe ich genug gespart, um durch Südostasien zu reisen, und zurück war danach keine Option mehr. Ich konnte nicht zu Hause bleiben, nicht einmal in Europa. Ich musste den Rest der Party sehen.": [
     "src/pages/touren.astro"
@@ -923,6 +1005,9 @@
   "in Anzeige": [
     "src/pages/app/index.astro"
   ],
+  "In meinem Konto speichern": [
+    "src/pages/leihvertrag.astro"
+  ],
   "In Saigon habe ich mir eine chinesische Honda Win geliehen und sie nach 22 Tagen zurückgebracht. Sie ging ungefähr einmal am Tag kaputt. Das war halb so schlimm: An jeder Ecke saß ein Mechaniker, und eine Reparatur kostete selten mehr als zehn Dollar.": [
     "src/pages/touren.astro"
   ],
@@ -932,6 +1017,9 @@
   "Ja, löschen": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
+  "Jetzt Vertrag erstellen": [
+    "src/pages/index.astro"
+  ],
   "Karte der Tour vom Oktober 2019 mit allen Stationen auf den Philippinen": [
     "src/pages/touren.astro"
   ],
@@ -939,7 +1027,7 @@
     "src/pages/anzeigen/index.astro"
   ],
   "Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro"
   ],
   "keine angegeben": [
     "src/pages/app/loans/[id]/index.astro"
@@ -951,23 +1039,25 @@
     "src/components/BikeDoc.astro"
   ],
   "Kennzeichen": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
-  "Kickstand ist für Leute, die sich gegenseitig aushelfen: ein Motorrad für ein paar Wochen, ein Platz in der Garage, Werkzeug für den Kettenwechsel. Den Leihvertrag füllst du zusammen am Handy aus, mit Fotos und Unterschrift.": [
-    "src/pages/index.astro"
+  "Kennzeichen fehlt.": [
+    "src/lib/contract-form.ts"
   ],
   "Kickstand. Zur Startseite": [
     "src/components/Logo.astro"
   ],
   "Kilometerstand": [
+    "src/components/LoanHandoverFields.astro",
     "src/pages/app/loans/[id]/return.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/leihvertrag.astro"
   ],
   "Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.": [
     "src/pages/index.astro"
   ],
   "Klasse A seit": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
     "src/pages/profil.astro"
   ],
   "Kolumbien 2024, Tatacoa-Wüste": [
@@ -991,11 +1081,18 @@
   "Kostenlos, in zwei Schritten.": [
     "src/pages/anzeigen/neu.astro"
   ],
+  "Kostenlos, ohne Anmeldung. Mit Übergabeprotokoll, Fotos und Unterschrift. Fertig als PDF.": [
+    "src/pages/index.astro"
+  ],
   "Kostenlose Leihe nach § 598 BGB mit Leihvertrag, Übergabeprotokoll und Fotos.": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
+  "Kostenloser Leihvertrag fürs Motorrad, ohne Anmeldung: Formular am Handy ausfüllen, Übergabe mit Fotos festhalten, mit dem Finger unterschreiben und als PDF speichern.": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Kraftstoff": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Land": [
     "src/components/ListingForm.astro"
@@ -1009,13 +1106,20 @@
   "Leere breite Strasse unter Gewitterwolken, im Rückspiegel ein Bein": [
     "src/pages/touren.astro"
   ],
+  "Leeren": [
+    "src/pages/leihvertrag.astro"
+  ],
+  "Legt das Motorrad an, falls es neu ist, und speichert den Vertrag als laufende Leihe. Die Fotos werden dabei hochgeladen.": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Leihdauer": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro"
   ],
   "Leihen": [
     "src/pages/app/index.astro"
   ],
   "Leihvertrag": [
+    "src/layouts/Base.astro",
     "src/pages/app/index.astro",
     "src/pages/app/loans/new.astro"
   ],
@@ -1025,12 +1129,22 @@
   "Leihvertrag am Handy": [
     "src/pages/index.astro"
   ],
+  "Leihvertrag erstellen": [
+    "src/pages/index.astro"
+  ],
+  "Leihvertrag fürs Motorrad – in 5 Minuten am Handy.": [
+    "src/pages/index.astro"
+  ],
   "Leihvertrag mit {name} starten": [
     "src/pages/anzeigen/[id]/index.astro",
     "src/pages/nachrichten/[id].astro"
   ],
   "Leihvertrag Motorrad": [
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
+  ],
+  "Leihvertrag Motorrad kostenlos erstellen – mit Übergabeprotokoll, Fotos und Unterschrift am Handy": [
+    "src/pages/leihvertrag.astro"
   ],
   "Leihvertrag starten": [
     "src/pages/anzeigen/[id]/index.astro"
@@ -1039,13 +1153,15 @@
     "src/pages/anzeigen/[id]/index.astro"
   ],
   "Leistung kW": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Löschen": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanSignatures.astro"
   ],
   "Marke": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Mechaniker repariert ein Motorrad am Straßenrand": [
     "src/pages/touren.astro"
@@ -1084,7 +1200,7 @@
     "src/pages/registrieren.astro"
   ],
   "Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanSignatures.astro"
   ],
   "Mit dem Speichern ist die Leihe beendet und das Motorrad wieder frei.": [
     "src/pages/app/loans/[id]/return.astro"
@@ -1108,8 +1224,8 @@
     "src/db/categories.ts"
   ],
   "Mitgegeben": [
-    "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanItemsFields.astro",
+    "src/pages/app/loans/[id]/index.astro"
   ],
   "Mitglied": [
     "src/lib/data/conversations.ts",
@@ -1126,7 +1242,8 @@
     "src/pages/anzeigen/[id]/index.astro"
   ],
   "Motorrad": [
-    "src/components/ListingForm.astro"
+    "src/components/ListingForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Motorrad an einer Bergstraße durch Teeplantagen": [
     "src/pages/touren.astro"
@@ -1189,10 +1306,14 @@
     "src/pages/registrieren.astro"
   ],
   "Name des Entleihers fehlt.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
+  ],
+  "Name des Verleihers fehlt.": [
+    "src/lib/contract-form.ts"
   ],
   "Name, Vorname": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
+    "src/pages/leihvertrag.astro",
     "src/pages/profil.astro"
   ],
   "Nasse Strasse durch grüne Hügel, vorn am Motorrad hängen Bananen": [
@@ -1200,7 +1321,8 @@
   ],
   "Neue Schäden": [
     "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/[id]/return.astro"
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "nicht digital unterschrieben": [
     "src/pages/app/loans/[id]/index.astro"
@@ -1218,6 +1340,9 @@
   "Nicht gefunden.": [
     "src/actions/util.ts",
     "src/lib/data/errors.ts"
+  ],
+  "Nicht gespeichert ({reason}).": [
+    "src/scripts/contract-generator.ts"
   ],
   "Nicht gespeichert ({reason}). Wird beim nächsten Tippen erneut versucht.": [
     "src/pages/app/loans/new.astro"
@@ -1277,11 +1402,14 @@
     "src/components/GoogleButton.astro"
   ],
   "Offen": [
-    "src/lib/labels.ts",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro",
+    "src/lib/labels.ts"
   ],
   "Offen (unbefristet), spätestens am": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro"
+  ],
+  "Offen oder festes Ende": [
+    "src/pages/index.astro"
   ],
   "offen, spätestens {date} (Rückgabe auf Aufforderung binnen 3 Tagen)": [
     "src/pages/app/loans/[id]/index.astro"
@@ -1290,7 +1418,8 @@
     "src/pages/profil.astro"
   ],
   "offline?": [
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/scripts/contract-generator.ts"
   ],
   "Ort": [
     "src/components/ListingForm.astro"
@@ -1306,7 +1435,7 @@
     "src/pages/anzeigen/index.astro"
   ],
   "Ort, Datum": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanSignatures.astro"
   ],
   "Passwort": [
     "src/pages/login.astro",
@@ -1319,10 +1448,12 @@
     "src/pages/login.astro"
   ],
   "PDF erstellen": [
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "PDF erstellt.": [
-    "src/pages/app/loans/[id]/index.astro"
+    "src/pages/app/loans/[id]/index.astro",
+    "src/scripts/contract-generator.ts"
   ],
   "PDF erstellt. Zum Abschließen unten auf „Abschließen“ tippen.": [
     "src/pages/app/loans/new.astro"
@@ -1332,9 +1463,14 @@
   ],
   "PDF konnte nicht erstellt werden ({reason}).": [
     "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/scripts/contract-generator.ts"
+  ],
+  "PDF öffnen": [
+    "src/scripts/contract-generator.ts"
   ],
   "PDF wird erstellt …": [
+    "src/scripts/contract-generator.ts",
     "src/scripts/pdf.ts"
   ],
   "Pfad": [
@@ -1354,7 +1490,8 @@
     "src/components/ListingForm.astro"
   ],
   "PLZ, Ort": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
+    "src/pages/leihvertrag.astro",
     "src/pages/profil.astro"
   ],
   "Portugal 2021": [
@@ -1402,7 +1539,8 @@
   "Rückgabe": [
     "src/pages/app/index.astro",
     "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/[id]/return.astro"
+    "src/pages/app/loans/[id]/return.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Rückgabe am {date}": [
     "src/pages/app/index.astro"
@@ -1417,11 +1555,11 @@
     "src/pages/app/loans/[id]/return.astro"
   ],
   "Rückgabeort": [
-    "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanPeriodFields.astro",
+    "src/pages/app/loans/[id]/index.astro"
   ],
   "Rückgabeort fehlt.": [
-    "src/actions/loans.ts"
+    "src/lib/contract-form.ts"
   ],
   "Rückgabeprotokoll": [
     "src/pages/app/loans/[id]/return.astro"
@@ -1439,7 +1577,7 @@
     "src/pages/app/loans/[id]/return.astro"
   ],
   "Schlüssel": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanItemsFields.astro"
   ],
   "Schlüssel ({n})": [
     "src/pages/app/loans/[id]/index.astro"
@@ -1484,7 +1622,10 @@
     "src/db/categories.ts"
   ],
   "Sonstiges (z. B. Helm, Schloss)": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanItemsFields.astro"
+  ],
+  "später ausfüllen": [
+    "src/pages/leihvertrag.astro"
   ],
   "spätestens {date}": [
     "src/pages/app/index.astro"
@@ -1496,7 +1637,8 @@
     "src/pages/profil.astro"
   ],
   "Speichert …": [
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/scripts/contract-save.ts"
   ],
   "Sporttourer am Straßenrand vor Felswänden und Schneefeldern": [
     "src/pages/touren.astro"
@@ -1517,7 +1659,8 @@
     "src/components/ListingTypeStep.astro"
   ],
   "Straße, Hausnummer": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
+    "src/pages/leihvertrag.astro",
     "src/pages/profil.astro"
   ],
   "Streetfood essen spart Geld. Rechne aber damit, dass es meistens dasselbe gibt.": [
@@ -1543,8 +1686,9 @@
     "src/pages/app/loans/[id]/return.astro"
   ],
   "Tankstand": [
+    "src/components/LoanHandoverFields.astro",
     "src/pages/app/loans/[id]/return.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/leihvertrag.astro"
   ],
   "Tausch": [
     "src/lib/listing-format.ts"
@@ -1553,12 +1697,15 @@
     "src/db/categories.ts"
   ],
   "Telefon": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
     "src/pages/profil.astro"
   ],
+  "Texte und Schalter merkt sich dein Browser als Entwurf. Fotos und Unterschriften bleiben nur im Arbeitsspeicher: Sie sind weg, sobald du die Seite neu lädst oder verlässt.": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.": [
-    "src/pages/app/loans/[id]/return.astro",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanHandoverFields.astro",
+    "src/pages/app/loans/[id]/return.astro"
   ],
   "Titel": [
     "src/components/ListingForm.astro"
@@ -1574,30 +1721,35 @@
     "src/pages/touren.astro"
   ],
   "Typ": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Übergabe": [
-    "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanHandoverFields.astro",
+    "src/pages/app/loans/[id]/index.astro"
   ],
   "Übergabe & Rückgabe": [
     "src/pages/index.astro"
   ],
   "Uhrzeit": [
+    "src/components/LoanPeriodFields.astro",
     "src/pages/app/loans/[id]/return.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/leihvertrag.astro"
   ],
   "Uhrzeit als HH:MM": [
     "src/components/TimeField.astro"
   ],
   "Uhrzeit als HH:MM angeben.": [
-    "src/actions/loans.ts"
+    "src/actions/loans.ts",
+    "src/lib/contract-form.ts",
+    "src/scripts/contract-generator.ts"
   ],
   "Unbekannter Status.": [
     "src/lib/data/listings.ts"
   ],
   "Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.": [
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Unentgeltliche Leihe nach §§ 598 ff. BGB. Klare Haftungsgrenze pro Schaden, Rückgabe auf Aufforderung innerhalb von 3 Tagen, Übergabeprotokoll mit Fotos.": [
     "src/pages/index.astro"
@@ -1610,17 +1762,17 @@
     "src/pages/app/loans/[id]/index.astro"
   ],
   "Unterschrift Entleiher, mit dem Finger zeichnen": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanSignatures.astro"
   ],
   "Unterschrift ist ungültig.": [
     "src/actions/loans.ts"
   ],
   "Unterschrift Verleiher, mit dem Finger zeichnen": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanSignatures.astro"
   ],
   "Unterschriften": [
-    "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanSignatures.astro",
+    "src/pages/app/loans/[id]/index.astro"
   ],
   "Unterwegs": [
     "src/pages/touren.astro"
@@ -1646,7 +1798,8 @@
   ],
   "Verleiher": [
     "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/app/loans/new.astro",
+    "src/pages/leihvertrag.astro"
   ],
   "Verleiher ({name})": [
     "src/pages/app/loans/new.astro"
@@ -1663,11 +1816,21 @@
   "Verliehen wird immer kostenlos, mit Leihvertrag und der Haftungsgrenze aus den Fahrzeugdaten. Kennzeichen und FIN bleiben privat.": [
     "src/components/ListingForm.astro"
   ],
+  "Versicherer fehlt.": [
+    "src/lib/contract-form.ts"
+  ],
+  "Versicherung": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Versicherung und Haftung": [
     "src/components/BikeForm.astro"
   ],
   "Versicherungsschein-Nr.": [
-    "src/components/BikeForm.astro"
+    "src/components/BikeForm.astro",
+    "src/pages/leihvertrag.astro"
+  ],
+  "Versicherungsscheinnummer fehlt.": [
+    "src/lib/contract-form.ts"
   ],
   "Vertrag abgeschlossen. Das Motorrad ist jetzt als verliehen markiert.": [
     "src/pages/app/loans/[id]/index.astro"
@@ -1691,7 +1854,7 @@
     "src/lib/listing-format.ts"
   ],
   "Vorhandene Schäden / Kratzer": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanHandoverFields.astro"
   ],
   "Warum Kickstand": [
     "src/pages/touren.astro"
@@ -1749,6 +1912,9 @@
   "Wirklich entfernen?": [
     "src/pages/anzeigen/[id]/bearbeiten.astro"
   ],
+  "Wirklich leeren?": [
+    "src/pages/leihvertrag.astro"
+  ],
   "Wirklich löschen?": [
     "src/pages/app/loans/new.astro"
   ],
@@ -1759,7 +1925,7 @@
     "src/components/ListingTypeStep.astro"
   ],
   "z. B. 2015": [
-    "src/pages/app/loans/new.astro",
+    "src/components/LoanBorrowerFields.astro",
     "src/pages/profil.astro"
   ],
   "z. B. 25": [
@@ -1778,7 +1944,7 @@
     "src/components/ListingForm.astro"
   ],
   "z. B. Kratzer Tank links, Spiegel rechts lose": [
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanHandoverFields.astro"
   ],
   "z. B. Leipzig oder 04": [
     "src/pages/anzeigen/index.astro"
@@ -1802,8 +1968,9 @@
     "src/components/ListingForm.astro"
   ],
   "z. B. voll, ½": [
+    "src/components/LoanHandoverFields.astro",
     "src/pages/app/loans/[id]/return.astro",
-    "src/pages/app/loans/new.astro"
+    "src/pages/leihvertrag.astro"
   ],
   "z. B. Wer hilft beim Kettenwechsel?": [
     "src/components/ListingForm.astro"
@@ -1819,8 +1986,8 @@
   ],
   "Zulassungsbescheinigung Teil I": [
     "src/components/BikeForm.astro",
-    "src/pages/app/loans/[id]/index.astro",
-    "src/pages/app/loans/new.astro"
+    "src/components/LoanItemsFields.astro",
+    "src/pages/app/loans/[id]/index.astro"
   ],
   "Zum Inhalt": [
     "src/layouts/Base.astro"

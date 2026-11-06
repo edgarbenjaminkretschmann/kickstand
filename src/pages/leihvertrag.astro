@@ -1,0 +1,240 @@
+---
+// The public contract generator: no login, nothing leaves the browser until a member chooses to save.
+// The form never posts (method="dialog", all buttons type="button"), so even without JS no field reaches a URL or a log.
+import Base from "../layouts/Base.astro";
+import DateField from "../components/DateField.astro";
+import Field from "../components/Field.astro";
+import LoanBorrowerFields from "../components/LoanBorrowerFields.astro";
+import LoanHandoverFields from "../components/LoanHandoverFields.astro";
+import LoanItemsFields from "../components/LoanItemsFields.astro";
+import LoanPeriodFields from "../components/LoanPeriodFields.astro";
+import LoanSignatures from "../components/LoanSignatures.astro";
+import TimeField from "../components/TimeField.astro";
+import { getProfile } from "../lib/data/profiles";
+import { formatDate, todayIso } from "../lib/dates";
+import { euroInWords, formatEuro } from "../lib/euro-words";
+import { i18n } from "../i18n";
+
+const { t, lang } = i18n(Astro.locals.lang);
+const user = Astro.locals.user;
+const profile = user ? await getProfile(user.id) : null;
+const today = todayIso();
+const defaults = {
+  keys: true,
+  keyCount: "1",
+  registration: true,
+  startDate: today,
+  endMode: "open",
+  placeDate: [profile?.city, formatDate(today, lang)].filter(Boolean).join(", "),
+};
+const caps = [
+  ["500", "500 €"],
+  ["1000", "1.000 €"],
+  ["1500", "1.500 €"],
+];
+---
+
+<Base
+  title={t("Leihvertrag Motorrad kostenlos erstellen – mit Übergabeprotokoll, Fotos und Unterschrift am Handy")}
+  description={t("Kostenloser Leihvertrag fürs Motorrad, ohne Anmeldung: Formular am Handy ausfüllen, Übergabe mit Fotos festhalten, mit dem Finger unterschreiben und als PDF speichern.")}
+  dock
+  dockFooter
+>
+  <div class="page-head">
+    <h1>{t("Leihvertrag Motorrad")}</h1>
+    <p>{t("Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.")}</p>
+  </div>
+
+  <p class="notice">
+    <strong>{t("Deine Daten bleiben auf deinem Gerät, bis du dich anmeldest und speicherst.")}</strong>
+    {" "}{t("Texte und Schalter merkt sich dein Browser als Entwurf. Fotos und Unterschriften bleiben nur im Arbeitsspeicher: Sie sind weg, sobald du die Seite neu lädst oder verlässt.")}
+  </p>
+  {lang !== "de" && <p class="notice">{t("Der Vertrag wird auf Deutsch erstellt. Die deutsche Fassung ist verbindlich.")}</p>}
+  <p class="notice nojs-only">{t("Das PDF wird in deinem Browser erstellt. Dafür braucht diese Seite JavaScript.")}</p>
+
+  <form id="generator" method="dialog" class="stack" novalidate autocomplete="off">
+    <section class="card">
+      <h2>{t("Verleiher")}</h2>
+      <Field label={t("Name, Vorname")} name="lenderName" value={profile?.name || user?.name} />
+      <Field label={t("Straße, Hausnummer")} name="lenderStreet" value={profile?.street} />
+      <Field label={t("PLZ, Ort")} name="lenderZipCity" value={profile?.zipCity} />
+    </section>
+
+    <LoanBorrowerFields values={{}} />
+
+    <section class="card">
+      <h2>{t("Motorrad")}</h2>
+      <p class="hint">{t("Abschreiben wie im Fahrzeugschein. Die Codes stehen dort links neben den Feldern.")}</p>
+      <div class="row stack-sm">
+        <Field code="D.1" label={t("Marke")} name="make" placeholder="Honda" />
+        <Field code="D.3" label={t("Handelsbezeichnung")} name="model" placeholder="VFR 750 F" />
+      </div>
+      <div class="row stack-sm">
+        <Field code="D.2" label={t("Typ")} name="typeCode" mono placeholder="RC36" />
+        <Field code="A" label={t("Kennzeichen")} name="plate" mono autocapitalize="characters" placeholder="M-AB 123" />
+      </div>
+      <Field code="E" label={t("Fahrzeug-Ident.-Nr.")} name="vin" mono autocapitalize="characters" maxlength={17} />
+      <DateField code="B" label={t("Erstzulassung")} name="firstRegistration" />
+      <div class="row-3">
+        <Field code="P.2" label={t("Leistung kW")} name="powerKw" mono inputmode="numeric" />
+        <Field code="P.1" label={t("Hubraum ccm")} name="displacementCcm" mono inputmode="numeric" />
+        <Field code="P.3" label={t("Kraftstoff")} name="fuel" placeholder={t("Benzin")} />
+      </div>
+      <label class="check"><input type="checkbox" name="footpegs" />{t("Auflage Beifahrer-Fußrasten (Feld 22)")}</label>
+    </section>
+
+    <section class="card">
+      <h2>{t("Versicherung")}</h2>
+      <div class="row stack-sm">
+        <Field label={t("Haftpflichtversicherer")} name="insurer" />
+        <Field label={t("Versicherungsschein-Nr.")} name="policyNumber" mono />
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>{t("Haftungsgrenze Entleiher")}</h2>
+      <div class="seg seg-4" role="radiogroup" aria-label={t("Haftungsgrenze Entleiher")}>
+        {caps.map(([value, label]) => (
+          <label><input type="radio" name="liabilityChoice" value={value} checked={value === "1000"} /><span>{label}</span></label>
+        ))}
+        <label><input type="radio" name="liabilityChoice" value="other" /><span>{t("anderer Betrag")}</span></label>
+      </div>
+      <div class="cap-other">
+        <Field label={t("Betrag in €")} name="liabilityCapEur" mono inputmode="decimal" />
+      </div>
+      <p class="cap" id="cap-preview">
+        <span class="mono" id="cap-amount">{t("höchstens {amount} je Schaden", { amount: formatEuro(1000, false) })}</span>
+        <span class="cap-words" id="cap-words" lang="de">{euroInWords(1000)}</span>
+      </p>
+      <p class="hint">
+        {t("Der Entleiher zahlt den tatsächlichen Schaden, höchstens diesen Betrag. Bei Vorsatz, grober Fahrlässigkeit, Alkohol oder Fahren ohne Führerschein haftet er voll.")}
+      </p>
+    </section>
+
+    <LoanPeriodFields values={defaults}>
+      <div class="return-buttons" slot="return-place">
+        <button type="button" class="btn btn-outline btn-small" data-return-from="borrower">{t("= Adresse Entleiher")}</button>
+        <button type="button" class="btn btn-outline btn-small" data-return-from="lender">{t("= Adresse Verleiher")}</button>
+      </div>
+    </LoanPeriodFields>
+
+    <LoanItemsFields values={defaults} />
+
+    <LoanHandoverFields values={{}} inputId="file-handover" thumbsId="thumbs-handover" />
+
+    <details class="card return-card">
+      <summary>
+        <span class="return-title">{t("Rückgabe")}</span>
+        <span class="hint">{t("später ausfüllen")}</span>
+      </summary>
+      <div class="stack return-body">
+        <div class="row">
+          <DateField label={t("Datum")} name="returnDate" />
+          <TimeField label={t("Uhrzeit")} name="returnTime" />
+        </div>
+        <div class="row">
+          <Field label={t("Kilometerstand")} name="returnKm" mono inputmode="numeric" />
+          <Field label={t("Tankstand")} name="returnFuel" placeholder={t("z. B. voll, ½")} />
+        </div>
+        <Field label={t("Neue Schäden")} name="returnDamages" multiline />
+        <div class="thumbs" id="thumbs-return"></div>
+        <label class="photo-btn">
+          {t("+ Fotos aufnehmen oder hochladen")}
+          <input type="file" accept="image/*" multiple id="file-return" />
+        </label>
+      </div>
+    </details>
+
+    <LoanSignatures values={defaults} lenderLabel={t("Verleiher")} />
+
+    <section class="card">
+      {
+        user ? (
+          <>
+            <button type="button" id="save-account" class="btn btn-sky js-only">{t("In meinem Konto speichern")}</button>
+            <p class="hint">{t("Legt das Motorrad an, falls es neu ist, und speichert den Vertrag als laufende Leihe. Die Fotos werden dabei hochgeladen.")}</p>
+          </>
+        ) : (
+          <>
+            <a class="btn btn-outline" id="login-to-save" href={`/login?next=${encodeURIComponent("/leihvertrag")}`}>{t("Anmelden, um zu speichern")}</a>
+            <p class="hint">{t("Der Entwurf bleibt beim Anmelden erhalten, Fotos und Unterschriften nicht.")}</p>
+          </>
+        )
+      }
+    </section>
+
+    <div class="dock">
+      <p id="status" role="status" aria-live="polite" class="small"></p>
+      <div class="in">
+        <button type="button" id="clear-form" class="btn-outline" data-confirm={t("Wirklich leeren?")}>{t("Leeren")}</button>
+        <button type="button" id="make-pdf" class="btn-primary js-only">{t("PDF erstellen")}</button>
+      </div>
+    </div>
+  </form>
+</Base>
+
+<style>
+  .cap {
+    background: var(--doc);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  #cap-amount {
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+  .cap-words {
+    font-size: 0.9rem;
+    color: var(--text-2);
+  }
+  .return-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .return-card summary {
+    cursor: pointer;
+    min-height: var(--tap);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 10px;
+  }
+  .return-title {
+    font-family: var(--slab);
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .return-body {
+    margin-top: 14px;
+  }
+  #status {
+    max-width: 760px;
+    margin: 0 auto 8px;
+    max-height: 30vh;
+    overflow-y: auto;
+  }
+  #status:empty {
+    display: none;
+  }
+  #status.err {
+    color: var(--danger);
+  }
+  /* Only the "anderer Betrag" choice needs the field. */
+  form:not(:has(input[name="liabilityChoice"][value="other"]:checked)) .cap-other {
+    display: none;
+  }
+  #clear-form.armed {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+</style>
+
+<script>
+  import "../scripts/contract-generator";
+</script>

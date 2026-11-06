@@ -1828,6 +1828,47 @@ fieldset.panel {
   padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
+/* The fixed bar would cover the end of the footer. */
+.has-dock-footer main.page {
+  padding-bottom: 56px;
+}
+
+.has-dock-footer {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+/* --- Contract forms (wizard and public generator) --- */
+
+/* Segmented toggle drives which end fields show, without JS. */
+form:has(input[name="endMode"][value="open"]:checked) .fixed-only,
+form:has(input[name="endMode"][value="fixed"]:checked) .open-only {
+  display: none;
+}
+
+.sig {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sig canvas {
+  width: 100%;
+  height: 140px;
+  background: #ffffff;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  touch-action: none;
+  display: block;
+}
+
+.sig-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
 /* --- Prose (So geht's, legal stubs) --- */
 
 .prose {

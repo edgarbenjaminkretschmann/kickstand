@@ -11,6 +11,8 @@ interface Props {
   description?: string;
   /** Page has its own fixed bottom bar (loan wizard, return): hides the tab bar and footer. */
   dock?: boolean;
+  /** Keeps the footer on a dock page (public pages need Impressum and the language switch). */
+  dockFooter?: boolean;
   /** Wider content column (search, detail). */
   wide?: boolean;
   /** Full-bleed page that lays out its own sections (landing). */
@@ -22,6 +24,7 @@ const {
   title,
   description = t("Motorräder kostenlos leihen, Garagen, Werkzeug und Hilfe unter Motorradfahrern. Mit Leihvertrag aus dem Handy."),
   dock = false,
+  dockFooter = false,
   wide = false,
   bare = false,
 } = Astro.props;
@@ -70,12 +73,13 @@ const tabs = [
     <script is:inline>document.documentElement.classList.add("js");</script>
     {clientDict && <script type="application/json" id="i18n-client" set:html={clientDict} />}
   </head>
-  <body class:list={{ "has-dock": dock, "has-tabs": !dock }}>
+  <body class:list={{ "has-dock": dock, "has-tabs": !dock, "has-dock-footer": dock && dockFooter }}>
     <a href="#main" class="skip">{t("Zum Inhalt")}</a>
     <header class="site-header">
       <div class="bar">
         <Logo />
         <nav class="main-nav" aria-label={t("Hauptnavigation")}>
+          <a href="/leihvertrag" class="nav-link" aria-current={current(is("/leihvertrag"))}>{t("Leihvertrag")}</a>
           <a href="/anzeigen" class="nav-link desktop-only" aria-current={current(is("/anzeigen") && !is("/anzeigen/neu"))}>{t("Suchen")}</a>
           {
             user && (
@@ -134,7 +138,7 @@ const tabs = [
     <slot name="after" />
 
     {
-      !dock && (
+      (!dock || dockFooter) && (
         <footer class="site-footer">
           <div class="foot">
             <span>Kickstand · Edgar Kretschmann</span>
