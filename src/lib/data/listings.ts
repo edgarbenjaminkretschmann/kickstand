@@ -54,6 +54,10 @@ export interface ListingCard {
   bikeId: string | null;
   createdAt: Date;
   coverPhotoId: string | null;
+  /** Number of photos. */
+  photoCount: number;
+  /** Start of the description, for one-line previews. */
+  teaser: string;
   /** A bike listing whose bike is lent out right now. */
   lent: boolean;
 }
@@ -69,7 +73,7 @@ export interface ListingDetail extends ListingCard {
   description: string;
   updatedAt: Date;
   photos: ListingPhotoRecord[];
-  seller: { id: string; name: string; memberSince: Date };
+  seller: { id: string; name: string; memberSince: Date; activeListings: number };
   bike: typeof Bike.$inferSelect | null;
 }
 
@@ -78,6 +82,8 @@ export interface SearchFilters {
   type?: string;
   category?: string;
   ort?: string;
+  /** Price kinds to include ("preis" and "vb" are separate). Empty: all. */
+  price?: string[];
   page?: number;
 }
 
@@ -270,9 +276,10 @@ const cardColumns = {
   status: Listing.status,
   bikeId: Listing.bikeId,
   createdAt: Listing.createdAt,
+  teaser: sql<string>`substr(${Listing.description}, 1, 160)`,
 };
 
-type CardRow = Omit<ListingCard, "coverPhotoId" | "lent" | "type" | "priceKind" | "status"> & { type: string; priceKind: string; status: string };
+type CardRow = Omit<ListingCard, "coverPhotoId" | "photoCount" | "lent" | "type" | "priceKind" | "status"> & { type: string; priceKind: string; status: string };
 
 /** Adds cover photo and the "verliehen" flag to plain rows. */
 async function toCards(rows: CardRow[]): Promise<ListingCard[]> {
@@ -284,7 +291,11 @@ async function toCards(rows: CardRow[]): Promise<ListingCard[]> {
     .where(inArray(ListingPhoto.listingId, ids))
     .orderBy(asc(ListingPhoto.sort), asc(ListingPhoto.id));
   const cover = new Map<string, string>();
-  for (const p of photos) if (!cover.has(p.listingId)) cover.set(p.listingId, p.id);
+  const photoCount = new Map<string, number>();
+  for (const p of photos) {
+    if (!cover.has(p.listingId)) cover.set(p.listingId, p.id);
+    photoCount.set(p.listingId, (photoCount.get(p.listingId) ?? 0) + 1);
+  }
   const lent = await lentBikeIds(rows.map((r) => r.bikeId ?? ""));
   return rows.map((r) => ({
     ...r,
@@ -292,6 +303,8 @@ async function toCards(rows: CardRow[]): Promise<ListingCard[]> {
     priceKind: r.priceKind as PriceKind,
     status: r.status as ListingStatus,
     coverPhotoId: cover.get(r.id) ?? null,
+    photoCount: photoCount.get(r.id) ?? 0,
+    teaser: r.teaser.replace(/\s+/g, " ").trim(),
     lent: !!r.bikeId && lent.has(r.bikeId),
   }));
 }
@@ -314,6 +327,8 @@ export function searchConditions(f: SearchFilters): SQL | undefined {
   const conds: (SQL | undefined)[] = [eq(Listing.status, "aktiv")];
   if (f.type && isOneOf(LISTING_TYPES, f.type)) conds.push(eq(Listing.type, f.type));
   if (f.category) conds.push(eq(Listing.categorySlug, f.category));
+  const price = (f.price ?? []).filter((p) => isOneOf(PRICE_KINDS, p));
+  if (price.length) conds.push(inArray(Listing.priceKind, price));
   const q = searchKey(f.q ?? "").slice(0, 100);
   if (q) {
     // Every word must appear in the title or the description.
@@ -403,6 +418,10 @@ export async function getListingDetail(listingId: string): Promise<ListingDetail
   const { sellerName, memberSince, description, updatedAt, ...card } = row;
   const [c] = await toCards([card]);
   const photos = await listListingPhotos(listingId);
+  const [{ n: activeListings }] = await db
+    .select({ n: count() })
+    .from(Listing)
+    .where(and(eq(Listing.userId, card.userId), eq(Listing.status, "aktiv")));
   const bike = card.bikeId ? ((await db.select().from(Bike).where(eq(Bike.id, card.bikeId)))[0] ?? null) : null;
-  return { ...c, description, updatedAt, photos, seller: { id: card.userId, name: sellerName, memberSince }, bike };
+  return { ...c, description, updatedAt, photos, seller: { id: card.userId, name: sellerName, memberSince, activeListings }, bike };
 }

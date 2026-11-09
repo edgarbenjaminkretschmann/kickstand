@@ -1,4 +1,5 @@
 ---
+import BennoWave from "../../components/benno/BennoWave.astro";
 import { i18n } from "../../i18n";
 import Base from "../../layouts/Base.astro";
 import ListingCard from "../../components/ListingCard.astro";
@@ -58,7 +59,14 @@ const unread = conversations.reduce((n, c) => n + c.unread, 0);
       <h2 id="h-anzeigen">{t("Meine Anzeigen")}</h2>
       <a class="btn btn-small" href="/anzeigen/neu">{t("Anzeige aufgeben")}</a>
     </div>
-    {listings.length === 0 && <p class="empty">{t("Noch keine Anzeigen. Biete deine Garage an, verleih dein Motorrad oder frag nach Hilfe.")}</p>}
+    {
+      listings.length === 0 && (
+        <div class="empty-box">
+          <BennoWave size={120} />
+          <p>{t("Noch keine Anzeigen. Biete deine Garage an, verleih dein Motorrad oder frag nach Hilfe.")}</p>
+        </div>
+      )
+    }
     <div class="cards">
       {listings.map((l) => <ListingCard listing={l} showStatus />)}
     </div>

@@ -237,6 +237,10 @@ export const Loan = sqliteTable(
     listingId: text("listingId").references(() => Listing.id, { onDelete: "set null" }),
     conversationId: text("conversationId").references(() => Conversation.id, { onDelete: "set null" }),
     status: text("status").notNull().default("draft"), // draft | active | returned
+    // Lender as written on a contract from the public generator. Null: use the member's profile.
+    lenderName: text("lenderName"),
+    lenderStreet: text("lenderStreet"),
+    lenderZipCity: text("lenderZipCity"),
     borrowerName: text("borrowerName").notNull().default(""),
     borrowerStreet: text("borrowerStreet").notNull().default(""),
     borrowerZipCity: text("borrowerZipCity").notNull().default(""),

@@ -8,7 +8,16 @@ A small marketplace for motorcyclists. People post what they offer (*Biete*) and
 - Photos resized to max 1600 px (`sharp` on Node, Cloudflare Images on Workers), stored through a small storage adapter (local disk or Cloudflare R2)
 - Production: Cloudflare Workers + Turso + R2 (see "Deploying to Cloudflare"). Local dev needs no accounts and no env vars
 - Contract PDF built in the browser with jsPDF (`src/lib/contract-pdf.ts`)
-- No analytics. Fonts from Google Fonts (Mr Dafoe, Roboto Slab, Open Sans). Design borrowed from Edgar's old blog vlogato (the domain no longer belongs to him)
+- No analytics. Fonts from Google Fonts (Barlow Semi Condensed, Inter)
+
+## Brand
+
+A marketplace look: search first, white cards on a light ground, borders instead of shadows, no gradients, no emoji. Light theme only.
+
+- **Benno, der Biber** carries the brand: riding goggles, petrol neckerchief, a wrench. Three inline-SVG components in `src/components/benno/`: `BennoMark` (head in a circle: logo, favicon, avatars, tip boxes), `Benno` (full body with wrench: start page hero) and `BennoWave` (waving: safety tips, empty states). Each takes `size` and `label` (empty = decorative). `public/favicon.svg` and `public/apple-touch-icon.png` are made from `BennoMark`.
+- **Colours** (all as CSS variables in `src/styles/global.css`): ink `#14181B`, petrol `#0B6E6C` (primary, "Biete"), petrol-dark `#08504F`, petrol-wash `#E3F1F0`, amber `#FFB020` ("Suche", badges), amber-wash `#FFF1D6`, ground `#F5F6F4`, card `#FFFFFF`, line `#E2E5E3`, text-2 `#3B4449`, muted `#5A6469`. Benno's brown `#8A5A3B` lives only inside the mascot, never in UI.
+- **Type:** Barlow Semi Condensed 600–800 for headings, prices, step numbers and the wordmark "kickstand"; Inter 400–700 for everything else. Inputs are 16 px.
+- **Radii:** cards 16 px, big sections 24 px, pills fully round.
 
 ## Setup
 
@@ -31,7 +40,7 @@ Open http://localhost:4321.
 
 `npm run db:reset` deletes the local SQLite file and runs migrate + seed again (stop the dev server first on Windows).
 
-Every form works without JavaScript. JS adds the signature pads, client-side photo resizing, draft autosave, sending messages without reload, the 15 s message poll and the PDF button.
+Every form works without JavaScript, except the public generator `/leihvertrag`, which builds its PDF in the browser. JS adds the signature pads, client-side photo resizing, draft autosave, sending messages without reload, the 15 s message poll and the PDF button.
 
 ### Database scripts
 
@@ -45,7 +54,7 @@ Every form works without JavaScript. JS adds the signature pads, client-side pho
 ### Tests
 
 ```sh
-npm test               # Vitest: contract PDF, euro words, dates, listing search and rules, conversation access, platform bits
+npm test               # Vitest: contract PDF, form mapper, euro words, dates, listing search and rules, conversation access, platform bits
 npm run check          # astro check (types)
 npm run check:bundle   # builds the Worker, wrangler dry-run, fails if native libSQL, sharp or node:fs is in the bundle
 ```
@@ -195,8 +204,10 @@ src/actions/            form handlers (auth, profile, bikes, loans, listings, me
 src/pages/anzeigen/     search, detail, neu, bearbeiten
 src/pages/nachrichten/  conversations list and thread
 src/pages/app/          Mein Bereich, bikes, loan wizard, return protocol
+src/pages/leihvertrag.astro  public contract generator, browser only until a member saves
 src/pages/media/        listing photos (public), bike/protocol photos and signatures (access-checked)
 src/lib/contract-pdf.ts buildContractPdf(data): pure, runs in browser and in Vitest
+src/lib/contract-form.ts form fields -> contract data and the checks, shared by generator and actions
 docs/                   MIGRATION-GOOGLE.md, DECISIONS.md
 ```
 
@@ -206,6 +217,7 @@ Actions and pages never import Drizzle, the schema or Better Auth directly; they
 
 - **Search** shows only `aktiv` listings, newest first, 20 per page. Keyword matches title and description (every word must appear), Ort/PLZ matches as a prefix.
 - **Bike listings:** "Motorrad zum Leihen" + "Biete" must link one of your own bikes and is always free. While the bike has an active loan the listing shows "verliehen" and takes no new messages.
+- **Leihvertrag ohne Konto (`/leihvertrag`):** works for any motorcycle, lender and borrower, with no login. Privacy: until a member taps "In meinem Konto speichern", no form field leaves the browser. Texts and switches are a draft in `localStorage`; photos and signatures stay in memory; the PDF is built on the device. The form cannot post (`method="dialog"`). Saving creates the bike if it is new (same FIN or plate as one of your bikes: that bike, updated) and an `active` loan, then uploads the photos. The page itself loads only static assets, plus the Google Fonts every page uses.
 - **Leihvertrag starten:** the owner starts the loan wizard from the listing or from a conversation about it; the wizard is prefilled from the other member's profile. The borrower can also have no account.
 - **Access:** only the owner edits a listing. A conversation is visible only to its two members. Loan photos, signatures and the contract data are served only to the lender and to the member of the conversation linked to the loan.
 - **One active loan per bike.** Finalising a contract checks this.

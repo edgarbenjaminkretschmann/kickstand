@@ -15,6 +15,13 @@
       "when": 1793013658361,
       "tag": "0001_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794003059143,
+      "tag": "0002_loan_lender_snapshot",
+      "breakpoints": true
     }
   ]
 }

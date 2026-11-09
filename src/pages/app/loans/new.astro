@@ -3,10 +3,13 @@
 import { actions } from "astro:actions";
 import Base from "../../../layouts/Base.astro";
 import BikeDoc from "../../../components/BikeDoc.astro";
-import DateField from "../../../components/DateField.astro";
 import Field from "../../../components/Field.astro";
 import FormAlert from "../../../components/FormAlert.astro";
-import TimeField from "../../../components/TimeField.astro";
+import LoanBorrowerFields from "../../../components/LoanBorrowerFields.astro";
+import LoanHandoverFields from "../../../components/LoanHandoverFields.astro";
+import LoanItemsFields from "../../../components/LoanItemsFields.astro";
+import LoanPeriodFields from "../../../components/LoanPeriodFields.astro";
+import LoanSignatures from "../../../components/LoanSignatures.astro";
 import { getActiveLoan, getOwnBike } from "../../../lib/access";
 import { loadLoanParts, toItems } from "../../../lib/contract-data";
 import { getConversationForUser } from "../../../lib/data/conversations";
@@ -52,7 +55,7 @@ const bike = await getOwnBike(parts?.bike.id ?? q.get("bike") ?? prev?.bikeId ??
 if (!bike) return Astro.redirect("/app");
 
 const lenderProfile = await getProfile(user.id);
-const lenderName = lenderProfile?.name || user.name;
+const lenderName = parts?.lender.name || lenderProfile?.name || user.name;
 const lenderAddress = [lenderProfile?.street, lenderProfile?.zipCity].filter(Boolean).join(", ");
 
 // Prefill from the other member's profile when started from a listing conversation (only for a new contract).
@@ -163,93 +166,19 @@ const message = savedError
       </p>
     </section>
 
-    <section class="card">
-      <h2>{t("Entleiher")}</h2>
-      <p class="hint">{t("Ein Konto braucht der Entleiher nicht. Daten vom Führerschein und Ausweis abschreiben.")}</p>
-      <Field label={t("Name, Vorname")} name="borrowerName" autocomplete="off" value={v.borrowerName} />
-      <Field label={t("Straße, Hausnummer")} name="borrowerStreet" value={v.borrowerStreet} />
-      <Field label={t("PLZ, Ort")} name="borrowerZipCity" value={v.borrowerZipCity} />
-      <div class="row stack-sm">
-        <DateField label={t("Geburtsdatum")} name="borrowerBirthdate" value={v.borrowerBirthdate} />
-        <Field label={t("Telefon")} name="borrowerPhone" type="tel" inputmode="tel" value={v.borrowerPhone} />
-      </div>
-      <div class="row stack-sm">
-        <Field label={t("Führerschein-Nr.")} name="licenseNumber" mono value={v.licenseNumber} />
-        <Field label={t("Klasse A seit")} name="licenseClassASince" inputmode="numeric" placeholder={t("z. B. 2015")} value={v.licenseClassASince} />
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>{t("Leihdauer")}</h2>
-      <div class="row">
-        <DateField label={t("Beginn Datum")} name="startDate" value={v.startDate} />
-        <TimeField label={t("Uhrzeit")} name="startTime" value={v.startTime} />
-      </div>
-      <div class="seg" role="radiogroup" aria-label={t("Ende der Leihe")}>
-        <label><input type="radio" name="endMode" value="open" checked={v.endMode !== "fixed"} /><span>{t("Offen")}</span></label>
-        <label><input type="radio" name="endMode" value="fixed" checked={v.endMode === "fixed"} /><span>{t("Festes Ende")}</span></label>
-      </div>
-      <div class="open-only stack">
-        <DateField label={t("Offen (unbefristet), spätestens am")} name="latestEndDate" value={v.latestEndDate} required />
-        <p class="hint">
-          {t("Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.")}
-        </p>
-      </div>
-      <div class="fixed-only row">
-        <DateField label={t("Ende Datum")} name="endDate" value={v.endDate} />
-        <TimeField label={t("Uhrzeit")} name="endTime" value={v.endTime} />
-      </div>
-      <Field label={t("Rückgabeort")} name="returnPlace" value={v.returnPlace} />
-    </section>
-
-    <section class="card">
-      <h2>{t("Mitgegeben")}</h2>
-      <div class="row">
-        <label class="check"><input type="checkbox" name="keys" checked={v.keys} />{t("Schlüssel")}</label>
-        <Field label={t("Anzahl")} name="keyCount" type="number" min="1" max="9" inputmode="numeric" value={v.keyCount} />
-      </div>
-      <label class="check"><input type="checkbox" name="registration" checked={v.registration} />{t("Zulassungsbescheinigung Teil I")}</label>
-      <Field label={t("Sonstiges (z. B. Helm, Schloss)")} name="otherItems" value={v.otherItems} />
-    </section>
-
-    <section class="card">
-      <h2>{t("Übergabe")}</h2>
-      <div class="row">
-        <Field label={t("Kilometerstand")} name="odometerKm" mono inputmode="numeric" value={v.odometerKm} />
-        <Field label={t("Tankstand")} name="fuelLevel" placeholder={t("z. B. voll, ½")} value={v.fuelLevel} />
-      </div>
-      <Field label={t("Vorhandene Schäden / Kratzer")} name="damages" multiline value={v.damages} placeholder={t("z. B. Kratzer Tank links, Spiegel rechts lose")} />
-      <p class="hint">{t("Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.")}</p>
-      <div class="thumbs" id="thumbs-handover">
-        {
-          photos.map((p, i) => (
-            <div class="thumb" data-photo-id={p.id}>
-              <img src={photoUrl(p.id)} alt={t("Foto {n}, {time}", { n: i + 1, time: formatTimestamp(p.takenAt, lang) })} loading="lazy" />
-            </div>
-          ))
-        }
-      </div>
-      <label class="photo-btn">
-        {t("+ Fotos aufnehmen oder hochladen")}
-        <input type="file" name="photos" accept="image/*" multiple id="file-handover" />
-      </label>
-    </section>
-
-    <section class="card">
-      <h2>{t("Unterschriften")}</h2>
-      <Field label={t("Ort, Datum")} name="placeDate" value={v.placeDate} />
-      <div class="sig js-only">
-        <div class="sig-bar"><span>{t("Verleiher ({name})", { name: lenderName })}</span><button type="button" class="btn-link" data-clear="lender">{t("Löschen")}</button></div>
-        <canvas id="pad-lender" aria-label={t("Unterschrift Verleiher, mit dem Finger zeichnen")}></canvas>
-        <input type="hidden" name="sigLender" value={v.sigLender} />
-      </div>
-      <div class="sig js-only">
-        <div class="sig-bar"><span>{t("Entleiher")}</span><button type="button" class="btn-link" data-clear="borrower">{t("Löschen")}</button></div>
-        <canvas id="pad-borrower" aria-label={t("Unterschrift Entleiher, mit dem Finger zeichnen")}></canvas>
-        <input type="hidden" name="sigBorrower" value={v.sigBorrower} />
-      </div>
-      <p class="hint">{t("Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.")}</p>
-    </section>
+    <LoanBorrowerFields values={v} />
+    <LoanPeriodFields values={v} />
+    <LoanItemsFields values={v} />
+    <LoanHandoverFields values={v} inputId="file-handover" thumbsId="thumbs-handover" inputName="photos">
+      {
+        photos.map((p, i) => (
+          <div class="thumb" data-photo-id={p.id}>
+            <img src={photoUrl(p.id)} alt={t("Foto {n}, {time}", { n: i + 1, time: formatTimestamp(p.takenAt, lang) })} loading="lazy" />
+          </div>
+        ))
+      }
+    </LoanHandoverFields>
+    <LoanSignatures values={v} lenderLabel={t("Verleiher ({name})", { name: lenderName })} />
 
     <p id="status" role="status" aria-live="polite" class="small muted"></p>
 
@@ -283,32 +212,6 @@ const message = savedError
     text-align: center;
     font-size: 1.05rem;
     font-weight: 500;
-  }
-  /* Segmented toggle drives which end fields show, without JS. */
-  form:has(input[name="endMode"][value="open"]:checked) .fixed-only,
-  form:has(input[name="endMode"][value="fixed"]:checked) .open-only {
-    display: none;
-  }
-  .sig {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .sig canvas {
-    width: 100%;
-    height: 140px;
-    background: #ffffff;
-    border: 1px dashed var(--line);
-    border-radius: var(--radius);
-    touch-action: none;
-    display: block;
-  }
-  .sig-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    color: var(--muted);
   }
   .pdf-lang {
     margin: 6px 0 0;

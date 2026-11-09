@@ -1,4 +1,5 @@
 ---
+import BennoWave from "../../components/benno/BennoWave.astro";
 import { i18n } from "../../i18n";
 import Base from "../../layouts/Base.astro";
 import { listConversations } from "../../lib/data/conversations";
@@ -17,8 +18,9 @@ const conversations = await listConversations(user.id);
   {
     conversations.length === 0 ? (
       <div class="empty-box">
+        <BennoWave size={120} />
         <p>{t("Noch keine Nachrichten. Schreib bei einer Anzeige auf „Nachricht schreiben“.")}</p>
-        <a class="btn" href="/anzeigen">
+        <a class="btn btn-primary" href="/anzeigen">
           {t("Anzeigen ansehen")}
         </a>
       </div>

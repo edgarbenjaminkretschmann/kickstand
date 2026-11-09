@@ -1,0 +1,32 @@
+---
+// Übergabe card, shared by the contract wizard and the public generator.
+// The default slot holds thumbnails that already exist. `inputName`: without a name, the file input is never part of
+// the form data (the generator keeps its photos in memory).
+import Field from "./Field.astro";
+import { i18n } from "../i18n";
+
+interface Props {
+  values: { odometerKm?: string; fuelLevel?: string; damages?: string };
+  inputId: string;
+  thumbsId: string;
+  inputName?: string;
+}
+
+const { values: v, inputId, thumbsId, inputName } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
+---
+
+<section class="card">
+  <h2>{t("Übergabe")}</h2>
+  <div class="row">
+    <Field label={t("Kilometerstand")} name="odometerKm" mono inputmode="numeric" value={v.odometerKm} />
+    <Field label={t("Tankstand")} name="fuelLevel" placeholder={t("z. B. voll, ½")} value={v.fuelLevel} />
+  </div>
+  <Field label={t("Vorhandene Schäden / Kratzer")} name="damages" multiline value={v.damages} placeholder={t("z. B. Kratzer Tank links, Spiegel rechts lose")} />
+  <p class="hint">{t("Tipp: Mit der Mikrofon-Taste auf der Handy-Tastatur kannst du den Text diktieren.")}</p>
+  <div class="thumbs" id={thumbsId}><slot /></div>
+  <label class="photo-btn">
+    {t("+ Fotos aufnehmen oder hochladen")}
+    <input type="file" name={inputName} accept="image/*" multiple id={inputId} />
+  </label>
+</section>

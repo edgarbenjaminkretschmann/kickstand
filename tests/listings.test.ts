@@ -8,7 +8,7 @@ const ids: Record<string, string> = {};
 beforeAll(async () => {
   await setupDb();
   ids.garage = await createListing(ERIKA, listingInput({ categorySlug: "garage", title: "Stellplatz im Winter frei", city: "Leipzig", zip: "04109" }));
-  ids.hebebuehne = await createListing(ERIKA, listingInput({ categorySlug: "hilfe", title: "Hilfe beim Reifenwechsel", description: "Hebebühne vorhanden" }));
+  ids.hebebuehne = await createListing(ERIKA, listingInput({ categorySlug: "hilfe", title: "Hilfe beim Reifenwechsel", description: "Hebebühne vorhanden,\n\nsamstags  offen" }));
   ids.ventil = await createListing(MAX, listingInput({ type: "suche", categorySlug: "hilfe", title: "Ventilspiel einstellen", city: "Leipzig", zip: "04229" }));
   ids.porto = await createListing(MAX, listingInput({ type: "suche", categorySlug: "tour", title: "Mitfahrer Serra da Estrela", city: "Porto", zip: "4000", country: "PT" }));
   ids.done = await createListing(MAX, listingInput({ categorySlug: "hilfe", title: "Hebebühne abzugeben" }));
@@ -57,6 +57,23 @@ describe("listing search", () => {
   it("combines type, category, keyword and Ort", async () => {
     expect(await found({ type: "suche", category: "hilfe", q: "ventil", ort: "Leipzig" })).toEqual([ids.ventil]);
     expect(await found({ type: "biete", category: "hilfe", q: "ventil", ort: "Leipzig" })).toEqual([]);
+  });
+
+  it("filters by price kind, and ignores unknown kinds", async () => {
+    const priced = await createListing(ERIKA, listingInput({ categorySlug: "teile", title: "Kettensatz 520", priceKind: "vb", priceCents: 4000 }));
+    expect(await found({ price: ["vb"] })).toEqual([priced]);
+    expect(await found({ price: ["preis", "vb"], category: "teile" })).toEqual([priced]);
+    expect(await found({ price: ["tausch"] })).toEqual([]);
+    expect((await found({ price: ["kostenlos"] })).includes(priced)).toBe(false);
+    expect(await found({ price: ["gratis"] })).toEqual(await found({}));
+  });
+
+  it("cards carry photo count and a one-line teaser", async () => {
+    const [card] = (await searchListings({ q: "reifenwechsel" })).items;
+    expect(card.photoCount).toBe(0);
+    expect(card.teaser).toBe("Hebebühne vorhanden, samstags offen");
+    const detail = await getListingDetail(ids.garage);
+    expect(detail!.seller.activeListings).toBeGreaterThanOrEqual(2);
   });
 
   it("pages 20 at a time, newest first", async () => {

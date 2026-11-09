@@ -1,0 +1,18 @@
+---
+// Benno, full body with the wrench: hero and empty states. `notch` is the colour behind the wrench mouth,
+// so it looks open on any background.
+interface Props {
+  size?: number;
+  /** Accessible name. Empty: decorative (aria-hidden). */
+  label?: string;
+  notch?: string;
+  class?: string;
+}
+
+const { size = 200, label = "", notch = "#FFFFFF", class: cls } = Astro.props;
+const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
+---
+
+<svg class:list={["benno", cls]} width={size} height={size} viewBox="0 0 200 200" focusable="false" {...a11y}
+  ><ellipse cx="56" cy="172" rx="42" ry="15" transform="rotate(-18 56 172)" fill="#3E2A1E"></ellipse><path d="M28 168 L80 158 M34 180 L84 170 M46 152 L54 186 M64 148 L72 182" stroke="#5E3B25" stroke-width="2"></path><path d="M60 172 Q52 112 100 98 Q148 112 140 172 Q100 186 60 172 Z" fill="#8A5A3B"></path><path d="M76 170 Q72 130 100 122 Q128 130 124 170 Q100 178 76 170 Z" fill="#C89B72"></path><ellipse cx="78" cy="180" rx="15" ry="7" fill="#5E3B25"></ellipse><ellipse cx="122" cy="180" rx="15" ry="7" fill="#5E3B25"></ellipse><ellipse cx="72" cy="136" rx="9" ry="18" transform="rotate(20 72 136)" fill="#5E3B25"></ellipse><g transform="translate(140 122) rotate(-62)"><rect x="0" y="-4" width="40" height="8" rx="4" fill="#9AA3A8"></rect><circle cx="44" cy="0" r="9" fill="#9AA3A8"></circle><rect x="42" y="-3.5" width="12" height="7" style={`fill:${notch}`}></rect></g><ellipse cx="134" cy="130" rx="9" ry="18" transform="rotate(-28 134 130)" fill="#5E3B25"></ellipse><circle cx="68" cy="44" r="10" fill="#5E3B25"></circle><circle cx="132" cy="44" r="10" fill="#5E3B25"></circle><circle cx="100" cy="74" r="38" fill="#8A5A3B"></circle><path d="M74 106 Q100 118 126 106 L118 116 Q100 126 82 116 Z" fill="#0B6E6C"></path><path d="M95 116 L105 116 L100 132 Z" fill="#0B6E6C"></path><path d="M63 52 Q100 38 137 52" stroke="#2B3236" stroke-width="5" fill="none" stroke-linecap="round"></path><circle cx="87" cy="47" r="10" fill="#FFB020" stroke="#2B3236" stroke-width="3.5"></circle><circle cx="113" cy="47" r="10" fill="#FFB020" stroke="#2B3236" stroke-width="3.5"></circle><circle cx="84" cy="44" r="2.5" fill="#FFFFFF"></circle><circle cx="110" cy="44" r="2.5" fill="#FFFFFF"></circle><ellipse cx="100" cy="88" rx="22" ry="16" fill="#C89B72"></ellipse><circle cx="86" cy="68" r="4.5" fill="#2B1D14"></circle><circle cx="114" cy="68" r="4.5" fill="#2B1D14"></circle><circle cx="87.5" cy="66.5" r="1.5" fill="#FFFFFF"></circle><circle cx="115.5" cy="66.5" r="1.5" fill="#FFFFFF"></circle><ellipse cx="100" cy="80" rx="9" ry="6" fill="#2B1D14"></ellipse><path d="M88 94 Q100 100 112 94" stroke="#2B1D14" stroke-width="2" fill="none" stroke-linecap="round"></path><rect x="93" y="97" width="14" height="13" rx="2" fill="#FFFFFF" stroke="#2B1D14" stroke-width="1.5"></rect><path d="M100 97 V110" stroke="#2B1D14" stroke-width="1.5"></path></svg
+>

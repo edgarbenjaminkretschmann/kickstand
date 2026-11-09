@@ -1,0 +1,37 @@
+---
+// Entleiher card, shared by the contract wizard and the public generator.
+import DateField from "./DateField.astro";
+import Field from "./Field.astro";
+import { i18n } from "../i18n";
+
+interface Props {
+  values: {
+    borrowerName?: string;
+    borrowerStreet?: string;
+    borrowerZipCity?: string;
+    borrowerBirthdate?: string;
+    borrowerPhone?: string;
+    licenseNumber?: string;
+    licenseClassASince?: string;
+  };
+}
+
+const { values: v } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
+---
+
+<section class="card">
+  <h2>{t("Entleiher")}</h2>
+  <p class="hint">{t("Ein Konto braucht der Entleiher nicht. Daten vom Führerschein und Ausweis abschreiben.")}</p>
+  <Field label={t("Name, Vorname")} name="borrowerName" autocomplete="off" value={v.borrowerName} />
+  <Field label={t("Straße, Hausnummer")} name="borrowerStreet" value={v.borrowerStreet} />
+  <Field label={t("PLZ, Ort")} name="borrowerZipCity" value={v.borrowerZipCity} />
+  <div class="row stack-sm">
+    <DateField label={t("Geburtsdatum")} name="borrowerBirthdate" value={v.borrowerBirthdate} />
+    <Field label={t("Telefon")} name="borrowerPhone" type="tel" inputmode="tel" value={v.borrowerPhone} />
+  </div>
+  <div class="row stack-sm">
+    <Field label={t("Führerschein-Nr.")} name="licenseNumber" mono value={v.licenseNumber} />
+    <Field label={t("Klasse A seit")} name="licenseClassASince" inputmode="numeric" placeholder={t("z. B. 2015")} value={v.licenseClassASince} />
+  </div>
+</section>

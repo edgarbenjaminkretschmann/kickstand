@@ -1,0 +1,31 @@
+---
+// Unterschriften card, shared by the contract wizard and the public generator.
+// The default slot is for page-specific notes under the pads.
+import Field from "./Field.astro";
+import { i18n } from "../i18n";
+
+interface Props {
+  values: { placeDate?: string; sigLender?: string; sigBorrower?: string };
+  lenderLabel: string;
+}
+
+const { values: v, lenderLabel } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
+---
+
+<section class="card">
+  <h2>{t("Unterschriften")}</h2>
+  <Field label={t("Ort, Datum")} name="placeDate" value={v.placeDate} />
+  <div class="sig js-only">
+    <div class="sig-bar"><span>{lenderLabel}</span><button type="button" class="btn-link" data-clear="lender">{t("Löschen")}</button></div>
+    <canvas id="pad-lender" aria-label={t("Unterschrift Verleiher, mit dem Finger zeichnen")}></canvas>
+    <input type="hidden" name="sigLender" value={v.sigLender ?? ""} />
+  </div>
+  <div class="sig js-only">
+    <div class="sig-bar"><span>{t("Entleiher")}</span><button type="button" class="btn-link" data-clear="borrower">{t("Löschen")}</button></div>
+    <canvas id="pad-borrower" aria-label={t("Unterschrift Entleiher, mit dem Finger zeichnen")}></canvas>
+    <input type="hidden" name="sigBorrower" value={v.sigBorrower ?? ""} />
+  </div>
+  <p class="hint">{t("Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.")}</p>
+  <slot />
+</section>

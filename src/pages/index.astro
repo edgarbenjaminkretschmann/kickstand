@@ -1,470 +1,623 @@
 ---
-// Landing page, Design A "Vlogato-Familie". The dark section shows the latest real listings.
+// Start page: search first, categories, the newest listings, the contract generator, how it works, Benno's
+// safety tips, and a call to post.
 import { actions } from "astro:actions";
 import Base from "../layouts/Base.astro";
-import TypeChip from "../components/TypeChip.astro";
-import { latestListings } from "../lib/data/listings";
-import { placeLabel, priceLabel } from "../lib/listing-format";
+import Benno from "../components/benno/Benno.astro";
+import BennoWave from "../components/benno/BennoWave.astro";
+import CategoryIcon from "../components/CategoryIcon.astro";
+import ListingCard from "../components/ListingCard.astro";
+import { latestListings, listCategories } from "../lib/data/listings";
+import { savedIds } from "../lib/data/saved";
 import { i18n } from "../i18n";
 
-const { t, lang } = i18n(Astro.locals.lang);
+const { t } = i18n(Astro.locals.lang);
 const loggedOut = Astro.getActionResult(actions.auth.logout);
 if (loggedOut && !loggedOut.error) return Astro.redirect("/");
 const user = Astro.locals.user;
-const latest = await latestListings(6);
-const joinHref = user ? "/anzeigen/neu" : "/registrieren";
+const [categories, latest] = await Promise.all([listCategories(), latestListings(8)]);
+const saved = user ? await savedIds(user.id, latest.map((l) => l.id)) : null;
+const heartFor = (id: string, owner: string) => (!user ? ("login" as const) : owner === user.id ? undefined : saved!.has(id));
+
+// Pre-filled searches. Categories and single words, so each one finds something.
+const popular = [
+  { href: "/anzeigen?kategorie=garage", label: t("Garage / Stellplatz") },
+  { href: "/anzeigen?q=Hebebühne", label: t("Hebebühne") },
+  { href: "/anzeigen?kategorie=motorrad-leihen", label: t("Motorrad zum Leihen") },
+  { href: "/anzeigen?kategorie=hilfe", label: t("Hilfe beim Schrauben") },
+];
+const CHECK = "M5 12l5 5L19 7";
 ---
 
 <Base bare>
-  <section class="hero wrap wide">
-    <div class="hero-text">
-      <p class="eyebrow">{t("Motorräder teilen · Garagen teilen")}</p>
-      <h1>{t("Dein Motorrad steht rum? Leih es aus – mit Vertrag aus dem Handy.")}</h1>
-      <svg class="stroke" width="260" height="18" viewBox="0 0 260 18" aria-hidden="true">
-        <path d="M2 12 C40 6 90 5 140 7 S220 9 258 4 L256 11 C210 15 150 13 100 14 S30 17 4 17 Z" fill="currentColor"></path>
-      </svg>
-      <p class="lead">
-        {t("Kickstand ist für Leute, die sich gegenseitig aushelfen: ein Motorrad für ein paar Wochen, ein Platz in der Garage, Werkzeug für den Kettenwechsel. Den Leihvertrag füllst du zusammen am Handy aus, mit Fotos und Unterschrift.")}
-      </p>
-      <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="/app/bikes/new">{t("Motorrad eintragen")}</a>
-        <a class="btn btn-sky btn-lg" href="#so">{t("So geht's")}</a>
+  <section class="hero-band">
+    <div class="wrap wide hero">
+      <div class="hero-text">
+        <p class="eyebrow">{t("Kostenlos · privat · in deiner Nähe")}</p>
+        <h1>{t("Garage, Werkzeug, Hilfe. Von Fahrern nebenan.")}</h1>
+        <p class="lead">
+          {t("Biete und suche alles, was Motorradfahrer brauchen: ein Bike zum Leihen, einen Stellplatz, den passenden Schlüssel oder jemanden, der mitschraubt.")}
+        </p>
+        <form method="GET" action="/anzeigen" class="bigsearch" role="search">
+          <label class="bs-q">
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <span class="visually-hidden">{t("Was suchst du?")}</span>
+            <input type="search" name="q" placeholder={t("Was suchst du? z. B. Hebebühne")} enterkeyhint="search" />
+          </label>
+          <label class="bs-ort">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+            <span class="visually-hidden">{t("PLZ oder Ort")}</span>
+            <input type="search" name="ort" placeholder={t("PLZ oder Ort")} autocomplete="address-level2" enterkeyhint="search" />
+          </label>
+          <button type="submit" class="btn-primary">{t("Finden")}</button>
+        </form>
+        <p class="popular">
+          <span>{t("Beliebt:")}</span>
+          {popular.map((p) => <a href={p.href}>{p.label}</a>)}
+        </p>
       </div>
-    </div>
-    <a class="hero-figure" href="/touren">
-      <div class="oval">
-        <picture>
-          <source type="image/webp" srcset="/images/rider-640.webp 640w, /images/rider-1200.webp 1200w" sizes="(min-width: 1000px) 520px, 92vw" />
-          <img
-            src="/images/rider-1200.webp"
-            alt={t("Edgar mit bepacktem Motorrad an einer Landstraße auf den Philippinen")}
-            width="1200"
-            height="900"
-            fetchpriority="high"
-          />
-        </picture>
-      </div>
-      <span class="hero-caption">{t("Philippinen 2019 – 21 Orte in 35 Tagen mit dem Motorrad.")}</span>
-      <span class="btn btn-outline btn-small hero-more">{t("Edgar & seine Motorradreisen")}</span>
-    </a>
-  </section>
-
-  <section id="so" class="band-wash">
-    <div class="wrap wide section">
-      <h2 class="h-section">{t("So geht's")}</h2>
-      <ol class="steps">
-        <li class="step">
-          <span class="step-num" aria-hidden="true">1</span>
-          <h3>{t("Motorrad eintragen")}</h3>
-          <p>{t("Daten aus dem Fahrzeugschein, Versicherung und wie viel der Entleiher im Schadensfall höchstens zahlt.")}</p>
-        </li>
-        <li class="step">
-          <span class="step-num" aria-hidden="true">2</span>
-          <h3>{t("Leihvertrag am Handy")}</h3>
-          <p>{t("Entleiher, Dauer (offen oder festes Ende), was mitgegeben wird. Beide unterschreiben mit dem Finger.")}</p>
-        </li>
-        <li class="step">
-          <span class="step-num" aria-hidden="true">3</span>
-          <h3>{t("Übergabe & Rückgabe")}</h3>
-          <p>{t("Kilometerstand, Tank, Kratzer und Fotos festhalten. Am Ende kommt alles als PDF raus.")}</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="wrap wide section contract">
-    <picture class="contract-photo">
-      <source type="image/webp" srcset="/images/myanmar-640.webp 640w, /images/myanmar-1200.webp 1021w" sizes="(min-width: 1000px) 560px, 92vw" />
-      <img
-        src="/images/myanmar-1200.webp"
-        alt={t("Bepackte Enduro auf dem Seitenständer vor einem grünen Bauzaun in Myanmar")}
-        width="1021"
-        height="681"
-        loading="lazy"
-      />
-    </picture>
-    <div class="contract-text">
-      <h2 class="h-section">{t("Der Vertrag, den wir selbst benutzen")}</h2>
-      <p class="lead-sm">
-        {t("Unentgeltliche Leihe nach §§ 598 ff. BGB. Klare Haftungsgrenze pro Schaden, Rückgabe auf Aufforderung innerhalb von 3 Tagen, Übergabeprotokoll mit Fotos.")}
-      </p>
-      {/* A quote from the contract, which is German only (binding text). */}
-      <div class="clause" lang="de">
-        <strong>§ 6 Haftung des Entleihers</strong><br />
-        Die Haftung ist auf höchstens <strong>1.000,00 €</strong> (in Worten: eintausend Euro) je Schadensfall begrenzt.
+      <div class="hero-benno">
+        <p class="bubble">{t("Ich hab da was für dich.")}</p>
+        <Benno size={320} label={t("Benno, der Biber mit Motorradbrille und Schraubenschlüssel")} />
       </div>
     </div>
   </section>
 
-  <section id="board" class="band-dark">
-    <div class="wrap wide section">
-      <div class="board-head">
-        <div class="board-intro">
-          <h2 class="h-section">{t("Garagen & Hilfe")}</h2>
-          <p>{t("Platz unterm Dach, Werkzeug oder eine helfende Hand. Kontakt nach dem Anmelden.")}</p>
-        </div>
-        <a class="board-all" href="/anzeigen">{t("Alle Einträge ansehen")}</a>
-      </div>
+  <section class="wrap wide section" aria-labelledby="h-kat">
+    <h2 id="h-kat" class="h-section">{t("Kategorien")}</h2>
+    <ul class="cats">
       {
-        latest.length ? (
-          <ul class="board-grid">
-            {latest.map((l) => (
-              <li class="dcard">
-                <div class="chips">
-                  <TypeChip type={l.type} category={l.categorySlug} />
-                  <span class="chip chip-outline">{t(l.categoryLabel)}</span>
-                  {l.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
-                </div>
-                <h3>
-                  <a href={`/anzeigen/${l.id}`}>{l.title}</a>
-                </h3>
-                <p class="dcard-meta">
-                  {[placeLabel(l, lang), priceLabel(l.priceKind, l.priceCents, lang)].filter(Boolean).join(" · ")}
-                </p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div class="board-empty">
-            <p>{t("Noch keine Anzeigen. Biete deine Garage an, verleih Werkzeug oder frag nach Hilfe.")}</p>
-            <a class="btn btn-sky" href="/anzeigen/neu">
-              {t("Erste Anzeige aufgeben")}
+        categories.map((c) => (
+          <li>
+            <a href={`/anzeigen?kategorie=${c.slug}`} class="cat">
+              <span class="cat-tile">
+                <CategoryIcon slug={c.slug} size={26} />
+              </span>
+              <span class="cat-label">{t(c.label)}</span>
             </a>
-          </div>
-        )
+          </li>
+        ))
       }
+    </ul>
+  </section>
+
+  <section class="wrap wide section" aria-labelledby="h-neu">
+    <div class="section-head">
+      <h2 id="h-neu" class="h-section">{t("Neueste Anzeigen")}</h2>
+      <a href="/anzeigen" class="more">{t("Alle Anzeigen ansehen")}</a>
+    </div>
+    {
+      latest.length ? (
+        <div class="cards">
+          {latest.map((l) => (
+            <ListingCard listing={l} heart={heartFor(l.id, l.userId)} />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-box">
+          <BennoWave size={120} />
+          <p>{t("Noch keine Anzeigen. Biete deine Garage an, verleih Werkzeug oder frag nach Hilfe.")}</p>
+          <a class="btn btn-primary" href="/anzeigen/neu">
+            {t("Erste Anzeige aufgeben")}
+          </a>
+        </div>
+      )
+    }
+  </section>
+
+  <section class="wrap wide section-tight" aria-labelledby="h-vertrag">
+    <div class="contract-band">
+      <div class="contract-text">
+        <span class="chip chip-suche">{t("Ohne Anmeldung")}</span>
+        <h2 id="h-vertrag">{t("Motorrad verleihen? Mit Vertrag.")}</h2>
+        <p class="contract-lead">
+          {t("Leihvertrag nach BGB, Übergabeprotokoll mit Fotos und Unterschrift auf dem Handy. In fünf Minuten als PDF, deine Daten bleiben auf deinem Gerät.")}
+        </p>
+        <ul class="checks">
+          <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d={CHECK}></path></svg>{t("Offen oder festes Ende")}</li>
+          <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d={CHECK}></path></svg>{t("Haftungsgrenze frei wählbar")}</li>
+          <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d={CHECK}></path></svg>{t("Fotos und Unterschrift im Protokoll")}</li>
+        </ul>
+        <a class="btn btn-xl btn-white" href="/leihvertrag">{t("Leihvertrag erstellen")}</a>
+      </div>
+      {/* A quote from the contract, which is German only (binding text). */}
+      <div class="mini-contract" lang="de" aria-hidden="true">
+        <p class="mc-title">Leihvertrag über ein Motorrad</p>
+        <p class="mc-sub">unentgeltliche Leihe gemäß §§ 598 ff. BGB</p>
+        <p class="mc-head">§ 6 Haftung des Entleihers</p>
+        <p class="mc-text">(2) Die Haftung ist auf höchstens <strong>1.000,00 €</strong> je Schadensfall begrenzt.</p>
+        <div class="mc-sign"><span>Verleiher</span><span>Entleiher</span></div>
+      </div>
     </div>
   </section>
 
-  <section class="band-sky">
-    <div class="wrap wide cta">
-      <h2 class="closing">{t("Einfach losfahren.")}</h2>
-      <a class="btn btn-primary btn-xl" href={joinHref}>{user ? t("Anzeige aufgeben") : t("Kostenlos mitmachen")}</a>
+  <section id="so" class="wrap wide section" aria-labelledby="h-so">
+    <h2 id="h-so" class="h-section">{t("So geht's")}</h2>
+    <ol class="steps">
+      <li class="step">
+        <span class="step-num" aria-hidden="true">1</span>
+        <h3>{t("Anzeige aufgeben")}</h3>
+        <p>{t("Biete deinen Stellplatz, dein Werkzeug oder dein Bike an. Oder schreib, was du suchst. Dauert zwei Minuten.")}</p>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">2</span>
+        <h3>{t("Nachricht schreiben")}</h3>
+        <p>{t("Klärt alles im Chat auf Kickstand. Deine Telefonnummer und E-Mail bleiben privat.")}</p>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">3</span>
+        <h3>{t("Treffen und loslegen")}</h3>
+        <p>{t("Bei einem Motorrad startest du den Leihvertrag direkt aus dem Chat, mit Protokoll und Fotos.")}</p>
+      </li>
+    </ol>
+  </section>
+
+  <section id="sicherheit" class="wrap wide section-tight" aria-labelledby="h-sicher">
+    <div class="safety-band">
+      <BennoWave size={140} />
+      <div class="safety-text">
+        <h2 id="h-sicher" class="h-section">{t("Bennos Sicherheitstipps")}</h2>
+        <ul class="tips">
+          <li><strong>{t("Öffentlich treffen.")}</strong> {t("Erste Übergabe am Tag und an einem belebten Ort.")}</li>
+          <li><strong>{t("Führerschein zeigen.")}</strong> {t("Klasse A prüfen, bevor jemand losfährt.")}</li>
+          <li><strong>{t("Alles festhalten.")}</strong> {t("Kilometer, Tank, Kratzer: mit Fotos ins Protokoll.")}</li>
+          <li><strong>{t("Im Chat bleiben.")}</strong> {t("Keine Vorkasse und keine fremden Links.")}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap wide section-tight cta-wrap">
+    <div class="cta-band">
+      <div class="cta-text">
+        <h2>{t("Was liegt bei dir in der Garage rum?")}</h2>
+        <p>{t("Ein freier Stellplatz, ein Satz Koffer, ein Abzieher. Irgendwer in deiner Nähe sucht genau das.")}</p>
+      </div>
+      <a class="btn btn-dark btn-xl" href="/anzeigen/neu">{t("Anzeige aufgeben")}</a>
     </div>
   </section>
 </Base>
 
 <style>
   .section {
-    padding-top: 72px;
-    padding-bottom: 72px;
+    padding-top: 40px;
+    padding-bottom: 8px;
     display: flex;
     flex-direction: column;
-    gap: 36px;
+    gap: 16px;
   }
-
+  .section-tight {
+    padding-top: 32px;
+  }
+  .cta-wrap {
+    padding-bottom: 56px;
+  }
   .h-section {
-    font-family: var(--slab);
-    font-size: clamp(1.75rem, 1.2rem + 2vw, 2.25rem);
-    line-height: 1.15;
+    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+  }
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 16px;
+  }
+  .more {
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
   }
 
   /* Hero */
+  .hero-band {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+  }
   .hero {
-    padding-top: 72px;
-    padding-bottom: 56px;
+    padding-top: 48px;
+    padding-bottom: 40px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 56px;
+    gap: 24px 40px;
   }
   .hero-text {
-    flex: 1 1 440px;
+    flex: 999 1 540px;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: 18px;
   }
   .eyebrow {
-    font-size: 14px;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--link);
+    color: var(--petrol);
+    font-size: 15px;
   }
   .hero h1 {
-    font-family: var(--slab);
-    font-size: clamp(2rem, 1.1rem + 3.6vw, 3.25rem);
-    line-height: 1.08;
-    font-weight: 700;
-  }
-  .stroke {
-    color: var(--ink);
-    max-width: 100%;
-    height: auto;
+    font-size: clamp(2.25rem, 1.2rem + 4.2vw, 3.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    max-width: 14ch;
   }
   .lead {
-    font-size: 18px;
-    line-height: 1.6;
+    font-size: clamp(1.05rem, 1rem + 0.3vw, 1.2rem);
     color: var(--text-2);
-    max-width: 34em;
+    max-width: 52ch;
   }
-  .hero-cta {
+  .bigsearch {
     display: flex;
     flex-wrap: wrap;
+    gap: 8px;
+    border: 2px solid var(--ink);
+    border-radius: 20px;
+    padding: 8px;
+    max-width: 760px;
+    background: var(--card);
+  }
+  .bigsearch label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px 0 12px;
+    min-height: 52px;
+    min-width: 0;
+    color: var(--muted);
+  }
+  .bs-q {
+    flex: 3 1 240px;
+  }
+  .bs-ort {
+    flex: 1 1 160px;
+    border-left: 1px solid var(--line);
+  }
+  .bigsearch svg {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .bigsearch input[type="search"] {
+    border: 0;
+    padding: 0;
+    min-height: 48px;
+    font-size: 17px;
+    background: transparent;
+    border-radius: 0;
+  }
+  .bigsearch input:focus-visible {
+    outline: none;
+  }
+  .bigsearch:focus-within {
+    outline: 3px solid var(--petrol);
+    outline-offset: 2px;
+  }
+  .bigsearch button {
+    flex: 0 0 auto;
+    min-height: 52px;
+    padding: 0 28px;
+    border-radius: 14px;
+    font-size: 17px;
+  }
+  /* Phones: the place field moves below the keyword, the button fills the row. */
+  @media (max-width: 559px) {
+    .bs-ort {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .bigsearch button {
+      flex: 1 1 100%;
+    }
+  }
+  .popular {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 14px;
+    font-size: 15px;
+    color: var(--muted);
+  }
+  .popular a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+    font-weight: 600;
+  }
+  .hero-benno {
+    flex: 1 1 280px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  .hero-benno :global(.benno) {
+    width: min(320px, 70vw);
+    height: auto;
+  }
+  .bubble {
+    position: absolute;
+    top: 4px;
+    right: max(0px, calc(50% - 180px));
+    background: var(--ink);
+    color: var(--on-dark);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 10px 14px;
+    border-radius: 16px 16px 4px 16px;
+    max-width: 200px;
+  }
+  @media (max-width: 559px) {
+    .hero {
+      padding-top: 28px;
+    }
+    .hero-benno :global(.benno) {
+      width: 180px;
+    }
+    .bubble {
+      font-size: 14px;
+      right: calc(50% - 170px);
+    }
+  }
+
+  /* Categories */
+  .cats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 12px;
   }
-  /* The photo, caption and pill are one link to /touren. */
-  .hero-figure {
-    flex: 1 1 420px;
-    min-width: 0;
+  .cat {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 12px;
+    padding: 18px 16px;
+    min-height: 116px;
+    height: 100%;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
     color: var(--ink);
     text-decoration: none;
   }
-  .hero-figure .oval {
-    width: 100%;
+  .cat:hover {
+    border-color: var(--petrol);
+    color: var(--ink);
   }
-  .hero-figure:hover .hero-more {
+  .cat-tile {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--petrol-wash);
+    color: var(--petrol);
+    display: grid;
+    place-items: center;
+  }
+  .cat-label {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  @media (max-width: 559px) {
+    .cats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .cat {
+      min-height: 0;
+      flex-direction: row;
+      align-items: center;
+      padding: 12px;
+      gap: 10px;
+    }
+    .cat-tile {
+      flex: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+    }
+    .cat-label {
+      font-size: 14px;
+    }
+  }
+
+  /* Leihvertrag band */
+  .contract-band {
     background: var(--ink);
-    color: #ffffff;
+    color: var(--on-dark);
+    border-radius: var(--radius-section);
+    padding: clamp(28px, 4vw, 48px) clamp(20px, 4vw, 40px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    align-items: center;
   }
-  .hero-figure:focus-visible {
-    outline: none;
+  .contract-text {
+    flex: 999 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
-  .hero-figure:focus-visible .oval {
-    outline: 3px solid var(--ink);
-    outline-offset: 4px;
+  .contract-text h2 {
+    font-size: clamp(1.9rem, 1.2rem + 2.4vw, 2.75rem);
+    line-height: 1.05;
+    color: var(--on-dark);
   }
-  .oval {
-    border-radius: 50% / 46%;
-    overflow: hidden;
-    background: var(--sky);
-    padding: 14px;
+  .contract-lead {
+    font-size: 1.1rem;
+    color: var(--on-dark-muted);
+    max-width: 50ch;
   }
-  .oval img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    border-radius: 50% / 46%;
+  .checks {
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+    display: grid;
+    gap: 10px;
   }
-  .hero-caption {
+  .checks li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .checks svg {
+    flex: none;
+    fill: none;
+    stroke: var(--amber);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .btn-white {
+    background: var(--card);
+    border-color: var(--card);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .btn-white:hover {
+    background: var(--petrol-wash);
+    border-color: var(--petrol-wash);
+  }
+  .mini-contract {
+    flex: 1 1 300px;
+    max-width: 380px;
+    margin: 0 auto;
+    background: var(--card);
+    color: var(--ink);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    transform: rotate(2deg);
+  }
+  .mc-title {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+  }
+  .mc-sub {
     font-size: 13px;
     color: var(--muted);
-    text-align: center;
+    margin: 2px 0 16px;
+  }
+  .mc-head {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .mc-text {
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 16px;
+  }
+  .mc-text strong {
+    background: var(--amber-wash);
+    color: var(--ink);
+    padding: 0 4px;
+    border-radius: 4px;
+  }
+  .mc-sign {
+    display: flex;
+    gap: 12px;
+  }
+  .mc-sign span {
+    flex: 1;
+    border-top: 1.5px solid var(--ink);
+    padding-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
   }
 
   /* So geht's */
-  .band-wash {
-    background: var(--sky-wash);
-  }
   .steps {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-    gap: 24px;
+    gap: 16px;
   }
   .step {
-    background: var(--surface);
+    background: var(--card);
+    border: 1px solid var(--line);
     border-radius: var(--radius-card);
-    padding: 28px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
   }
   .step-num {
-    font-family: var(--script);
+    font-family: var(--display);
+    font-weight: 800;
     font-size: 44px;
     line-height: 1;
-    color: var(--link);
+    color: var(--petrol);
+    margin-bottom: 6px;
   }
   .step h3 {
-    font-family: var(--slab);
-    font-size: 22px;
+    font-size: 20px;
   }
   .step p {
-    line-height: 1.6;
     color: var(--text-2);
   }
 
-  /* Contract */
-  .contract {
-    flex-direction: row;
+  /* Safety */
+  .safety-band {
+    background: var(--petrol-wash);
+    border-radius: var(--radius-section);
+    padding: clamp(24px, 4vw, 40px);
+    display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 48px;
+    gap: 16px 32px;
   }
-  .contract-photo {
-    flex: 1 1 420px;
-    min-width: 0;
+  .safety-band > :global(.benno) {
+    flex: none;
   }
-  .contract-photo img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 3 / 2;
-    object-fit: cover;
-    border-radius: var(--radius-card);
-  }
-  .contract-text {
-    flex: 1 1 380px;
+  .safety-text {
+    flex: 999 1 400px;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
-  .lead-sm {
-    font-size: 17px;
-    line-height: 1.6;
-    color: var(--text-2);
-  }
-  .clause {
-    border: 1px solid var(--line-strong);
-    border-radius: 12px;
-    padding: 20px;
-    font-family: var(--slab);
-    font-size: 15px;
-    line-height: 1.55;
-    background: var(--surface);
-  }
-
-  /* Garagen & Hilfe */
-  .band-dark {
-    background: var(--dark);
-    color: #ffffff;
-  }
-  .band-dark .section {
-    gap: 32px;
-  }
-  .board-head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 16px;
-  }
-  .board-intro {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .board-intro p {
-    color: var(--dark-muted);
-  }
-  .board-all {
-    color: var(--sky);
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--tap);
-  }
-  .board-all:hover {
-    color: #ffffff;
-  }
-  .board-grid {
+  .tips {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 12px 24px;
+    color: var(--text-2);
   }
-  .dcard {
-    position: relative;
-    border: 1px solid var(--dark-line);
-    border-radius: 14px;
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .dcard:hover {
-    border-color: var(--dark-chip-line);
-  }
-  .dcard:has(a:focus-visible) {
-    outline: 3px solid var(--sky);
-    outline-offset: 2px;
-  }
-  .dcard .chip-outline {
-    border-color: var(--dark-chip-line);
-    color: var(--dark-muted);
-  }
-  .dcard .chip-ink {
-    background: #ffffff;
+  .tips strong {
     color: var(--ink);
   }
-  .dcard h3 {
-    font-family: var(--sans);
-    font-size: 18px;
-    line-height: 1.3;
-  }
-  .dcard h3 a {
-    color: #ffffff;
-    text-decoration: none;
-  }
-  .dcard h3 a:focus-visible {
-    outline: none;
-  }
-  /* Whole card clickable through the title link. */
-  .dcard h3 a::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-  }
-  .dcard-meta {
-    color: var(--dark-muted);
-    font-size: 14px;
-    margin-top: auto;
-  }
-  .board-empty {
-    border: 1px dashed var(--dark-chip-line);
-    border-radius: 14px;
-    padding: 28px 22px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    color: var(--dark-muted);
-  }
 
-  /* Closing band */
-  .band-sky {
-    background: var(--sky);
-  }
-  .cta {
-    padding-top: 64px;
-    padding-bottom: 64px;
+  /* CTA */
+  .cta-band {
+    background: var(--amber);
+    border-radius: var(--radius-section);
+    padding: clamp(24px, 4vw, 40px);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
   }
-  .closing {
-    font-family: var(--script);
-    font-weight: 400;
-    font-size: clamp(2.75rem, 2rem + 3vw, 3.5rem);
+  .cta-text {
+    flex: 1 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .cta-text h2 {
+    font-size: clamp(1.75rem, 1.2rem + 2vw, 2.4rem);
     line-height: 1.05;
   }
-
-  @media (max-width: 559px) {
-    .hero {
-      padding-top: 36px;
-      padding-bottom: 40px;
-      gap: 32px;
-    }
-    .section {
-      padding-top: 48px;
-      padding-bottom: 48px;
-      gap: 24px;
-    }
-    .contract {
-      gap: 28px;
-    }
-    .step {
-      padding: 22px;
-    }
-    .lead {
-      font-size: 17px;
-    }
-    .cta {
-      padding-top: 44px;
-      padding-bottom: 44px;
-    }
+  .cta-text p {
+    font-size: 1.1rem;
   }
 </style>

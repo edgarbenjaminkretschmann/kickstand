@@ -1,6 +1,7 @@
 ---
 import { actions } from "astro:actions";
 import Logo from "../components/Logo.astro";
+import { CATEGORIES } from "../db/categories";
 import { i18n, LANG_NAMES, LANGS } from "../i18n";
 import clientKeys from "../i18n/client-keys.json";
 import { unreadTotal } from "../lib/data/conversations";
@@ -11,6 +12,12 @@ interface Props {
   description?: string;
   /** Page has its own fixed bottom bar (loan wizard, return): hides the tab bar and footer. */
   dock?: boolean;
+  /** Keeps the footer on a dock page (public pages need Impressum and the language switch). */
+  dockFooter?: boolean;
+  /** Fixed bottom bar on phones only (listing detail): hides the tab bar, keeps the footer. */
+  mobileDock?: boolean;
+  /** The page draws its own top bar on phones (listing detail): hides the site header there. */
+  mobileBar?: boolean;
   /** Wider content column (search, detail). */
   wide?: boolean;
   /** Full-bleed page that lays out its own sections (landing). */
@@ -22,6 +29,9 @@ const {
   title,
   description = t("Motorräder kostenlos leihen, Garagen, Werkzeug und Hilfe unter Motorradfahrern. Mit Leihvertrag aus dem Handy."),
   dock = false,
+  dockFooter = false,
+  mobileDock = false,
+  mobileBar = false,
   wide = false,
   bare = false,
 } = Astro.props;
@@ -41,13 +51,25 @@ const initial = (user?.name.trim()[0] ?? "?").toUpperCase();
 
 const is = (prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 const current = (on: boolean) => (on ? "page" : undefined);
+const onSearch = is("/anzeigen") && !is("/anzeigen/neu");
+
+// Search and member pages get the compact search in the header and the member nav; the rest the public nav.
+const appHeader = is("/anzeigen") || is("/app") || is("/nachrichten") || is("/merkliste") || is("/profil");
+const params = Astro.url.searchParams;
+const searchQ = path === "/anzeigen" ? (params.get("q") ?? "") : "";
+const searchOrt = path === "/anzeigen" ? (params.get("ort") ?? "") : "";
+// On the results page, the header search keeps the filters from the side card (and the other way round).
+const carry = path === "/anzeigen" ? [...params].filter(([k]) => !["q", "ort", "seite"].includes(k)) : [];
+const loginHref = `/login${path === "/" || path === "/login" ? "" : `?next=${encodeURIComponent(path + Astro.url.search)}`}`;
+
 const tabs = [
-  { href: "/anzeigen", label: t("Suchen"), icon: "search", on: is("/anzeigen") && !is("/anzeigen/neu") },
+  { href: "/anzeigen", label: t("Suchen"), icon: "search", on: onSearch },
   { href: "/merkliste", label: t("Merkliste"), icon: "heart", on: is("/merkliste") },
   { href: "/anzeigen/neu", label: t("Aufgeben"), icon: "plus", on: is("/anzeigen/neu") },
   { href: "/nachrichten", label: t("Nachrichten"), icon: "chat", on: is("/nachrichten"), badge: unread },
   { href: "/app", label: t("Mein Bereich"), icon: "user", on: is("/app") || is("/profil") },
 ];
+const HEART = "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z";
 ---
 
 <!doctype html>
@@ -59,37 +81,110 @@ const tabs = [
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#ffffff" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Mr+Dafoe&family=Open+Sans:wght@400;600&family=Roboto+Slab:wght@500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"
     />
     <title>{pageTitle}</title>
     {LANGS.map((l) => <link rel="alternate" hreflang={l} href={new URL(l === "de" ? here : `/${l}${here === "/" ? "" : here}`, site).href} />)}
     <script is:inline>document.documentElement.classList.add("js");</script>
     {clientDict && <script type="application/json" id="i18n-client" set:html={clientDict} />}
   </head>
-  <body class:list={{ "has-dock": dock, "has-tabs": !dock }}>
+  <body
+    class:list={{
+      "has-dock": dock,
+      "has-tabs": !dock && !mobileDock,
+      "has-dock-footer": dock && dockFooter,
+      "has-mobile-dock": mobileDock,
+    }}
+  >
     <a href="#main" class="skip">{t("Zum Inhalt")}</a>
-    <header class="site-header">
+    <header class:list={["site-header", { "head-app": appHeader, "head-mobile-off": mobileBar }]}>
       <div class="bar">
         <Logo />
-        <nav class="main-nav" aria-label={t("Hauptnavigation")}>
-          <a href="/anzeigen" class="nav-link desktop-only" aria-current={current(is("/anzeigen") && !is("/anzeigen/neu"))}>{t("Suchen")}</a>
+        {
+          appHeader && (
+            <form method="GET" action="/anzeigen" class="hsearch" role="search">
+              {carry.map(([k, v]) => (
+                <input type="hidden" name={k} value={v} />
+              ))}
+              <label class="hs-q">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.5-3.5" />
+                </svg>
+                <span class="visually-hidden">{t("Suchbegriff")}</span>
+                <input type="search" name="q" value={searchQ} placeholder={t("Was suchst du?")} enterkeyhint="search" />
+              </label>
+              <label class="hs-ort">
+                <span class="visually-hidden">{t("PLZ oder Ort")}</span>
+                <input type="search" name="ort" value={searchOrt} placeholder={t("PLZ oder Ort")} autocomplete="address-level2" enterkeyhint="search" />
+              </label>
+              <button type="submit" class="btn-primary">
+                {t("Finden")}
+              </button>
+            </form>
+          )
+        }
+        <nav class="main-nav desktop-only" aria-label={t("Hauptnavigation")}>
           {
-            user && (
-              <a href="/nachrichten" class="nav-link desktop-only" aria-current={current(is("/nachrichten"))}>
-                {t("Nachrichten")}
-                {unread > 0 && (
-                  <span class="count count-hot" aria-label={t("{n} ungelesen", { n: unread })}>
-                    {unread}
-                  </span>
+            appHeader ? (
+              <>
+                <a href="/anzeigen" class="nav-link" aria-current={current(onSearch)}>
+                  {t("Anzeigen")}
+                </a>
+                {user && (
+                  <a href="/nachrichten" class="nav-link" aria-current={current(is("/nachrichten"))}>
+                    {t("Nachrichten")}
+                    {unread > 0 && (
+                      <span class="count count-hot" aria-label={t("{n} ungelesen", { n: unread })}>
+                        {unread}
+                      </span>
+                    )}
+                  </a>
                 )}
-              </a>
+              </>
+            ) : (
+              <>
+                <a href="/anzeigen" class="nav-link" aria-current={current(onSearch)}>
+                  {t("Anzeigen")}
+                </a>
+                <a href="/leihvertrag" class="nav-link" aria-current={current(is("/leihvertrag"))}>
+                  {t("Leihvertrag")}
+                </a>
+                <a href="/so-gehts" class="nav-link" aria-current={current(is("/so-gehts"))}>
+                  {t("So geht's")}
+                </a>
+                <a href="/#sicherheit" class="nav-link">
+                  {t("Sicherheit")}
+                </a>
+              </>
             )
           }
-          <a href="/anzeigen/neu" class="btn btn-primary btn-small desktop-only">{t("Anzeige aufgeben")}</a>
+        </nav>
+        <div class="head-actions">
+          <details class="menu lang-menu">
+            <summary aria-label={t("Sprache: {name}", { name: LANG_NAMES[lang] })}>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z" />
+              </svg>
+              <span class="lang-code" aria-hidden="true">{lang.toUpperCase()}</span>
+            </summary>
+            <div class="menu-pop">
+              {LANGS.map((l) => (
+                <a href={altHref(l)} hreflang={l} lang={l} aria-current={l === lang ? "true" : undefined}>
+                  {LANG_NAMES[l]}
+                </a>
+              ))}
+            </div>
+          </details>
+          <a href="/merkliste" class="head-icon desktop-only" aria-label={t("Merkliste")} aria-current={current(is("/merkliste"))}>
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
+          </a>
           {
             user ? (
               <details class="menu">
@@ -103,6 +198,7 @@ const tabs = [
                   <p class="menu-name">{user.name}</p>
                   <a href="/app">{t("Mein Bereich")}</a>
                   <a href="/app#anzeigen">{t("Meine Anzeigen")}</a>
+                  <a href="/nachrichten">{t("Nachrichten")}</a>
                   <a href="/merkliste">{t("Merkliste")}</a>
                   <a href="/profil">{t("Profil")}</a>
                   <form method="POST" action={"/" + actions.auth.logout}>
@@ -111,14 +207,19 @@ const tabs = [
                 </div>
               </details>
             ) : (
-              <a href={`/login${path === "/" || path === "/login" ? "" : `?next=${encodeURIComponent(path + Astro.url.search)}`}`} class="btn btn-outline btn-small">
+              <a href={loginHref} class="btn btn-outline btn-small">
                 {t("Anmelden")}
               </a>
             )
           }
-        </nav>
+          <a href="/anzeigen/neu" class="btn btn-primary btn-small desktop-only">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            {t("Anzeige aufgeben")}
+          </a>
+        </div>
       </div>
     </header>
+    <slot name="before" />
 
     {
       bare ? (
@@ -134,16 +235,32 @@ const tabs = [
     <slot name="after" />
 
     {
-      !dock && (
+      (!dock || dockFooter) && (
         <footer class="site-footer">
           <div class="foot">
-            <span>Kickstand · Edgar Kretschmann</span>
-            <span class="foot-links">
+            <div class="foot-brand">
+              <p class="foot-word">kickstand</p>
+              <p>{t("Der Marktplatz von Motorradfahrern für Motorradfahrer.")}</p>
+            </div>
+            <nav class="foot-col" aria-label="Kickstand">
+              <p class="foot-head">Kickstand</p>
               <a href="/so-gehts">{t("So geht's")}</a>
+              <a href="/#sicherheit">{t("Sicherheit")}</a>
+              <a href="/leihvertrag">{t("Leihvertrag")}</a>
               <a href="/touren">{t("Edgars Touren")}</a>
+            </nav>
+            <nav class="foot-col" aria-label={t("Kategorien")}>
+              <p class="foot-head">{t("Kategorien")}</p>
+              {CATEGORIES.map((c) => <a href={`/anzeigen?kategorie=${c.slug}`}>{t(c.label)}</a>)}
+            </nav>
+            <nav class="foot-col" aria-label={t("Rechtliches")}>
+              <p class="foot-head">{t("Rechtliches")}</p>
               <a href="/impressum">{t("Impressum")}</a>
               <a href="/datenschutz">{t("Datenschutz")}</a>
-            </span>
+            </nav>
+          </div>
+          <div class="foot-base">
+            <span>{t("Kickstand · ein Projekt von Edgar Kretschmann")}</span>
             <nav class="lang-switch" aria-label={t("Sprache")}>
               {LANGS.map((l) => (
                 <a href={altHref(l)} hreflang={l} lang={l} aria-current={l === lang ? "true" : undefined}>
@@ -157,41 +274,41 @@ const tabs = [
     }
 
     {
-      !dock && (
+      !dock && !mobileDock && (
         <nav class="tabbar" aria-label={t("Schnellzugriff")}>
-          {tabs.map((t) => (
-            <a href={t.href} aria-current={current(t.on)} class:list={{ "tab-add": t.icon === "plus" }}>
+          {tabs.map((tab) => (
+            <a href={tab.href} aria-current={current(tab.on)} class:list={{ "tab-add": tab.icon === "plus" }}>
               <span class="tab-icon" aria-hidden="true">
-                {t.icon === "search" && (
+                {tab.icon === "search" && (
                   <svg viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="6.5" />
                     <path d="M16 16l4.5 4.5" />
                   </svg>
                 )}
-                {t.icon === "heart" && (
+                {tab.icon === "heart" && (
                   <svg viewBox="0 0 24 24">
-                    <path d="M12 20s-7-4.4-8.6-8.7C2.3 8.1 4.3 5 7.4 5c1.9 0 3.4 1 4.6 2.8C13.2 6 14.7 5 16.6 5c3.1 0 5.1 3.1 4 6.3C19 15.6 12 20 12 20z" />
+                    <path d={HEART} />
                   </svg>
                 )}
-                {t.icon === "plus" && (
+                {tab.icon === "plus" && (
                   <svg viewBox="0 0 24 24">
                     <path d="M12 6v12M6 12h12" />
                   </svg>
                 )}
-                {t.icon === "chat" && (
+                {tab.icon === "chat" && (
                   <svg viewBox="0 0 24 24">
                     <path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z" />
                   </svg>
                 )}
-                {t.icon === "user" && (
+                {tab.icon === "user" && (
                   <svg viewBox="0 0 24 24">
                     <circle cx="12" cy="8.5" r="3.8" />
                     <path d="M4.5 20c1.2-3.7 4-5.5 7.5-5.5s6.3 1.8 7.5 5.5" />
                   </svg>
                 )}
-                {t.badge ? <span class="tab-badge">{t.badge > 9 ? "9+" : t.badge}</span> : null}
+                {tab.badge ? <span class="tab-badge">{tab.badge > 9 ? "9+" : tab.badge}</span> : null}
               </span>
-              <span class="tab-label">{t.label}</span>
+              <span class="tab-label">{tab.label}</span>
             </a>
           ))}
         </nav>

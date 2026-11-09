@@ -1,0 +1,22 @@
+---
+// Mitgegeben card, shared by the contract wizard and the public generator.
+import Field from "./Field.astro";
+import { i18n } from "../i18n";
+
+interface Props {
+  values: { keys?: boolean; keyCount?: string; registration?: boolean; otherItems?: string };
+}
+
+const { values: v } = Astro.props;
+const { t } = i18n(Astro.locals.lang);
+---
+
+<section class="card">
+  <h2>{t("Mitgegeben")}</h2>
+  <div class="row">
+    <label class="check"><input type="checkbox" name="keys" checked={v.keys} />{t("Schlüssel")}</label>
+    <Field label={t("Anzahl")} name="keyCount" type="number" min="1" max="9" inputmode="numeric" value={v.keyCount} />
+  </div>
+  <label class="check"><input type="checkbox" name="registration" checked={v.registration} />{t("Zulassungsbescheinigung Teil I")}</label>
+  <Field label={t("Sonstiges (z. B. Helm, Schloss)")} name="otherItems" value={v.otherItems} />
+</section>

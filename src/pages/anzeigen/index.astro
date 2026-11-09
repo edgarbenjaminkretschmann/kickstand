@@ -1,7 +1,11 @@
 ---
+// Search results: filter card on the left (a GET form, works without JS), results as list rows.
+// Keyword and Ort come from the search in the header; both forms carry the other's fields along.
 import Base from "../../layouts/Base.astro";
-import ListingCard from "../../components/ListingCard.astro";
-import { listCategories, searchListings } from "../../lib/data/listings";
+import BennoMark from "../../components/benno/BennoMark.astro";
+import BennoWave from "../../components/benno/BennoWave.astro";
+import ListingRow from "../../components/ListingRow.astro";
+import { listCategories, PRICE_KINDS, searchListings } from "../../lib/data/listings";
 import { i18n } from "../../i18n";
 
 const { t } = i18n(Astro.locals.lang);
@@ -12,112 +16,181 @@ const filters = {
   type: ["biete", "suche"].includes(q.get("typ") ?? "") ? q.get("typ")! : "",
   category: q.get("kategorie") ?? "",
   ort: (q.get("ort") ?? "").trim().slice(0, 80),
+  price: q.getAll("preis").filter((p) => (PRICE_KINDS as readonly string[]).includes(p)),
   page: Number(q.get("seite")) || 1,
 };
 const categories = await listCategories();
 if (filters.category && !categories.some((c) => c.slug === filters.category)) filters.category = "";
 const result = await searchListings(filters);
 const activeCategory = categories.find((c) => c.slug === filters.category);
-const filtered = !!(filters.q || filters.type || filters.category || filters.ort);
+const filtered = !!(filters.q || filters.type || filters.category || filters.ort || filters.price.length);
 
-/** Same filters, other page. */
-const pageHref = (page: number) => {
+/** Same filters with some changed (null removes). Page resets unless given. */
+const hrefWith = (change: Record<string, string | null>) => {
   const p = new URLSearchParams();
-  if (filters.q) p.set("q", filters.q);
-  if (filters.type) p.set("typ", filters.type);
-  if (filters.category) p.set("kategorie", filters.category);
-  if (filters.ort) p.set("ort", filters.ort);
-  if (page > 1) p.set("seite", String(page));
+  const v = { q: filters.q, typ: filters.type, kategorie: filters.category, ort: filters.ort, ...change };
+  for (const [k, val] of Object.entries(v)) if (val) p.set(k, val);
+  if (!("preis" in change)) for (const pr of filters.price) p.append("preis", pr);
   const s = p.toString();
   return `/anzeigen${s ? `?${s}` : ""}`;
 };
+const pageHref = (page: number) => hrefWith({ seite: page > 1 ? String(page) : null });
+
+// Up to five page numbers around the current one.
+const first = Math.max(1, Math.min(result.page - 2, result.pageCount - 4));
+const pages = Array.from({ length: Math.min(5, result.pageCount) }, (_, i) => first + i);
+
 const title = activeCategory ? t(activeCategory.label) : t("Anzeigen");
+const heading = filters.ort ? t("{what} in {place}", { what: title, place: filters.ort }) : title;
+const PRICE_FILTERS = [
+  { value: "kostenlos", label: t("Kostenlos") },
+  { value: "tausch", label: t("Tausch") },
+  { value: "preis", label: t("Mit Preis") },
+  { value: "vb", label: t("VB") },
+];
+const newSearchHref = `/anzeigen/neu?typ=suche${filters.category ? `&kategorie=${filters.category}` : ""}`;
 ---
 
 <Base title={title} description={t("Motorräder zum Leihen, Garagen, Werkzeug, Teile, Hilfe beim Schrauben und Tourpartner. Biete und suche unter Motorradfahrern.")} wide>
-  <div class="page-head">
-    <h1>{title}</h1>
-    <p>{t("Biete und suche unter Motorradfahrern: Motorräder zum Leihen, Garagen, Werkzeug, Teile, Hilfe und Touren.")}</p>
-  </div>
+  <nav class="crumbs small" aria-label={t("Pfad")}>
+    <a href="/">{t("Start")}</a>
+    <span aria-hidden="true">›</span>
+    {
+      activeCategory ? (
+        <>
+          <a href="/anzeigen">{t("Anzeigen")}</a>
+          <span aria-hidden="true">›</span>
+          <span aria-current="page">{t(activeCategory.label)}</span>
+        </>
+      ) : (
+        <span aria-current="page">{t("Anzeigen")}</span>
+      )
+    }
+  </nav>
 
-  <form method="GET" action="/anzeigen" class="search" role="search">
-    <label class="field search-q">
-      <span class="visually-hidden">{t("Suchbegriff")}</span>
-      <input type="search" name="q" value={filters.q} placeholder={t("Was suchst du? z. B. Hebebühne")} enterkeyhint="search" />
-    </label>
-    <div class="seg seg-3" role="radiogroup" aria-label={t("Art")}>
-      <label><input type="radio" name="typ" value="" checked={!filters.type} /><span>{t("Alle")}</span></label>
-      <label><input type="radio" name="typ" value="biete" checked={filters.type === "biete"} /><span>{t("Biete")}</span></label>
-      <label><input type="radio" name="typ" value="suche" checked={filters.type === "suche"} /><span>{t("Suche")}</span></label>
-    </div>
-    <div class="row stack-sm">
-      <label class="field">
-        {t("Kategorie")}
-        <select name="kategorie">
-          <option value="">{t("Alle Kategorien")}</option>
+  <div class="results-layout">
+    <form method="GET" action="/anzeigen" class="filters" aria-label={t("Filter")} data-autosubmit>
+      {filters.q && <input type="hidden" name="q" value={filters.q} />}
+      {filters.ort && <input type="hidden" name="ort" value={filters.ort} />}
+      <fieldset class="filter-group">
+        <legend class="filter-head">{t("Art")}</legend>
+        <div class="seg seg-3 seg-type">
+          <label><input type="radio" name="typ" value="" checked={!filters.type} /><span>{t("Alle")}</span></label>
+          <label class="seg-biete"><input type="radio" name="typ" value="biete" checked={filters.type === "biete"} /><span>{t("Biete")}</span></label>
+          <label class="seg-suche"><input type="radio" name="typ" value="suche" checked={filters.type === "suche"} /><span>{t("Suche")}</span></label>
+        </div>
+      </fieldset>
+      <details class="filter-more">
+        <summary>
+          {t("Kategorie und Preis")}
+          {(activeCategory || filters.price.length > 0) && <span class="filter-on">{activeCategory ? t(activeCategory.label) : t("Preis")}</span>}
+        </summary>
+        <fieldset class="filter-group">
+          <legend class="filter-head">{t("Kategorie")}</legend>
+          <div class="cat-list">
+            <label class="cat-row"><input type="radio" name="kategorie" value="" checked={!filters.category} /><span>{t("Alle Kategorien")}</span></label>
+            {
+              categories.map((c) => (
+                <label class="cat-row">
+                  <input type="radio" name="kategorie" value={c.slug} checked={c.slug === filters.category} />
+                  <span>{t(c.label)}</span>
+                </label>
+              ))
+            }
+          </div>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend class="filter-head">{t("Preis")}</legend>
           {
-            categories.map((c) => (
-              <option value={c.slug} selected={c.slug === filters.category}>
-                {t(c.label)}
-              </option>
+            PRICE_FILTERS.map((p) => (
+              <label class="check">
+                <input type="checkbox" name="preis" value={p.value} checked={filters.price.includes(p.value)} />
+                {p.label}
+              </label>
             ))
           }
-        </select>
-      </label>
-      <label class="field">
-        {t("Ort oder PLZ")}
-        <input type="search" name="ort" value={filters.ort} placeholder={t("z. B. Leipzig oder 04")} autocomplete="address-level2" />
-      </label>
-    </div>
-    <div class="actions">
-      <button type="submit" class="btn-primary">{t("Suchen")}</button>
-      {filtered && <a href="/anzeigen" class="btn-link">{t("Filter zurücksetzen")}</a>}
-    </div>
-  </form>
-
-  <p class="result-count" role="status">
-    {result.total === 0 ? t("Keine Anzeigen gefunden.") : result.total === 1 ? t("1 Anzeige") : t("{n} Anzeigen", { n: result.total })}
-    {result.pageCount > 1 && <span class="muted"> · {t("Seite {page} von {count}", { page: result.page, count: result.pageCount })}</span>}
-  </p>
-
-  {
-    result.total === 0 ? (
-      <div class="empty-box">
-        <p>{filtered ? t("Mit diesen Filtern gibt es gerade nichts. Versuch es mit weniger Filtern.") : t("Noch keine Anzeigen. Sei die oder der Erste.")}</p>
-        <a class="btn" href="/anzeigen/neu">
-          {t("Anzeige aufgeben")}
-        </a>
+        </fieldset>
+      </details>
+      <div class="filter-actions">
+        <button type="submit" class="btn-primary nojs-only">{t("Anwenden")}</button>
+        {filtered && <a href="/anzeigen" class="btn-link">{t("Filter zurücksetzen")}</a>}
       </div>
-    ) : (
-      <div class="cards">
-        {result.items.map((l) => (
-          <ListingCard listing={l} headingLevel={2} />
-        ))}
-      </div>
-    )
-  }
+    </form>
 
-  {
-    result.pageCount > 1 && (
-      <nav class="pager" aria-label={t("Seiten")}>
-        {result.page > 1 ? (
-          <a class="btn" href={pageHref(result.page - 1)} rel="prev">
-            {t("Zurück")}
-          </a>
+    <div class="results">
+      <div class="results-head">
+        <h1>{heading}</h1>
+        <p class="result-count" role="status">
+          {result.total === 0 ? t("Keine Anzeigen gefunden.") : result.total === 1 ? t("1 Anzeige") : t("{n} Anzeigen", { n: result.total })}
+          {filters.q && <span class="muted"> · „{filters.q}“</span>}
+        </p>
+      </div>
+
+      {
+        result.total === 0 ? (
+          <div class="empty-box">
+            <BennoWave size={120} />
+            <p>{filtered ? t("Mit diesen Filtern gibt es gerade nichts. Versuch es mit weniger Filtern.") : t("Noch keine Anzeigen. Sei die oder der Erste.")}</p>
+            <a class="btn btn-primary" href="/anzeigen/neu">
+              {t("Anzeige aufgeben")}
+            </a>
+          </div>
         ) : (
-          <span />
-        )}
-        <span class="muted small">
-          {t("Seite {page} von {count}", { page: result.page, count: result.pageCount })}
-        </span>
-        {result.page < result.pageCount ? (
-          <a class="btn" href={pageHref(result.page + 1)} rel="next">
-            {t("Weiter")}
-          </a>
-        ) : (
-          <span />
-        )}
-      </nav>
-    )
-  }
+          <ul class="rows">
+            {result.items.map((l) => (
+              <li>
+                <ListingRow listing={l} />
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      <aside class="hint-box">
+        <BennoMark size={64} bg="white" />
+        <div class="hint-text">
+          <p class="hint-title">{t("Nichts Passendes dabei?")}</p>
+          <p>{t("Gib ein Gesuch auf. Wer etwas Passendes hat, findet dich dann.")}</p>
+        </div>
+        <a class="btn btn-dark" href={newSearchHref}>{t("Gesuch aufgeben")}</a>
+      </aside>
+
+      {
+        result.pageCount > 1 && (
+          <nav class="pager" aria-label={t("Seiten")}>
+            {result.page > 1 && (
+              <a class="page-btn" href={pageHref(result.page - 1)} rel="prev" aria-label={t("Zurück")}>
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+              </a>
+            )}
+            {pages.map((p) =>
+              p === result.page ? (
+                <span class="page-btn on" aria-current="page">
+                  {p}
+                </span>
+              ) : (
+                <a class="page-btn" href={pageHref(p)} aria-label={t("Seite {page} von {count}", { page: p, count: result.pageCount })}>
+                  {p}
+                </a>
+              ),
+            )}
+            {result.page < result.pageCount && (
+              <a class="page-btn" href={pageHref(result.page + 1)} rel="next" aria-label={t("Weiter")}>
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+              </a>
+            )}
+          </nav>
+        )
+      }
+    </div>
+  </div>
 </Base>
+
+<script>
+  // Filters apply on change. Without JS the "Anwenden" button does the same.
+  const form = document.querySelector<HTMLFormElement>("form[data-autosubmit]");
+  form?.addEventListener("change", () => form.requestSubmit());
+  // Wide screens show the whole filter card; phones keep category and price folded.
+  const more = form?.querySelector("details");
+  if (more && window.matchMedia("(min-width: 900px)").matches) more.open = true;
+</script>

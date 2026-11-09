@@ -4,6 +4,7 @@ import { euroInWords, formatEuro, numberInWords } from "../src/lib/euro-words";
 describe("euroInWords", () => {
   it.each([
     [500, "fünfhundert Euro"],
+    [750, "siebenhundertfünfzig Euro"],
     [1000, "eintausend Euro"],
     [1500, "eintausendfünfhundert Euro"],
     [2500, "zweitausendfünfhundert Euro"],

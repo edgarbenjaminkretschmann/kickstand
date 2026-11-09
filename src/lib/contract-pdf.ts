@@ -3,6 +3,7 @@
 // Wording, section order and layout follow reference/leihvertrag-reference.html.
 
 import { jsPDF } from "jspdf";
+import { FOOTPEG_CONDITION } from "./contract-form";
 import { formatDate, formatDateTime, formatTimestamp } from "./dates";
 import { euroInWords, formatEuro, groupThousands } from "./euro-words";
 
@@ -273,7 +274,10 @@ export function buildContractPdf(data: ContractData): jsPDF {
 
   // --- § 4 ---
   head("§ 4 Nutzung");
+  // The Feld 22 switch gives the sentence from the contract template. Any other free text stays its own paragraph.
   const conditions = bike.conditions?.trim();
+  const footpegs = conditions === FOOTPEG_CONDITION;
+  const otherConditions = footpegs ? "" : conditions;
   para(
     "(1) Das Motorrad darf ausschließlich vom Entleiher gefahren werden. Er versichert, eine gültige Fahrerlaubnis der Klasse A zu besitzen, und legt diese bei Übergabe vor. Eine Weitergabe an Dritte ist nicht gestattet.",
     { after: 0.6 },
@@ -282,13 +286,16 @@ export function buildContractPdf(data: ContractData): jsPDF {
     "(2) Fahrten unter Einfluss von Alkohol, Drogen oder fahrtüchtigkeitsbeeinträchtigenden Medikamenten sind untersagt, ebenso Rennen, Fahrten auf Rennstrecken, Fahrsicherheitstrainings und Fahrten abseits befestigter Straßen.",
     { after: 0.6 },
   );
-  para("(3) Fahrten ins Ausland nur nach vorheriger Zustimmung des Verleihers.", { after: 0.6 });
+  para(
+    `(3) ${footpegs ? "Ein Beifahrer darf nur mitgenommen werden, wenn die vorgesehenen Fußrasten angebracht sind (Auflage laut Zulassungsbescheinigung). " : ""}Fahrten ins Ausland nur nach vorheriger Zustimmung des Verleihers.`,
+    { after: 0.6 },
+  );
   para(
     "(4) Der Entleiher behandelt das Motorrad pfleglich, sichert es beim Abstellen mit dem Lenkschloss und beachtet die Straßenverkehrsordnung.",
-    conditions ? { after: 0.6 } : {},
+    otherConditions ? { after: 0.6 } : {},
   );
-  if (conditions) {
-    para(`(5) Der Entleiher beachtet die Auflagen laut Zulassungsbescheinigung (Feld 22): ${conditions}`);
+  if (otherConditions) {
+    para(`(5) Der Entleiher beachtet die Auflagen laut Zulassungsbescheinigung (Feld 22): ${otherConditions}`);
   }
 
   // --- § 5 ---
