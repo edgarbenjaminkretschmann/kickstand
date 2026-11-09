@@ -27,6 +27,7 @@
     "src/pages/app/loans/[id]/index.astro"
   ],
   "{n} Anzeigen": [
+    "src/pages/anzeigen/[id]/index.astro",
     "src/pages/anzeigen/index.astro"
   ],
   "{n} Datei(en) übersprungen. Nur Fotos sind möglich.": [
@@ -87,6 +88,7 @@
     "src/pages/leihvertrag.astro"
   ],
   "1 Anzeige": [
+    "src/pages/anzeigen/[id]/index.astro",
     "src/pages/anzeigen/index.astro"
   ],
   "1 Foto": [
@@ -228,6 +230,9 @@
   "Anzeige löschen": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
+  "Anzeige melden": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
   "Anzeige nicht gefunden.": [
     "src/lib/data/conversations.ts",
     "src/lib/data/listings.ts",
@@ -257,6 +262,7 @@
     "src/pages/profil.astro"
   ],
   "Art": [
+    "src/pages/anzeigen/[id]/index.astro",
     "src/pages/anzeigen/index.astro"
   ],
   "Auf deiner": [
@@ -305,6 +311,9 @@
   "Bemerkungen und Ausnahmen": [
     "src/components/BikeForm.astro"
   ],
+  "Benno-Tipp": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
   "Benno, der Biber mit Motorradbrille und Schraubenschlüssel": [
     "src/pages/index.astro"
   ],
@@ -325,7 +334,8 @@
     "src/pages/anzeigen/neu.astro"
   ],
   "Beschreibung": [
-    "src/components/ListingForm.astro"
+    "src/components/ListingForm.astro",
+    "src/pages/anzeigen/[id]/index.astro"
   ],
   "Betrag in €": [
     "src/components/ListingForm.astro",
@@ -455,6 +465,9 @@
     "src/lib/auth/index.ts",
     "src/pages/nachrichten/[id].astro"
   ],
+  "Bleib im Chat auf Kickstand und zahl nichts im Voraus.": [
+    "src/lib/benno-tips.ts"
+  ],
   "Blick über den Lenker auf eine leere Landstraße, im Hintergrund ein Vulkan": [
     "src/pages/touren.astro"
   ],
@@ -478,9 +491,6 @@
   ],
   "Das mit Regenplanen verpackte Motorrad steht im Regen am Strassenrand": [
     "src/pages/touren.astro"
-  ],
-  "Das Motorrad": [
-    "src/pages/anzeigen/[id]/index.astro"
   ],
   "Das Motorrad ist die günstigste Art zu reisen, und die schönste.": [
     "src/pages/touren.astro"
@@ -1069,6 +1079,7 @@
     "src/pages/touren.astro"
   ],
   "Kategorie": [
+    "src/pages/anzeigen/[id]/index.astro",
     "src/pages/anzeigen/index.astro"
   ],
   "Kategorie und Preis": [
@@ -1119,6 +1130,9 @@
   ],
   "Klärt alles im Chat auf Kickstand. Deine Telefonnummer und E-Mail bleiben privat.": [
     "src/pages/index.astro"
+  ],
+  "Klärt vorher, wer Werkzeug und Teile mitbringt, und schraubt nie allein unter einem aufgebockten Motorrad.": [
+    "src/lib/benno-tips.ts"
   ],
   "Klasse A prüfen, bevor jemand losfährt.": [
     "src/pages/index.astro"
@@ -1180,6 +1194,9 @@
   "Leihdauer": [
     "src/components/LoanPeriodFields.astro"
   ],
+  "Leihe mit Vertrag": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
   "Leihen": [
     "src/pages/app/index.astro"
   ],
@@ -1218,8 +1235,17 @@
     "src/components/BikeForm.astro",
     "src/pages/leihvertrag.astro"
   ],
+  "Link kopiert": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
   "Löschen": [
     "src/components/LoanSignatures.astro"
+  ],
+  "Mach bei der Übergabe Fotos von jeder Seite. Sie landen direkt im Protokoll des Leihvertrags.": [
+    "src/lib/benno-tips.ts"
+  ],
+  "Mach ein Foto vom Werkzeug, bevor es rausgeht, und vereinbart im Chat, wann es zurückkommt.": [
+    "src/lib/benno-tips.ts"
   ],
   "Marke": [
     "src/components/BikeForm.astro",
@@ -1594,6 +1620,9 @@
   "Protokoll": [
     "src/pages/app/loans/[id]/index.astro"
   ],
+  "Prüf die Teilenummer vor dem Kauf. Zahl am besten bei der Abholung, nicht im Voraus.": [
+    "src/lib/benno-tips.ts"
+  ],
   "Rechtliches": [
     "src/layouts/Base.astro"
   ],
@@ -1655,6 +1684,9 @@
   ],
   "Schäden: {text}": [
     "src/pages/app/loans/[id]/return.astro"
+  ],
+  "Schau dir den Platz vorher an und klärt Schlüssel, Zugang und Kündigung schriftlich im Chat.": [
+    "src/lib/benno-tips.ts"
   ],
   "Schlüssel": [
     "src/components/LoanItemsFields.astro"
@@ -1730,6 +1762,7 @@
     "src/layouts/Base.astro"
   ],
   "Start": [
+    "src/pages/anzeigen/[id]/index.astro",
     "src/pages/anzeigen/index.astro"
   ],
   "Status": [
@@ -1782,6 +1815,9 @@
   "Teile & Zubehör": [
     "src/db/categories.ts"
   ],
+  "Teilen": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
   "Telefon": [
     "src/components/LoanBorrowerFields.astro",
     "src/pages/profil.astro"
@@ -1802,6 +1838,9 @@
   ],
   "Treffen und loslegen": [
     "src/pages/index.astro"
+  ],
+  "Trefft euch vor der Tour einmal kurz und sprecht Tempo, Strecke und Pausen ab.": [
+    "src/lib/benno-tips.ts"
   ],
   "TT.MM.JJJJ": [
     "src/components/DateField.astro"
@@ -1836,6 +1875,9 @@
   "Unentgeltliche Leihe (§§ 598 ff. BGB). Felder ausfüllen, unterschreiben, PDF erstellen.": [
     "src/pages/app/loans/new.astro",
     "src/pages/leihvertrag.astro"
+  ],
+  "Ungefährer Standort": [
+    "src/pages/anzeigen/[id]/index.astro"
   ],
   "Unterhaltung nicht gefunden.": [
     "src/lib/data/conversations.ts",
@@ -1873,6 +1915,9 @@
   ],
   "Vereinbarung": [
     "src/pages/app/loans/[id]/index.astro"
+  ],
+  "verfügbar": [
+    "src/pages/anzeigen/[id]/index.astro"
   ],
   "Verhandlungsbasis": [
     "src/lib/listing-format.ts"
@@ -2012,6 +2057,9 @@
   "Wirklich?": [
     "src/scripts/inputs.ts"
   ],
+  "Wo": [
+    "src/pages/anzeigen/[id]/index.astro"
+  ],
   "Worum geht es?": [
     "src/components/ListingTypeStep.astro"
   ],
@@ -2099,6 +2147,9 @@
   "Zurück": [
     "src/pages/anzeigen/index.astro",
     "src/pages/profil.astro"
+  ],
+  "Zurück zu den Anzeigen": [
+    "src/pages/anzeigen/[id]/index.astro"
   ],
   "Zurück zu Mein Bereich": [
     "src/pages/app/loans/[id]/index.astro"

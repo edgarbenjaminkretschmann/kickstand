@@ -1899,11 +1899,69 @@ fieldset.panel {
   min-height: var(--tap);
 }
 
-/* Mobile: photos and title, then contact, then the description. Desktop: contact in a sticky side column. */
+/* Phone top bar: back, category, share. Replaces the site header there. */
+.dbar {
+  display: none;
+}
+
+@media (max-width: 759px) {
+  .dbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 8px;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+.dbar-title {
+  font-weight: 600;
+  font-size: 15px;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dbar-btn {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+}
+
+.dbar-btn:hover {
+  background: var(--ground);
+}
+
+.dbar-btn svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dbar-btn.done {
+  color: var(--petrol);
+}
+
+/* Phones: photos and title, details and description, seller and contact, then tip and place.
+   Desktop: everything left, seller card and actions in a sticky column on the right. */
 .detail {
   display: grid;
-  gap: 24px;
-  grid-template-areas: "top" "side" "body";
+  gap: 20px;
+  grid-template-areas: "top" "body" "side" "extra";
 }
 
 .detail-top {
@@ -1918,11 +1976,16 @@ fieldset.panel {
   grid-area: side;
 }
 
+.detail-extra {
+  grid-area: extra;
+}
+
 @media (min-width: 900px) {
   .detail {
-    grid-template-columns: minmax(0, 1fr) 340px;
-    grid-template-areas: "top side" "body side";
-    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-areas: "top side" "body side" "extra side";
+    grid-template-rows: auto auto 1fr;
+    gap: 24px 32px;
     align-items: start;
   }
   .detail-side {
@@ -1933,10 +1996,11 @@ fieldset.panel {
 
 .detail-top,
 .detail-body,
-.detail-side {
+.detail-side,
+.detail-extra {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -1944,6 +2008,10 @@ fieldset.panel {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.gallery-frame {
+  position: relative;
 }
 
 .gallery-track {
@@ -1974,6 +2042,22 @@ fieldset.panel {
   object-fit: cover;
 }
 
+.gallery-count {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: var(--scrim);
+  color: var(--on-dark);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+html:not(.js) .gallery-count {
+  display: none;
+}
+
 .gallery-thumbs {
   display: flex;
   gap: 8px;
@@ -2001,16 +2085,28 @@ fieldset.panel {
 }
 
 .gallery-empty {
-  aspect-ratio: 16 / 7;
+  aspect-ratio: 16 / 9;
   border-radius: var(--radius-card);
-  background: var(--petrol-wash);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: 1.2rem;
-  color: var(--petrol);
+  display: grid;
+  place-items: center;
+}
+
+/* Phones: the gallery runs edge to edge under the top bar. */
+@media (max-width: 759px) {
+  .has-mobile-dock main.page {
+    padding-top: 0;
+  }
+  .detail-top .gallery-track,
+  .detail-top .gallery-empty {
+    margin: 0 calc(-1 * var(--gutter));
+    border-radius: 0;
+  }
+  .detail-top .gallery-thumbs {
+    display: none;
+  }
+  .gallery-empty {
+    aspect-ratio: 4 / 3;
+  }
 }
 
 .detail-head {
@@ -2019,20 +2115,73 @@ fieldset.panel {
   gap: 10px;
 }
 
+.detail-head h1 {
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem);
+  line-height: 1.08;
+}
+
 .detail-price {
   font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.facts-table {
+  margin: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 4px 16px;
+}
+
+.facts-table > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.facts-table > div:last-child {
+  border-bottom: 0;
+}
+
+.facts-table dt {
+  color: var(--muted);
+  flex: none;
+}
+
+.facts-table dd {
+  margin: 0;
   font-weight: 700;
-  font-size: 1.5rem;
+  text-align: right;
+  min-width: 0;
+}
+
+.facts-table .is-free {
+  color: var(--petrol);
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-section h2 {
+  font-size: 1.25rem;
 }
 
 .detail-text {
   white-space: pre-line;
   color: var(--text-2);
-  font-size: 1.05rem;
   line-height: 1.65;
   max-width: 65ch;
 }
 
+/* Older pages still use this simple facts list. */
 .facts {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -2049,18 +2198,25 @@ fieldset.panel {
   margin: 0;
 }
 
-.seller {
-  flex-direction: row;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 4px 12px;
+.seller-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-lg {
+  width: 52px;
+  height: 52px;
+  font-size: 22px;
 }
 
 .seller-name {
-  font-family: var(--display);
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
 }
 
 .side-actions {
@@ -2069,25 +2225,130 @@ fieldset.panel {
   gap: 12px;
 }
 
+@media (min-width: 900px) {
+  .side-actions {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 16px;
+  }
+}
+
 .btn-heart {
   background: var(--card);
   border-color: var(--ink);
-  align-self: flex-start;
-}
-
-.btn-heart svg {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
 }
 
 .btn-heart.on svg {
-  fill: var(--danger);
-  stroke: var(--danger);
+  fill: var(--petrol);
+  stroke: var(--petrol);
 }
 
 .save-form {
   display: flex;
+}
+
+.tip-box {
+  background: var(--amber-wash);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-2);
+}
+
+.tip-box > .benno {
+  flex: none;
+}
+
+.tip-title {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.where-box {
+  min-height: 140px;
+  border-radius: var(--radius-card);
+  background: var(--stone);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.where-box svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.report-link {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Sticky action bar on phones. */
+.mbar {
+  display: none;
+}
+
+@media (max-width: 759px) {
+  .mbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .mbar .btn,
+  .mbar button {
+    min-height: 52px;
+    padding: 0 14px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .mbar {
+    gap: 8px;
+  }
+  .mbar .btn-icon {
+    width: 52px;
+    min-width: 52px;
+    padding: 0;
+  }
+  .mbar form {
+    display: flex;
+  }
+}
+
+.mbar-grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mbar-note {
+  flex: 1;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .confirm-box {

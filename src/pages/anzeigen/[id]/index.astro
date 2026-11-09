@@ -1,9 +1,12 @@
 ---
 import { actions } from "astro:actions";
 import Base from "../../../layouts/Base.astro";
+import BennoMark from "../../../components/benno/BennoMark.astro";
+import CategoryIcon from "../../../components/CategoryIcon.astro";
 import Field from "../../../components/Field.astro";
 import FormAlert from "../../../components/FormAlert.astro";
 import TypeChip from "../../../components/TypeChip.astro";
+import { bennoTip } from "../../../lib/benno-tips";
 import { getActiveLoan } from "../../../lib/data/bikes";
 import { findConversation, listConversations } from "../../../lib/data/conversations";
 import { BIKE_CATEGORY, getListingDetail } from "../../../lib/data/listings";
@@ -12,7 +15,7 @@ import { firstName } from "../../../lib/data/profiles";
 import { formatDate } from "../../../lib/dates";
 import { formatEuro, groupThousands } from "../../../lib/euro-words";
 import { fieldErrors, formError } from "../../../lib/form";
-import { memberSince, placeLabel, priceLabel, relativeDate, STATUS_LABEL } from "../../../lib/listing-format";
+import { memberSince, placeLabel, priceLabel, relativeDate, STATUS_LABEL, TYPE_LABEL } from "../../../lib/listing-format";
 import { submittedValues } from "../../../lib/submitted";
 import { i18n } from "../../../i18n";
 
@@ -49,13 +52,34 @@ const message = formError(started) ?? formError(status) ?? formError(removed) ??
 const confirmDelete = own && Astro.url.searchParams.has("loeschen");
 const bike = listing.bike;
 const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kontakt`)}`;
+
+const backHref = `/anzeigen?kategorie=${listing.categorySlug}`;
+const place = placeLabel(listing, lang);
+const seller = firstName(listing.seller.name) || t("Mitglied");
+const sellerCount = listing.seller.activeListings === 1 ? t("1 Anzeige") : t("{n} Anzeigen", { n: listing.seller.activeListings });
+const availability = listing.lent ? t("verliehen") : inactive ? t(STATUS_LABEL[listing.status]) : t("verfügbar");
+const startLoanHref = isBikeOffer && !activeLoan ? `/app/loans/new?bike=${bike!.id}&listing=${listing.id}` : null;
+const HEART = "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z";
 ---
 
-<Base title={listing.title} description={listing.description.slice(0, 150)} wide>
-  <nav class="crumbs small" aria-label={t("Pfad")}>
+<Base title={listing.title} description={listing.description.slice(0, 150)} wide mobileBar mobileDock>
+  <div class="dbar" slot="before">
+    <a href={backHref} class="dbar-btn" aria-label={t("Zurück zu den Anzeigen")}>
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </a>
+    <span class="dbar-title">{t(listing.categoryLabel)}</span>
+    <button type="button" class="dbar-btn js-only" data-share aria-label={t("Teilen")}>
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"></path></svg>
+    </button>
+    <span class="dbar-btn nojs-only" aria-hidden="true"></span>
+  </div>
+
+  <nav class="crumbs small desktop-only" aria-label={t("Pfad")}>
+    <a href="/">{t("Start")}</a>
+    <span aria-hidden="true">›</span>
     <a href="/anzeigen">{t("Anzeigen")}</a>
-    <span aria-hidden="true">/</span>
-    <a href={`/anzeigen?kategorie=${listing.categorySlug}`}>{t(listing.categoryLabel)}</a>
+    <span aria-hidden="true">›</span>
+    <a href={backHref}>{t(listing.categoryLabel)}</a>
   </nav>
 
   <FormAlert message={message} />
@@ -78,19 +102,26 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
       {
         listing.photos.length > 0 ? (
           <div class="gallery" aria-label={t("{n} Fotos", { n: listing.photos.length })}>
-            <ul class="gallery-track">
-              {listing.photos.map((p, i) => (
-                <li id={`foto-${i + 1}`}>
-                  <img
-                    src={`/media/listing/${p.id}`}
-                    alt={t("{title}, Foto {n} von {count}", { title: listing.title, n: i + 1, count: listing.photos.length })}
-                    width="960"
-                    height="720"
-                    loading={i === 0 ? "eager" : "lazy"}
-                  />
-                </li>
-              ))}
-            </ul>
+            <div class="gallery-frame">
+              <ul class="gallery-track" data-gallery>
+                {listing.photos.map((p, i) => (
+                  <li id={`foto-${i + 1}`}>
+                    <img
+                      src={`/media/listing/${p.id}`}
+                      alt={t("{title}, Foto {n} von {count}", { title: listing.title, n: i + 1, count: listing.photos.length })}
+                      width="960"
+                      height="720"
+                      loading={i === 0 ? "eager" : "lazy"}
+                    />
+                  </li>
+                ))}
+              </ul>
+              {listing.photos.length > 1 && (
+                <span class="gallery-count" aria-hidden="true">
+                  <span data-gallery-at>1</span> / {listing.photos.length}
+                </span>
+              )}
+            </div>
             {listing.photos.length > 1 && (
               <nav class="gallery-thumbs" aria-label={t("Fotos")}>
                 {listing.photos.map((p, i) => (
@@ -102,8 +133,8 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
             )}
           </div>
         ) : (
-          <div class="gallery-empty" aria-hidden="true">
-            <span>{t(listing.categoryLabel)}</span>
+          <div class:list={["gallery-empty", listing.type === "suche" ? "wash-suche" : "wash-biete"]} aria-hidden="true">
+            <CategoryIcon slug={listing.categorySlug} size={88} strokeWidth={1.2} />
           </div>
         )
       }
@@ -111,96 +142,124 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
       <div class="detail-head">
         <div class="chips">
           <TypeChip type={listing.type} category={listing.categorySlug} />
-          <span class="chip chip-outline">{t(listing.categoryLabel)}</span>
+          {isBikeOffer && <span class="chip chip-outline">{t("Leihe mit Vertrag")}</span>}
           {listing.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
           {inactive && <span class="chip chip-outline">{t(STATUS_LABEL[listing.status])}</span>}
         </div>
         <h1>{listing.title}</h1>
-        <p class="detail-price">{priceLabel(listing.priceKind, listing.priceCents, lang)}</p>
-        <p class="muted">
-          {placeLabel(listing, lang) || t("Ort nicht angegeben")} · <time datetime={listing.createdAt.toISOString()}>{relativeDate(listing.createdAt, new Date(), lang)}</time>
-        </p>
+        <div>
+          <p class="detail-price">{priceLabel(listing.priceKind, listing.priceCents, lang)}</p>
+          <p class="muted">
+            {place || t("Ort nicht angegeben")} · <time datetime={listing.createdAt.toISOString()}>{relativeDate(listing.createdAt, new Date(), lang)}</time>
+          </p>
+        </div>
       </div>
-
     </div>
 
     <div class="detail-body">
-      {listing.description && <div class="detail-text">{listing.description}</div>}
-
-      {
-        isBikeOffer && bike && (
-          <section class="panel" aria-labelledby="h-bike">
-            <h2 id="h-bike">{t("Das Motorrad")}</h2>
-            <dl class="facts">
-              <dt>{t("Modell")}</dt>
-              <dd>
-                {bike.make} {bike.model}
-                {bike.typeCode && ` (${bike.typeCode})`}
-              </dd>
+      <dl class="facts-table">
+        <div>
+          <dt>{t("Art")}</dt>
+          <dd>{t(TYPE_LABEL[listing.type] ?? listing.type)}</dd>
+        </div>
+        <div>
+          <dt>{t("Kategorie")}</dt>
+          <dd>{t(listing.categoryLabel)}</dd>
+        </div>
+        {
+          isBikeOffer && bike && (
+            <>
+              <div>
+                <dt>{t("Modell")}</dt>
+                <dd>
+                  {bike.make} {bike.model}
+                  {bike.typeCode && ` (${bike.typeCode})`}
+                </dd>
+              </div>
               {bike.firstRegistration && (
-                <>
+                <div>
                   <dt>{t("Erstzulassung")}</dt>
                   <dd>{formatDate(bike.firstRegistration, lang).slice(3)}</dd>
-                </>
+                </div>
               )}
               {(bike.powerKw || bike.displacementCcm) && (
-                <>
+                <div>
                   <dt>{t("Leistung")}</dt>
                   <dd>
                     {[bike.powerKw ? t("{kw} kW ({ps} PS)", { kw: bike.powerKw, ps: Math.round(bike.powerKw * 1.36) }) : "", bike.displacementCcm ? `${groupThousands(bike.displacementCcm)} cm³` : ""]
                       .filter(Boolean)
                       .join(" · ")}
                   </dd>
-                </>
+                </div>
               )}
-              <dt>{t("Haftung")}</dt>
-              <dd>{t("höchstens {amount} je Schaden", { amount: formatEuro(bike.liabilityCapEur, false) })}</dd>
+              <div>
+                <dt>{t("Haftung")}</dt>
+                <dd>{t("höchstens {amount} je Schaden", { amount: formatEuro(bike.liabilityCapEur, false) })}</dd>
+              </div>
               {bike.conditions && (
-                <>
+                <div>
                   <dt>{t("Auflage")}</dt>
                   <dd>{bike.conditions}</dd>
-                </>
+                </div>
               )}
-            </dl>
-            <p class="small muted">
-              {t("Kostenlose Leihe nach § 598 BGB mit Leihvertrag, Übergabeprotokoll und Fotos.")} <a href="/so-gehts">{t("So geht's")}</a>
-            </p>
+            </>
+          )
+        }
+        <div>
+          <dt>{t("Status")}</dt>
+          <dd class:list={{ "is-free": !listing.lent && !inactive }}>{availability}</dd>
+        </div>
+      </dl>
+      {
+        isBikeOffer && (
+          <p class="small muted">
+            {t("Kostenlose Leihe nach § 598 BGB mit Leihvertrag, Übergabeprotokoll und Fotos.")} <a href="/so-gehts">{t("So geht's")}</a>
+          </p>
+        )
+      }
+
+      {
+        listing.description && (
+          <section class="detail-section" aria-labelledby="h-text">
+            <h2 id="h-text">{t("Beschreibung")}</h2>
+            <div class="detail-text">{listing.description}</div>
           </section>
         )
       }
     </div>
 
     <aside class="detail-side">
-      <section class="panel seller" aria-label={t("Anbieter")}>
-        <p class="seller-name">{firstName(listing.seller.name) || t("Mitglied")}</p>
-        <p class="small muted">{memberSince(listing.seller.memberSince, lang)}</p>
+      <section class="seller-card" aria-label={t("Anbieter")}>
+        <span class="avatar avatar-lg" aria-hidden="true">{seller[0]?.toUpperCase()}</span>
+        <div>
+          <p class="seller-name">{seller}</p>
+          <p class="small muted">{memberSince(listing.seller.memberSince, lang)} · {sellerCount}</p>
+        </div>
       </section>
 
       {
         !own && (
           <div class="side-actions" id="kontakt">
-            {user ? (
-              <form method="POST" action={actions.listings.save} class="save-form">
-                <input type="hidden" name="listingId" value={listing.id} />
-                <input type="hidden" name="saved" value={saved ? "0" : "1"} />
-                <button type="submit" class:list={["btn", "btn-heart", { on: saved }]} aria-pressed={saved ? "true" : "false"}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
-                  </svg>
-                  {saved ? t("Gemerkt") : t("Merken")}
-                </button>
-              </form>
-            ) : (
-              <a class="btn btn-heart" href={loginHref}>
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z" />
-                </svg>
-                {t("Merken")}
-              </a>
-            )}
+            <div class="desktop-only">
+              {user ? (
+                <form method="POST" action={actions.listings.save} class="save-form">
+                  <input type="hidden" name="listingId" value={listing.id} />
+                  <input type="hidden" name="saved" value={saved ? "0" : "1"} />
+                  <button type="submit" class:list={["btn", "btn-heart", { on: saved }]} aria-pressed={saved ? "true" : "false"}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
+                    {saved ? t("Gemerkt") : t("Merken")}
+                  </button>
+                </form>
+              ) : (
+                <a class="btn btn-heart" href={loginHref}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
+                  {t("Merken")}
+                </a>
+              )}
+            </div>
 
             {existingConversation ? (
-              <a class="btn btn-primary btn-block" href={`/nachrichten/${existingConversation}`}>
+              <a class="btn btn-primary btn-block desktop-only" href={`/nachrichten/${existingConversation}`}>
                 {t("Zur Unterhaltung")}
               </a>
             ) : !canMessage ? (
@@ -223,7 +282,7 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
                 </button>
               </form>
             ) : (
-              <a class="btn btn-primary btn-block" href={loginHref}>
+              <a class="btn btn-primary btn-block desktop-only" href={loginHref}>
                 {t("Nachricht schreiben")}
               </a>
             )}
@@ -234,7 +293,7 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
 
       {
         own && (
-          <section class="panel owner" aria-labelledby="h-owner">
+          <section class="panel owner" id="verwalten" aria-labelledby="h-owner">
             <h2 id="h-owner">{t("Deine Anzeige")}</h2>
             <div class="actions">
               <a class="btn btn-primary" href={`/anzeigen/${listing.id}/bearbeiten`}>
@@ -259,7 +318,7 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
                   {t("Gerade verliehen an {name}.", { name: activeLoan.borrowerName })} <a href={`/app/loans/${activeLoan.id}`}>{t("Zum Vertrag")}</a>
                 </p>
               ) : (
-                <a class="btn btn-block" href={`/app/loans/new?bike=${bike!.id}&listing=${listing.id}`}>
+                <a class="btn btn-block" href={startLoanHref!}>
                   {t("Leihvertrag starten")}
                 </a>
               ))}
@@ -314,5 +373,106 @@ const loginHref = `/login?next=${encodeURIComponent(`/anzeigen/${listing.id}#kon
         )
       }
     </aside>
+
+    <div class="detail-extra">
+      <aside class="tip-box" aria-labelledby="h-tip">
+        <BennoMark size={48} bg="white" />
+        <div>
+          <p id="h-tip" class="tip-title">{t("Benno-Tipp")}</p>
+          <p>{t(bennoTip(listing.categorySlug))}</p>
+        </div>
+      </aside>
+
+      {
+        place && (
+          <section class="detail-section" aria-labelledby="h-where">
+            <h2 id="h-where">{t("Wo")}</h2>
+            <div class="where-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+              <span>{t("Ungefährer Standort")} · {place}</span>
+            </div>
+          </section>
+        )
+      }
+
+      {!own && <a class="report-link" href="/impressum">{t("Anzeige melden")}</a>}
+    </div>
+  </div>
+
+  <div class="mbar" slot="after">
+    {
+      own ? (
+        <>
+          <a class="btn btn-icon" href={`/anzeigen/${listing.id}/bearbeiten`} aria-label={t("Bearbeiten")}>
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"></path></svg>
+          </a>
+          <a class:list={["btn", { "mbar-grow": !startLoanHref }]} href="#verwalten">
+            {t("Status")}
+          </a>
+          {startLoanHref && (
+            <a class="btn btn-primary mbar-grow" href={startLoanHref}>
+              {t("Leihvertrag starten")}
+            </a>
+          )}
+        </>
+      ) : (
+        <>
+          {user ? (
+            <form method="POST" action={actions.listings.save}>
+              <input type="hidden" name="listingId" value={listing.id} />
+              <input type="hidden" name="saved" value={saved ? "0" : "1"} />
+              <button type="submit" class:list={["btn", "btn-icon", "btn-heart", { on: saved }]} aria-pressed={saved ? "true" : "false"} aria-label={t("Merken")}>
+                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
+              </button>
+            </form>
+          ) : (
+            <a class="btn btn-icon btn-heart" href={loginHref} aria-label={t("Merken")}>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
+            </a>
+          )}
+          {existingConversation ? (
+            <a class="btn btn-primary mbar-grow" href={`/nachrichten/${existingConversation}`}>
+              {t("Zur Unterhaltung")}
+            </a>
+          ) : !canMessage ? (
+            <span class="mbar-note">{listing.lent ? t("verliehen") : t(STATUS_LABEL[listing.status])}</span>
+          ) : (
+            <a class="btn btn-primary mbar-grow" href={user ? "#kontakt" : loginHref}>
+              {t("Nachricht schreiben")}
+            </a>
+          )}
+        </>
+      )
+    }
   </div>
 </Base>
+
+<script>
+  import { ct } from "../../../i18n/client";
+
+  // "1 / n" follows the swipe.
+  const track = document.querySelector<HTMLElement>("[data-gallery]");
+  const at = document.querySelector<HTMLElement>("[data-gallery-at]");
+  if (track && at) {
+    track.addEventListener(
+      "scroll",
+      () => {
+        at.textContent = String(Math.round(track.scrollLeft / track.clientWidth) + 1);
+      },
+      { passive: true },
+    );
+  }
+
+  // Share: the system sheet where there is one, otherwise copy the link.
+  const share = document.querySelector<HTMLButtonElement>("[data-share]");
+  share?.addEventListener("click", async () => {
+    const url = location.href.split("#")[0];
+    if (navigator.share) {
+      await navigator.share({ title: document.title, url }).catch(() => {});
+    } else {
+      await navigator.clipboard?.writeText(url).catch(() => {});
+      share.setAttribute("aria-label", ct("Link kopiert"));
+      share.classList.add("done");
+    }
+  });
+</script>
