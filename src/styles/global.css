@@ -142,7 +142,7 @@ p {
 }
 
 .wrap.wide {
-  max-width: 1160px;
+  max-width: 1200px;
 }
 
 main.page {
@@ -202,19 +202,25 @@ main.page {
 }
 
 .bar {
-  max-width: 1160px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 10px var(--gutter);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px 20px;
 }
 
 .main-nav {
   display: flex;
   align-items: center;
-  gap: 8px 20px;
+  gap: 4px;
+  flex: 1 1 auto;
+}
+
+.head-app .main-nav {
+  flex: 0 1 auto;
+  margin-left: auto;
 }
 
 .nav-link {
@@ -222,24 +228,126 @@ main.page {
   align-items: center;
   gap: 6px;
   min-height: var(--tap);
+  padding: 0 14px;
+  border-radius: 999px;
   color: var(--ink);
   text-decoration: none;
   font-weight: 600;
   font-size: 15px;
+  white-space: nowrap;
 }
 
 .nav-link:hover {
   color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 2px;
+  background: var(--ground);
 }
 
 .nav-link[aria-current="page"] {
-  text-decoration: underline;
-  text-decoration-color: var(--petrol);
-  text-decoration-thickness: 3px;
-  text-underline-offset: 8px;
+  background: var(--petrol-wash);
+  color: var(--petrol);
+}
+
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.head-app .head-actions {
+  margin-left: 0;
+}
+
+.head-icon {
+  width: var(--tap);
+  height: var(--tap);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--ink);
+}
+
+.head-icon:hover,
+.head-icon[aria-current="page"] {
+  color: var(--petrol);
+  background: var(--petrol-wash);
+}
+
+.head-icon svg,
+.hsearch svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Compact search (results and member pages): its own row below 1100 px, inline above. */
+.hsearch {
+  order: 2;
+  flex: 1 1 100%;
+  min-width: 0;
+  display: flex;
+  gap: 4px;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 3px;
+  background: var(--card);
+}
+
+.hsearch label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 4px 0 10px;
+  color: var(--muted);
+}
+
+.hs-q {
+  flex: 3 1 0;
+}
+
+.hs-ort {
+  flex: 2 1 0;
+  border-left: 1px solid var(--line);
+}
+
+.hsearch input[type="search"] {
+  border: 0;
+  min-height: 40px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.hsearch input:focus-visible {
+  outline: none;
+}
+
+.hsearch:focus-within {
+  outline: 3px solid var(--petrol);
+  outline-offset: 2px;
+}
+
+.hsearch button {
+  flex: none;
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0 16px;
+}
+
+@media (min-width: 1100px) {
+  .hsearch {
+    order: 0;
+    flex: 1 1 360px;
+  }
+}
+
+@media (max-width: 420px) {
+  .hs-q svg {
+    display: none;
+  }
 }
 
 .menu {
@@ -269,14 +377,17 @@ main.page {
   color: var(--on-dark);
   font-family: var(--display);
   font-weight: 700;
+  font-size: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
 }
 
 .menu[open] .avatar,
 .menu summary:hover .avatar {
-  box-shadow: 0 0 0 2px var(--ink);
+  outline: 2px solid var(--petrol);
+  outline-offset: 2px;
 }
 
 .menu .dot {
@@ -298,7 +409,7 @@ main.page {
   min-width: 220px;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -306,7 +417,7 @@ main.page {
 
 .menu-name {
   padding: 8px 12px 10px;
-  font-weight: 600;
+  font-weight: 700;
   border-bottom: 1px solid var(--line);
   margin-bottom: 4px;
 }
@@ -344,40 +455,79 @@ main.page {
   .mobile-only {
     display: block;
   }
+  .head-mobile-off {
+    display: none;
+  }
 }
 
 /* --- Footer --- */
 
 .site-footer {
   border-top: 1px solid var(--line);
+  background: var(--card);
+  font-size: 15px;
 }
 
 .foot {
-  max-width: 1160px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 28px var(--gutter);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px 24px;
-  font-size: 14px;
+  padding: 40px var(--gutter) 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+.foot-word {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.foot-brand p:not(.foot-word) {
   color: var(--muted);
+  max-width: 32ch;
 }
 
-.foot-links {
+.foot-col {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.foot-links a {
+.foot-head {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.foot-col a {
+  color: var(--text-2);
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
   min-height: var(--tap);
 }
 
+.foot-col a:hover {
+  color: var(--petrol);
+  text-decoration: underline;
+}
+
+.foot-base {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) 28px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 24px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .lang-switch {
-  flex-basis: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: 0 16px;
@@ -392,7 +542,7 @@ main.page {
 
 .lang-switch a[aria-current] {
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -424,12 +574,12 @@ main.page {
     gap: 2px;
     color: var(--muted);
     text-decoration: none;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 600;
     padding: 4px 1px;
   }
   .tabbar a[aria-current="page"] {
-    color: var(--ink);
+    color: var(--petrol);
   }
   .tab-icon {
     position: relative;
@@ -455,8 +605,8 @@ main.page {
   }
   .tab-add .tab-icon,
   .tabbar a.tab-add[aria-current="page"] .tab-icon {
-    background: var(--ink);
-    color: #fff;
+    background: var(--petrol);
+    color: var(--on-dark);
     width: 44px;
   }
   .tab-badge {
@@ -470,6 +620,7 @@ main.page {
     background: var(--amber);
     color: var(--ink);
     font-size: 11px;
+    font-weight: 700;
     line-height: 18px;
     text-align: center;
   }
@@ -481,6 +632,9 @@ main.page {
   }
   body.has-tabs {
     padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  }
+  body.has-mobile-dock {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 }
 

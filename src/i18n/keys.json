@@ -227,6 +227,7 @@
     "src/pages/anzeigen/[id]/index.astro"
   ],
   "Anzeigen": [
+    "src/layouts/Base.astro",
     "src/pages/anzeigen/[id]/index.astro",
     "src/pages/anzeigen/index.astro",
     "src/pages/app/index.astro"
@@ -535,6 +536,9 @@
   "Der Kilometerstand ist kleiner als bei der Übergabe.": [
     "src/actions/loans.ts"
   ],
+  "Der Marktplatz von Motorradfahrern für Motorradfahrer.": [
+    "src/layouts/Base.astro"
+  ],
   "Der Preis muss zwischen 0 und 100.000 € liegen.": [
     "src/lib/data/listings.ts"
   ],
@@ -786,6 +790,9 @@
   "FIN fehlt.": [
     "src/lib/contract-form.ts"
   ],
+  "Finden": [
+    "src/layouts/Base.astro"
+  ],
   "Formular geleert.": [
     "src/scripts/contract-generator.ts"
   ],
@@ -1026,6 +1033,9 @@
   "Kategorie": [
     "src/pages/anzeigen/index.astro"
   ],
+  "Kategorien": [
+    "src/layouts/Base.astro"
+  ],
   "Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.": [
     "src/components/LoanPeriodFields.astro"
   ],
@@ -1044,6 +1054,9 @@
   ],
   "Kennzeichen fehlt.": [
     "src/lib/contract-form.ts"
+  ],
+  "Kickstand · ein Projekt von Edgar Kretschmann": [
+    "src/layouts/Base.astro"
   ],
   "Kickstand. Zur Startseite": [
     "src/components/Logo.astro"
@@ -1489,6 +1502,9 @@
   "PLZ": [
     "src/components/ListingForm.astro"
   ],
+  "PLZ oder Ort": [
+    "src/layouts/Base.astro"
+  ],
   "PLZ, Ort": [
     "src/components/LoanBorrowerFields.astro",
     "src/pages/leihvertrag.astro",
@@ -1516,6 +1532,9 @@
   ],
   "Protokoll": [
     "src/pages/app/loans/[id]/index.astro"
+  ],
+  "Rechtliches": [
+    "src/layouts/Base.astro"
   ],
   "Registrieren": [
     "src/pages/login.astro",
@@ -1606,6 +1625,9 @@
   "Senden": [
     "src/pages/nachrichten/[id].astro"
   ],
+  "Sicherheit": [
+    "src/layouts/Base.astro"
+  ],
   "So geht's": [
     "src/layouts/Base.astro",
     "src/pages/anzeigen/[id]/index.astro",
@@ -1667,6 +1689,7 @@
     "src/pages/touren.astro"
   ],
   "Suchbegriff": [
+    "src/layouts/Base.astro",
     "src/pages/anzeigen/index.astro"
   ],
   "Suche": [
@@ -1867,6 +1890,9 @@
   ],
   "Was ich unterwegs gelernt habe": [
     "src/pages/touren.astro"
+  ],
+  "Was suchst du?": [
+    "src/layouts/Base.astro"
   ],
   "Was suchst du? z. B. Hebebühne": [
     "src/pages/anzeigen/index.astro"

@@ -1,0 +1,18 @@
+---
+// Benno's head in a circle: logo, favicon, avatars, tip boxes. bg="white" for tip boxes on a coloured band.
+interface Props {
+  size?: number;
+  /** Accessible name. Empty: decorative (aria-hidden). */
+  label?: string;
+  /** Circle colour. Any CSS colour; "white" is the variant for tip boxes. */
+  bg?: string;
+  class?: string;
+}
+
+const { size = 40, label = "", bg = "var(--petrol)", class: cls } = Astro.props;
+const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
+---
+
+<svg class:list={["benno", cls]} width={size} height={size} viewBox="0 0 64 64" focusable="false" {...a11y}
+  ><circle cx="32" cy="32" r="32" style={`fill:${bg === "white" ? "#FFFFFF" : bg}`}></circle><circle cx="17" cy="20" r="5" fill="#5E3B25"></circle><circle cx="47" cy="20" r="5" fill="#5E3B25"></circle><circle cx="32" cy="34" r="19" fill="#8A5A3B"></circle><path d="M15 25 Q32 18 49 25" stroke="#2B3236" stroke-width="3" fill="none"></path><circle cx="25" cy="24" r="5" fill="#FFB020" stroke="#2B3236" stroke-width="2"></circle><circle cx="39" cy="24" r="5" fill="#FFB020" stroke="#2B3236" stroke-width="2"></circle><ellipse cx="32" cy="42" rx="11" ry="8" fill="#C89B72"></ellipse><ellipse cx="32" cy="37" rx="4.5" ry="3" fill="#2B1D14"></ellipse><circle cx="26" cy="32" r="2" fill="#2B1D14"></circle><circle cx="38" cy="32" r="2" fill="#2B1D14"></circle><rect x="28.5" y="46" width="7" height="7" rx="1" fill="#FFFFFF" stroke="#2B1D14" stroke-width="1"></rect></svg
+>

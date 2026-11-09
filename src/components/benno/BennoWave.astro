@@ -1,0 +1,17 @@
+---
+// Benno waving, no wrench: tips, greetings, empty states. Benno.astro without the tail crosshatch, wrench,
+// right arm, neckerchief knot, highlights and tooth line, with one arm raised and one lowered.
+interface Props {
+  size?: number;
+  /** Accessible name. Empty: decorative (aria-hidden). */
+  label?: string;
+  class?: string;
+}
+
+const { size = 120, label = "", class: cls } = Astro.props;
+const a11y = label ? { role: "img" as const, "aria-label": label } : { "aria-hidden": "true" as const };
+---
+
+<svg class:list={["benno", cls]} width={size} height={size} viewBox="0 0 200 200" focusable="false" {...a11y}
+  ><ellipse cx="56" cy="172" rx="42" ry="15" transform="rotate(-18 56 172)" fill="#3E2A1E"></ellipse><path d="M60 172 Q52 112 100 98 Q148 112 140 172 Q100 186 60 172 Z" fill="#8A5A3B"></path><path d="M76 170 Q72 130 100 122 Q128 130 124 170 Q100 178 76 170 Z" fill="#C89B72"></path><ellipse cx="78" cy="180" rx="15" ry="7" fill="#5E3B25"></ellipse><ellipse cx="122" cy="180" rx="15" ry="7" fill="#5E3B25"></ellipse><ellipse cx="58" cy="104" rx="9" ry="20" transform="rotate(-28 58 104)" fill="#5E3B25"></ellipse><ellipse cx="134" cy="136" rx="9" ry="18" transform="rotate(-16 134 136)" fill="#5E3B25"></ellipse><circle cx="68" cy="44" r="10" fill="#5E3B25"></circle><circle cx="132" cy="44" r="10" fill="#5E3B25"></circle><circle cx="100" cy="74" r="38" fill="#8A5A3B"></circle><path d="M74 106 Q100 118 126 106 L118 116 Q100 126 82 116 Z" fill="#0B6E6C"></path><path d="M63 52 Q100 38 137 52" stroke="#2B3236" stroke-width="5" fill="none" stroke-linecap="round"></path><circle cx="87" cy="47" r="10" fill="#FFB020" stroke="#2B3236" stroke-width="3.5"></circle><circle cx="113" cy="47" r="10" fill="#FFB020" stroke="#2B3236" stroke-width="3.5"></circle><ellipse cx="100" cy="88" rx="22" ry="16" fill="#C89B72"></ellipse><circle cx="86" cy="68" r="4.5" fill="#2B1D14"></circle><circle cx="114" cy="68" r="4.5" fill="#2B1D14"></circle><ellipse cx="100" cy="80" rx="9" ry="6" fill="#2B1D14"></ellipse><path d="M88 94 Q100 100 112 94" stroke="#2B1D14" stroke-width="2" fill="none" stroke-linecap="round"></path><rect x="93" y="97" width="14" height="13" rx="2" fill="#FFFFFF" stroke="#2B1D14" stroke-width="1.5"></rect></svg
+>

@@ -1,5 +1,6 @@
 ---
-// "Kickstand" in Mr Dafoe inside the sky oval. Design A (the look is borrowed from vlogato.com).
+// Benno's head and the wordmark "kickstand".
+import BennoMark from "./benno/BennoMark.astro";
 import { i18n } from "../i18n";
 
 interface Props {
@@ -11,36 +12,28 @@ const { t } = i18n(Astro.locals.lang);
 ---
 
 <a href={href} class="logo" aria-label={t("Kickstand. Zur Startseite")}>
-  <span class="logo-oval" aria-hidden="true">Kickstand</span>
+  <BennoMark size={40} />
+  <span class="logo-word" aria-hidden="true">kickstand</span>
 </a>
 
 <style>
   .logo {
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     color: var(--ink);
     text-decoration: none;
     min-height: var(--tap);
-  }
-  .logo-oval {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 132px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--sky);
-    font-family: var(--script);
-    font-size: 34px;
-    line-height: 1;
-    color: var(--ink);
     flex: none;
   }
-  @media (max-width: 560px) {
-    .logo-oval {
-      width: 104px;
-      height: 44px;
-      font-size: 27px;
-    }
+  .logo:hover {
+    color: var(--ink);
+  }
+  .logo-word {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: -0.01em;
   }
 </style>
