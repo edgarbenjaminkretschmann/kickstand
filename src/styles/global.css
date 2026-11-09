@@ -11,14 +11,14 @@
   --amber: #ffb020;
   --amber-wash: #fff1d6;
   --ground: #f5f6f4;
-  --card: var(--card);
+  --card: #ffffff;
   --line: #e2e5e3;
   --text-2: #3b4449;
   --muted: #5a6469;
   --beaver: #8a5a3b;
 
   /* Derived */
-  --on-dark: var(--card);
+  --on-dark: #ffffff;
   --on-dark-muted: #c9d0d3; /* body copy on --ink, 11:1 */
   --line-strong: #8c9599; /* field outlines, 3:1 on white */
   --amber-ink: #8a5a00; /* icons on --amber-wash, 5.3:1 */
@@ -918,14 +918,20 @@ summary:focus-visible {
 }
 
 .empty-box {
-  background: var(--petrol-wash);
+  background: var(--card);
+  border: 1px solid var(--line);
   border-radius: var(--radius-card);
   padding: 28px 20px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: 14px;
   color: var(--text-2);
+}
+
+.empty-box p {
+  max-width: 46ch;
 }
 
 .list {
@@ -1272,18 +1278,26 @@ fieldset.panel {
   gap: 18px;
 }
 
-/* --- Listing cards --- */
+/* --- Listing cards (tiles) --- */
 
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
-  gap: 18px;
+  gap: 16px;
+}
+
+/* Phones: two narrow columns, like a classifieds app. */
+@media (max-width: 559px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
 }
 
 .lcard {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1296,44 +1310,102 @@ fieldset.panel {
 }
 
 .lcard-photo {
-  display: block;
-  text-decoration: none;
+  position: relative;
   aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+}
+
+.wash-biete {
   background: var(--petrol-wash);
+  color: var(--petrol);
+}
+
+.wash-suche {
+  background: var(--amber-wash);
+  color: var(--amber-ink);
 }
 
 .lcard-photo img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.lcard-nophoto {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  text-align: center;
-  font-family: var(--display);
-  font-weight: 500;
+.lcard-type {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.lcard-heart-form {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+}
+
+.lcard-heart {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  width: var(--tap);
+  height: var(--tap);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+}
+
+.lcard-heart-form .lcard-heart {
+  position: static;
+}
+
+.lcard-heart:hover {
   color: var(--petrol);
 }
 
+.lcard-heart svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lcard-heart.on svg {
+  fill: var(--petrol);
+  stroke: var(--petrol);
+}
+
 .lcard-body {
-  padding: 14px 16px 16px;
+  padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   flex: 1;
+  min-width: 0;
+}
+
+.lcard-cat {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .lcard-title {
   font-family: var(--sans);
-  font-size: 1.02rem;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .lcard-title a {
@@ -1359,14 +1431,17 @@ fieldset.panel {
 
 .lcard-price {
   font-family: var(--display);
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 19px;
+  line-height: 1.2;
+  margin-top: 4px;
 }
 
 .lcard-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0 6px;
-  font-size: 0.85rem;
+  font-size: 14px;
   color: var(--muted);
   margin-top: auto;
 }
@@ -1375,62 +1450,20 @@ fieldset.panel {
   opacity: 0.6;
 }
 
-.lcard-dark {
-  background: transparent;
-  border-color: var(--dark-line);
-  color: var(--card);
-}
-
-.lcard-dark .lcard-title a {
-  color: var(--card);
-}
-
-.lcard-dark .lcard-meta {
-  color: var(--dark-muted);
-}
-
-.lcard-dark .chip-outline {
-  border-color: var(--dark-chip-line);
-  color: var(--dark-muted);
-}
-
-.lcard-dark .lcard-photo {
-  background: #1d2126;
-}
-
-.lcard-dark .lcard-nophoto {
-  color: var(--sky);
-}
-
-.lcard-dark .chip-ink {
-  background: var(--card);
-  color: var(--ink);
-}
-
-/* Phones: compact rows, photo left, like a classifieds list. */
 @media (max-width: 559px) {
-  .cards {
-    gap: 12px;
+  .lcard-body {
+    padding: 10px 10px 12px;
   }
-  .lcard:not(.lcard-dark) {
-    flex-direction: row;
+  .lcard-title {
+    font-size: 15px;
   }
-  .lcard:not(.lcard-dark) .lcard-photo {
-    flex: none;
-    width: 112px;
-    aspect-ratio: auto;
-    min-height: 112px;
+  .lcard-type {
+    top: 8px;
+    left: 8px;
   }
-  .lcard:not(.lcard-dark) .lcard-nophoto {
-    font-size: 0.8rem;
-    padding: 8px;
-  }
-  .lcard:not(.lcard-dark) .lcard-body {
-    padding: 10px 12px 12px;
-    gap: 4px;
-  }
-  .lcard:not(.lcard-dark) .chip-outline {
-    display: none;
+  .lcard-photo .cat-icon {
+    width: 36px;
+    height: 36px;
   }
 }
 

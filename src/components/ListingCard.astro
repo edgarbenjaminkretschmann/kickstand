@@ -1,43 +1,66 @@
 ---
-// One search result: cover photo, type chip, category, title, price, place and age.
+// One listing as a tile: cover photo (or the category icon on a wash), type chip, heart, category, title,
+// price, place and age. Used on the start page, the Merkliste and the member area.
+import { actions } from "astro:actions";
 import { i18n } from "../i18n";
 import type { ListingCard } from "../lib/data/listings";
 import { placeLabel, priceLabel, relativeDate, STATUS_LABEL } from "../lib/listing-format";
+import CategoryIcon from "./CategoryIcon.astro";
 import TypeChip from "./TypeChip.astro";
 
 interface Props {
   listing: ListingCard;
   /** Show the status chip (own listings, Merkliste). */
   showStatus?: boolean;
-  /** Dark variant for the landing page. */
-  tone?: "light" | "dark";
+  /** Heart on the photo: true/false = saved state for a member, "login" for visitors, undefined = no heart. */
+  heart?: boolean | "login";
   headingLevel?: 2 | 3;
 }
 
-const { listing: l, showStatus = false, tone = "light", headingLevel = 3 } = Astro.props;
+const { listing: l, showStatus = false, heart, headingLevel = 3 } = Astro.props;
 const { t, lang } = i18n(Astro.locals.lang);
 const H = `h${headingLevel}` as "h2" | "h3";
 const href = `/anzeigen/${l.id}`;
+const HEART = "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z";
 ---
 
-<article class:list={["lcard", `lcard-${tone}`, { "lcard-off": l.status !== "aktiv" }]}>
-  <a href={href} class="lcard-photo" tabindex="-1" aria-hidden="true">
+<article class:list={["lcard", { "lcard-off": l.status !== "aktiv" }]}>
+  <div class:list={["lcard-photo", l.type === "suche" ? "wash-suche" : "wash-biete"]}>
     {
       l.coverPhotoId ? (
         <img src={`/media/listing/${l.coverPhotoId}`} alt="" loading="lazy" width="400" height="300" />
       ) : (
-        <span class="lcard-nophoto">{t(l.categoryLabel)}</span>
+        <CategoryIcon slug={l.categorySlug} size={48} strokeWidth={1.4} />
       )
     }
-  </a>
+    <span class="lcard-type"><TypeChip type={l.type} category={l.categorySlug} /></span>
+    {
+      heart === "login" ? (
+        <a class="lcard-heart" href={`/login?next=${encodeURIComponent(href)}`} aria-label={t("Merken")}>
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
+        </a>
+      ) : heart !== undefined ? (
+        <form method="POST" action={`${href}${actions.listings.save}`} class="lcard-heart-form">
+          <input type="hidden" name="listingId" value={l.id} />
+          <input type="hidden" name="saved" value={heart ? "0" : "1"} />
+          <button type="submit" class:list={["lcard-heart", { on: heart }]} aria-pressed={heart ? "true" : "false"} aria-label={t("Merken")}>
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d={HEART} /></svg>
+          </button>
+        </form>
+      ) : null
+    }
+  </div>
   <div class="lcard-body">
-    <div class="chips">
-      <TypeChip type={l.type} category={l.categorySlug} />
-      <span class="chip chip-outline">{t(l.categoryLabel)}</span>
-      {l.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
-      {showStatus && l.status !== "aktiv" && <span class="chip chip-outline">{t(STATUS_LABEL[l.status])}</span>}
-    </div>
+    <p class="lcard-cat">{t(l.categoryLabel)}</p>
     <H class="lcard-title"><a href={href}>{l.title}</a></H>
+    {
+      (l.lent || (showStatus && l.status !== "aktiv")) && (
+        <div class="chips">
+          {l.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
+          {showStatus && l.status !== "aktiv" && <span class="chip chip-outline">{t(STATUS_LABEL[l.status])}</span>}
+        </div>
+      )
+    }
     <p class="lcard-price">{priceLabel(l.priceKind, l.priceCents, lang)}</p>
     <p class="lcard-meta">
       <span>{placeLabel(l, lang) || t("Ort nicht angegeben")}</span>
