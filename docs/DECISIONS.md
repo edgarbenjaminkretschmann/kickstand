@@ -175,6 +175,7 @@ The design A notes under "Design" above are replaced by this section where they 
 - **Phones:** the header holds only logo and Anmelden or the avatar (plus the search row on search pages). "Leihvertrag" no longer fits next to the wordmark at 360 px; it is reached from the start page band and the footer. The Merkliste heart and "+ Anzeige aufgeben" are desktop only, the tab bar has both.
 - **"Sicherheit" links to `/#sicherheit`**, the safety section on the start page. No separate page. "So geht's" links to the existing `/so-gehts`.
 - **Footer:** "Edgars Touren" instead of "Über uns" (that page is the story page; the Vlogato mention lives only there now). No "Nutzungsbedingungen": there is no such page. The category column uses the `CATEGORIES` constant, not a DB query per page. The language switch sits in the bottom line next to "Kickstand · ein Projekt von Edgar Kretschmann".
+- **Language picker in the header** (globe + code on desktop, globe alone on phones), a `<details>` menu like the avatar menu, so it works without JS. Added after Edgar found the footer-only switch too hidden. The detail page on phones hides the site header, so there only the footer switch is left.
 
 ### Start page
 

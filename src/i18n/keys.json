@@ -1761,6 +1761,9 @@
   "Sprache": [
     "src/layouts/Base.astro"
   ],
+  "Sprache: {name}": [
+    "src/layouts/Base.astro"
+  ],
   "Start": [
     "src/pages/anzeigen/[id]/index.astro",
     "src/pages/anzeigen/index.astro"

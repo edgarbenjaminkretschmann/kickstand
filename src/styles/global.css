@@ -451,6 +451,51 @@ main.page {
   background: var(--petrol-wash);
 }
 
+/* Language picker: globe and code on desktop, globe alone on phones. */
+.lang-menu summary {
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.lang-menu summary:hover,
+.lang-menu[open] summary {
+  background: var(--petrol-wash);
+  color: var(--petrol);
+}
+
+.lang-menu summary svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lang-menu .menu-pop {
+  min-width: 180px;
+}
+
+.lang-menu .menu-pop a[aria-current] {
+  font-weight: 700;
+  color: var(--petrol);
+}
+
+@media (max-width: 759px) {
+  .lang-menu summary {
+    padding: 0;
+  }
+  .lang-code {
+    display: none;
+  }
+  .head-actions {
+    gap: 4px;
+  }
+}
+
 .mobile-only {
   display: none;
 }
