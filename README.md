@@ -8,7 +8,16 @@ A small marketplace for motorcyclists. People post what they offer (*Biete*) and
 - Photos resized to max 1600 px (`sharp` on Node, Cloudflare Images on Workers), stored through a small storage adapter (local disk or Cloudflare R2)
 - Production: Cloudflare Workers + Turso + R2 (see "Deploying to Cloudflare"). Local dev needs no accounts and no env vars
 - Contract PDF built in the browser with jsPDF (`src/lib/contract-pdf.ts`)
-- No analytics. Fonts from Google Fonts (Mr Dafoe, Roboto Slab, Open Sans). Design borrowed from Edgar's old blog vlogato (the domain no longer belongs to him)
+- No analytics. Fonts from Google Fonts (Barlow Semi Condensed, Inter)
+
+## Brand
+
+A marketplace look: search first, white cards on a light ground, borders instead of shadows, no gradients, no emoji. Light theme only.
+
+- **Benno, der Biber** carries the brand: riding goggles, petrol neckerchief, a wrench. Three inline-SVG components in `src/components/benno/`: `BennoMark` (head in a circle: logo, favicon, avatars, tip boxes), `Benno` (full body with wrench: start page hero) and `BennoWave` (waving: safety tips, empty states). Each takes `size` and `label` (empty = decorative). `public/favicon.svg` and `public/apple-touch-icon.png` are made from `BennoMark`.
+- **Colours** (all as CSS variables in `src/styles/global.css`): ink `#14181B`, petrol `#0B6E6C` (primary, "Biete"), petrol-dark `#08504F`, petrol-wash `#E3F1F0`, amber `#FFB020` ("Suche", badges), amber-wash `#FFF1D6`, ground `#F5F6F4`, card `#FFFFFF`, line `#E2E5E3`, text-2 `#3B4449`, muted `#5A6469`. Benno's brown `#8A5A3B` lives only inside the mascot, never in UI.
+- **Type:** Barlow Semi Condensed 600–800 for headings, prices, step numbers and the wordmark "kickstand"; Inter 400–700 for everything else. Inputs are 16 px.
+- **Radii:** cards 16 px, big sections 24 px, pills fully round.
 
 ## Setup
 

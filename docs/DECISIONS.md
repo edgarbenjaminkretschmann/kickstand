@@ -76,7 +76,7 @@ Judgement calls made while building Phase 2 (`PROMPT-2.md`), so they can be revi
 - **Loan requests become messages.** Body: "Leihanfrage ab TT.MM.JJJJ.", the original message, and the old status as text ("(Anfrage angenommen)"), since conversations have no status. Several requests from the same member for the same bike share one conversation. Migrated messages count as read.
 - **Expired sessions are skipped**; valid ones are copied so people stay logged in.
 
-## Design
+## Design (design A, replaced in November 2026, see the redesign section below)
 
 - **Header follows the prompt, not the design export:** logo, "Suchen" (the prompt said "Anzeigen"; Edgar found it redundant next to "Anzeige aufgeben", and "Suchen" matches the mobile tab bar), black "Anzeige aufgeben" pill, Nachrichten with count, avatar menu or Anmelden. The landing page reaches "So geht's" and "Garagen & Hilfe" through its hero button and sections instead.
 - **Landing "Garagen & Hilfe" cards** follow the design (chips, title, place) instead of reusing the photo cards from search, plus the price. The section shows the latest 6 active listings of any category; empty state with a button to post.
@@ -162,3 +162,53 @@ The prompt assumed a move from Vercel. Kickstand was already live on Workers, so
 
 - **13 listings** instead of "~12", so every category has at least one. Fixed join dates make "Mitglied seit" stable.
 - The tour listing in PT uses `myanmar.jpg` as its cover; the VFR listing has no photo.
+
+## Redesign: marketplace with Benno (November 2026)
+
+The design A notes under "Design" above are replaced by this section where they disagree. Spec: the canvas "Kickstand Redesign – Marktplatz mit Maskottchen" plus the written prompt.
+
+### Layout and navigation
+
+- **Still one layout.** The prompt names `PublicLayout` and `AppLayout`; only `Base.astro` exists. It picks the header by path: on `/anzeigen*`, `/app*`, `/nachrichten*`, `/merkliste` and `/profil` the compact search (keyword + Ort + "Finden") with "Anzeigen" and "Nachrichten"; everywhere else the public nav. New props `mobileBar` (page draws its own phone top bar), `mobileDock` (fixed bar on phones only, footer stays) and a `before` slot above `main`.
+- **On the results page both search forms carry each other's fields** (hidden inputs), so the header search keeps the filters and the filter card keeps keyword and Ort.
+- **Header says "Anzeigen"** as the prompt asks (it used to say "Suchen"); the phone tab bar keeps "Suchen".
+- **Phones:** the header holds only logo and Anmelden or the avatar (plus the search row on search pages). "Leihvertrag" no longer fits next to the wordmark at 360 px; it is reached from the start page band and the footer. The Merkliste heart and "+ Anzeige aufgeben" are desktop only, the tab bar has both.
+- **"Sicherheit" links to `/#sicherheit`**, the safety section on the start page. No separate page. "So geht's" links to the existing `/so-gehts`.
+- **Footer:** "Edgars Touren" instead of "Über uns" (that page is the story page; the Vlogato mention lives only there now). No "Nutzungsbedingungen": there is no such page. The category column uses the `CATEGORIES` constant, not a DB query per page. The language switch sits in the bottom line next to "Kickstand · ein Projekt von Edgar Kretschmann".
+
+### Start page
+
+- **"Neueste Anzeigen" instead of "Neu in deiner Nähe".** Kickstand does not know where a visitor is; the list is simply the newest 8 active listings anywhere.
+- **"Beliebt:" links are categories or single words** (Garage / Stellplatz, Hebebühne, Motorrad zum Leihen, Hilfe beim Schrauben). Every word of a search must match, so the canvas examples ("Garage für den Winter") would find nothing.
+- **Hearts on the tiles are real:** a form that posts the existing `listings.save` action to the listing's page, which then shows "Auf deiner Merkliste". Visitors go to login; your own listings have no heart. Works without JS.
+- **Category tiles show no counts** (the prompt allows counts only from the DB; not worth a query on a cached page).
+- **The rider photo, brush stroke and sky oval are gone** from the start page; `public/images/rider-*` and `myanmar-*` stay, `/touren` still uses them. Its oval frame is now petrol-wash.
+
+### Search (`/anzeigen`)
+
+- **Price filter added to the data layer** (`SearchFilters.price`, tested), because the prompt asks for the checkboxes unconditionally. "Mit Preis" and "VB" are separate boxes, so all four price kinds can be picked; unknown values are ignored.
+- **Umkreis and Land are left out.** Listings have no coordinates and the search has no country filter. The canvas "Sortieren" select is left out too: results are always newest first.
+- **Filters apply on change with JS;** without JS the "Anwenden" button submits the same GET form. On phones, category and price fold into "Kategorie und Preis" (with the active one shown as a chip); on wide screens JS opens it and hides the summary.
+- **Cards gained `photoCount` and `teaser`** (first 160 characters, cut in SQL with `substr`, whitespace collapsed). The seller in the detail gained `activeListings`. All additive.
+
+### Listing detail
+
+- **Phones get the board's top bar** (back, category, share) instead of the site header, and a fixed bottom bar instead of the tab bar. The footer stays.
+- **Back goes to the category's list,** not `history.back()`, so it also works from a shared link. **Share** uses the system share sheet, or copies the link; hidden without JS. The "1 / n" counter needs JS too; desktop keeps the thumbnails.
+- **"Nachricht schreiben" in the bar jumps to the message form** (`#kontakt`), which stays in the page as before. Visitors go to login.
+- **Owner bar:** an icon button for Bearbeiten (three text buttons do not fit at 360 px), "Status" jumping to the owner panel (`#verwalten`), and "Leihvertrag starten" for a bike offer without an active loan.
+- **The details table shows only stored data:** Art, Kategorie, the bike's facts, Status ("verfügbar", "verliehen", "Reserviert", "Erledigt"). The board's "Führerschein: Klasse A" is not stored and not shown.
+- **Seller card:** initial, first name, "Mitglied seit", number of active listings. No "Profil" link: there are no public profiles.
+- **"Wo" is a grey box with Ort/PLZ, not a map.** There is no geodata.
+- **"Anzeige melden" links to `/impressum`** for now. There is no report flow and no contact address yet. **To do before real members join.**
+- **Benno-Tipp per category** in `src/lib/benno-tips.ts` (translatable). `motorrad-leihen` has the handover-photo tip from the board.
+
+### Tokens and components
+
+- **Derived variables besides the prompt's table:** `--on-dark` (white text on ink/petrol), `--on-dark-muted` `#C9D0D3` (11:1 on ink), `--line-strong` `#8C9599` (field outlines, 3:1 on white as WCAG asks for input borders; `--line` alone is 1.2:1), `--amber-ink` `#8A5A00` (icons on amber-wash, from the canvas, 5.3:1), `--stone` (place box), `--scrim` (photo-count badges), `--danger`. Contrast checked: muted on white 6.1, on ground 5.6; petrol on petrol-wash 5.2; white on petrol 6.1; ink on amber 9.8.
+- **Benno's colours are literal hex inside the SVGs.** The mascot is artwork, not UI, so it does not go through variables; `--beaver` exists only to document the colour.
+- **Chips:** Biete petrol on petrol-wash, Suche ink on amber. **Buttons:** plain `button`/`.btn` is now the white secondary pill, `.btn-primary` petrol, `.btn-dark` ink. Segmented controls: grey track, petrol when selected. `.btn-sky` and the aliases `--fg`, `--accent`, `--doc` stay for the loan pages.
+- **Tiles vs rows:** `ListingCard` is the tile (start page, Merkliste, Mein Bereich; two columns on phones), the new `ListingRow` the search result row.
+- **Empty states with `BennoWave`:** search, start page, Nachrichten, Merkliste, and "no listings" in Mein Bereich. The other dashboard empties stay one line, so the page is not full of beavers.
+- **New texts were translated by Claude** into EN, FR, ES, IT, PT (FR with "vous"); the start page strings of design A were removed from the locale files.
+- **The contract PDF is unchanged.**
