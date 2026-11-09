@@ -33,12 +33,16 @@ function applyCacheHeader(response: Response, pathname: string, loggedIn: boolea
 }
 
 /**
- * The old address kickstand.<account>.workers.dev sends visitors to SITE_URL, so sessions and Google login
- * live on one origin. Preview versions (<version>-kickstand.<account>.workers.dev) are left alone.
+ * Old and alias addresses send visitors to SITE_URL, so sessions and Google login live on one origin:
+ * kickstand.<account>.workers.dev and every host in REDIRECT_HOSTS (comma-separated, e.g. www. and the
+ * former domain). Preview versions (<version>-kickstand.<account>.workers.dev) and localhost are left alone.
  */
 function canonicalRedirect(url: URL): Response | null {
   const site = env("SITE_URL");
-  if (!site || !url.hostname.endsWith(".workers.dev") || !url.hostname.startsWith("kickstand.")) return null;
+  if (!site) return null;
+  const aliases = (env("REDIRECT_HOSTS") ?? "").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
+  const oldWorkersDev = url.hostname.endsWith(".workers.dev") && url.hostname.startsWith("kickstand.");
+  if (!oldWorkersDev && !aliases.includes(url.hostname.toLowerCase())) return null;
   const target = new URL(url.pathname + url.search, site);
   if (target.host === url.host) return null;
   return new Response(null, { status: 301, headers: { Location: target.toString() } });

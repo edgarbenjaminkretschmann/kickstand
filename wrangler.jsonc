@@ -12,16 +12,23 @@
   "observability": { "enabled": true },
   // Turso sits in AWS eu-west-1 and one page runs several queries: run the Worker near the database.
   "placement": { "mode": "smart" },
-  // Custom domain on the deutschacademy.com zone (same account). Wrangler creates the DNS record and
-  // certificate. The workers.dev address stays on and redirects here (src/middleware.ts).
-  "routes": [{ "pattern": "kickstand.deutschacademy.com", "custom_domain": true }],
+  // Custom domains (zones kickstand.top and deutschacademy.com, same account). Wrangler creates the DNS
+  // records and certificates. kickstand.top is the address; www, the former kickstand.deutschacademy.com
+  // and the workers.dev address stay on and 301-redirect to it (REDIRECT_HOSTS, src/middleware.ts).
+  "routes": [
+    { "pattern": "kickstand.top", "custom_domain": true },
+    { "pattern": "www.kickstand.top", "custom_domain": true },
+    { "pattern": "kickstand.deutschacademy.com", "custom_domain": true }
+  ],
   "workers_dev": true,
   "vars": {
     // Turso (libsql://<db>-<org>.aws-eu-west-1.turso.io). The token is the secret DATABASE_AUTH_TOKEN.
     "DATABASE_URL": "libsql://kickstand-kickstand.aws-eu-west-1.turso.io",
     // Public URL. Also read by astro.config.mjs at build time, so it is the one place to change it.
-    "SITE_URL": "https://kickstand.deutschacademy.com",
-    "BETTER_AUTH_URL": "https://kickstand.deutschacademy.com",
+    "SITE_URL": "https://kickstand.top",
+    "BETTER_AUTH_URL": "https://kickstand.top",
+    // Hosts that 301-redirect to SITE_URL (path and query kept).
+    "REDIRECT_HOSTS": "www.kickstand.top,kickstand.deutschacademy.com",
     // Shows the demo accounts on /login. "false" once real members use the site.
     "SHOW_DEMO_LOGINS": "true"
   },

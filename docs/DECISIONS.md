@@ -213,3 +213,8 @@ The design A notes under "Design" above are replaced by this section where they 
 - **Empty states with `BennoWave`:** search, start page, Nachrichten, Merkliste, and "no listings" in Mein Bereich. The other dashboard empties stay one line, so the page is not full of beavers.
 - **New texts were translated by Claude** into EN, FR, ES, IT, PT (FR with "vous"); the start page strings of design A were removed from the locale files.
 - **The contract PDF is unchanged.**
+
+## Domain kickstand.top and a new Google login client (9 November 2026)
+
+- **kickstand.top is the address.** Registered at Namecheap, nameservers moved to Cloudflare (zone on the hello@deutschacademy.com account, free plan) so the Worker can use it as a custom domain. `www.kickstand.top` and the former `kickstand.deutschacademy.com` stay attached to the Worker and 301-redirect to it, keeping path and query, so old links and bookmarks keep working and sessions live on one origin. The list is the var `REDIRECT_HOSTS`; the workers.dev rule is unchanged.
+- **Google login moved to a project under hello@deutschacademy.com** (`kickstand-514221`, client "Kickstand Web"). The old project belonged to a private Gmail account that the deutschacademy browser profile cannot reach, and the consent screen should name the site's own contact. Existing Google-linked members are unaffected: Google's account id (`sub`) is the same for every client, and that is what Better Auth stores.
