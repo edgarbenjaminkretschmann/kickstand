@@ -1,42 +1,44 @@
-/* Kickstand, Design A "Vlogato-Familie": white pages, one sky blue, black ink, slab headings,
-   pill buttons, flat white cards. Light theme only for now; every colour goes through a variable. */
+/* Kickstand, marketplace look with the mascot Benno (November 2026): search first, white cards on a light
+   ground, one petrol primary, amber for "Suche" and highlights. Borders, not shadows. No gradients.
+   Light theme only; every colour goes through a variable. --beaver is for the mascot only, never UI. */
 
 :root {
   /* Brand tokens */
-  --sky: #5bb8e8;
-  --sky-wash: #eef7fc;
-  --ink: #121417;
-  --text-2: #36404a;
-  --muted: #4a5560;
-  --line: #dfe9ef;
-  --suche: #f2b134;
+  --ink: #14181b;
+  --petrol: #0b6e6c;
+  --petrol-dark: #08504f;
+  --petrol-wash: #e3f1f0;
+  --amber: #ffb020;
+  --amber-wash: #fff1d6;
+  --ground: #f5f6f4;
+  --card: var(--card);
+  --line: #e2e5e3;
+  --text-2: #3b4449;
+  --muted: #5a6469;
+  --beaver: #8a5a3b;
 
   /* Derived */
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --link: #0f5f8a;
-  --link-hover: #0a4363;
-  --line-strong: #c9dbe5;
-  --field: #ffffff;
+  --on-dark: var(--card);
+  --on-dark-muted: #c9d0d3; /* body copy on --ink, 11:1 */
+  --line-strong: #8c9599; /* field outlines, 3:1 on white */
+  --amber-ink: #8a5a00; /* icons on --amber-wash, 5.3:1 */
+  --stone: #e9ecea; /* map placeholder */
+  --scrim: rgba(20, 24, 27, 0.8); /* photo-count badges on photos */
   --danger: #b3261e;
-  --dark: #121417;
-  --dark-line: #343b42;
-  --dark-muted: #c3ccd3;
-  --dark-chip-line: #5b646c;
 
-  /* Aliases kept for the loan pages written before Design A */
+  /* Aliases kept for the loan pages */
   --fg: var(--ink);
-  --accent: var(--link);
-  --accent-fg: #ffffff;
-  --doc: var(--sky-wash);
+  --accent: var(--petrol);
+  --accent-fg: var(--on-dark);
+  --doc: var(--petrol-wash);
 
-  --script: "Mr Dafoe", cursive;
-  --slab: "Roboto Slab", Georgia, serif;
-  --sans: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --display: "Barlow Semi Condensed", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
 
   --radius: 10px;
   --radius-card: 16px;
+  --radius-section: 24px;
   --tap: 44px;
   --gutter: 16px;
   --tabbar-h: 64px;
@@ -56,7 +58,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--ground);
   color: var(--ink);
   font-family: var(--sans);
   font-size: 16px;
@@ -71,20 +73,21 @@ img {
 }
 
 a {
-  color: var(--link);
+  color: var(--petrol);
   text-underline-offset: 2px;
 }
 
 a:hover {
-  color: var(--link-hover);
+  color: var(--petrol-dark);
 }
 
 h1,
 h2,
 h3 {
-  font-family: var(--slab);
-  font-weight: 700;
-  line-height: 1.15;
+  font-family: var(--display);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
   text-wrap: balance;
   margin: 0;
 }
@@ -187,7 +190,7 @@ main.page {
 }
 
 .section-title {
-  font-family: var(--slab);
+  font-family: var(--display);
   font-size: 1.3rem;
 }
 
@@ -195,7 +198,7 @@ main.page {
 
 .site-header {
   border-bottom: 1px solid var(--line);
-  background: var(--bg);
+  background: var(--card);
 }
 
 .bar {
@@ -234,7 +237,7 @@ main.page {
 
 .nav-link[aria-current="page"] {
   text-decoration: underline;
-  text-decoration-color: var(--sky);
+  text-decoration-color: var(--petrol);
   text-decoration-thickness: 3px;
   text-underline-offset: 8px;
 }
@@ -262,9 +265,9 @@ main.page {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--sky);
-  color: var(--ink);
-  font-family: var(--slab);
+  background: var(--ink);
+  color: var(--on-dark);
+  font-family: var(--display);
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -283,8 +286,8 @@ main.page {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: var(--suche);
-  border: 2px solid var(--bg);
+  background: var(--amber);
+  border: 2px solid var(--card);
 }
 
 .menu-pop {
@@ -293,7 +296,7 @@ main.page {
   top: calc(100% + 6px);
   z-index: 30;
   min-width: 220px;
-  background: var(--surface);
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 8px;
@@ -327,7 +330,7 @@ main.page {
 
 .menu-pop a:hover,
 .menu-pop button:hover {
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
 }
 
 .mobile-only {
@@ -408,7 +411,7 @@ main.page {
     right: 0;
     bottom: 0;
     z-index: 20;
-    background: var(--bg);
+    background: var(--card);
     border-top: 1px solid var(--line);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -447,7 +450,7 @@ main.page {
     stroke-linejoin: round;
   }
   .tabbar a[aria-current="page"] .tab-icon {
-    background: var(--sky-wash);
+    background: var(--petrol-wash);
     width: 48px;
   }
   .tab-add .tab-icon,
@@ -464,7 +467,7 @@ main.page {
     height: 18px;
     padding: 0 5px;
     border-radius: 999px;
-    background: var(--suche);
+    background: var(--amber);
     color: var(--ink);
     font-size: 11px;
     line-height: 18px;
@@ -483,6 +486,7 @@ main.page {
 
 /* --- Buttons --- */
 
+/* Plain buttons are the secondary pill: white with a grey outline. */
 button,
 .btn {
   font: inherit;
@@ -496,8 +500,8 @@ button,
   gap: 8px;
   padding: 0 24px;
   text-decoration: none;
-  border: 2px solid transparent;
-  background: var(--sky);
+  border: 1.5px solid var(--line-strong);
+  background: var(--card);
   color: var(--ink);
   line-height: 1.2;
   text-align: center;
@@ -506,16 +510,43 @@ button,
 .btn:hover,
 button:hover {
   color: var(--ink);
+  border-color: var(--ink);
+}
+
+.btn svg,
+button svg {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .btn-primary {
-  background: var(--ink);
-  color: #ffffff;
+  background: var(--petrol);
+  border-color: var(--petrol);
+  color: var(--on-dark);
+  font-weight: 700;
 }
 
 .btn-primary:hover {
-  background: #2a2f35;
-  color: #ffffff;
+  background: var(--petrol-dark);
+  border-color: var(--petrol-dark);
+  color: var(--on-dark);
+}
+
+.btn-dark {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-dark);
+  font-weight: 700;
+}
+
+.btn-dark:hover {
+  background: var(--text-2);
+  border-color: var(--text-2);
+  color: var(--on-dark);
 }
 
 .btn-outline {
@@ -530,9 +561,9 @@ button:hover {
   font-size: 15px;
 }
 
-/* The secondary pill. Same as a plain .btn; named for markup that wants to say so. */
+/* Older name for the secondary pill, still used by the loan pages. */
 .btn-sky {
-  background: var(--sky);
+  background: var(--card);
   color: var(--ink);
 }
 
@@ -545,19 +576,28 @@ button:hover {
   padding: 0 30px;
 }
 
+/* Round icon-only button (heart, edit). Needs an aria-label. */
+.btn-icon {
+  width: 48px;
+  min-width: 48px;
+  padding: 0;
+}
+
 .btn-danger {
   background: var(--danger);
-  color: #ffffff;
+  border-color: var(--danger);
+  color: var(--on-dark);
 }
 
 .btn-danger:hover {
-  color: #ffffff;
+  border-color: var(--danger);
+  color: var(--on-dark);
 }
 
 .btn-link {
   background: none;
   border: none;
-  color: var(--link);
+  color: var(--petrol);
   padding: 0 4px;
   min-height: var(--tap);
   font-weight: 600;
@@ -565,7 +605,7 @@ button:hover {
 }
 
 .btn-link:hover {
-  color: var(--link-hover);
+  color: var(--petrol-dark);
   text-decoration: underline;
 }
 
@@ -578,7 +618,7 @@ button:hover {
 }
 
 .btn-google {
-  background: #ffffff;
+  background: var(--card);
   border-color: var(--line-strong);
   color: var(--ink);
 }
@@ -601,7 +641,7 @@ textarea:focus-visible,
 button:focus-visible,
 a:focus-visible,
 summary:focus-visible {
-  outline: 3px solid var(--sky);
+  outline: 3px solid var(--petrol);
   outline-offset: 2px;
 }
 
@@ -617,10 +657,10 @@ summary:focus-visible {
 .tag {
   display: inline-flex;
   align-items: center;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   line-height: 1.3;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 999px;
   white-space: nowrap;
   border: 1px solid transparent;
@@ -628,21 +668,22 @@ summary:focus-visible {
 
 .chip-biete,
 .tag-accent {
-  background: var(--sky);
-  color: var(--ink);
+  background: var(--petrol-wash);
+  color: var(--petrol);
 }
 
 .chip-suche,
 .tag-warn {
-  background: var(--suche);
+  background: var(--amber);
   color: var(--ink);
 }
 
 .chip-outline,
 .tag {
-  border-color: var(--line-strong);
-  color: var(--muted);
-  padding: 3px 10px;
+  background: var(--card);
+  border-color: var(--line);
+  color: var(--text-2);
+  font-weight: 600;
 }
 
 .tag-accent,
@@ -652,7 +693,7 @@ summary:focus-visible {
 
 .chip-ink {
   background: var(--ink);
-  color: #ffffff;
+  color: var(--on-dark);
 }
 
 .count {
@@ -663,21 +704,21 @@ summary:focus-visible {
   height: 22px;
   padding: 0 7px;
   border-radius: 999px;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   color: var(--ink);
   font-size: 12px;
   font-weight: 600;
 }
 
 .count-hot {
-  background: var(--suche);
+  background: var(--amber);
 }
 
 /* --- Cards and panels --- */
 
 .card,
 .panel {
-  background: var(--surface);
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   padding: 20px;
@@ -702,7 +743,7 @@ summary:focus-visible {
 
 .notice {
   border-radius: 12px;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   padding: 12px 16px;
   font-size: 0.95rem;
   color: var(--text-2);
@@ -711,7 +752,7 @@ summary:focus-visible {
 .alert {
   border: 1px solid var(--danger);
   color: var(--danger);
-  background: #ffffff;
+  background: var(--card);
   border-radius: 12px;
   padding: 12px 16px;
   font-size: 0.95rem;
@@ -723,7 +764,7 @@ summary:focus-visible {
 }
 
 .empty-box {
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   border-radius: var(--radius-card);
   padding: 28px 20px;
   display: flex;
@@ -753,8 +794,8 @@ summary:focus-visible {
 }
 
 .item.unread {
-  border-color: var(--suche);
-  background: #fff9ec;
+  border-color: var(--amber);
+  background: var(--amber-wash);
 }
 
 .item-head {
@@ -796,7 +837,7 @@ a.item-title:hover {
 .field .code {
   font-family: var(--mono);
   font-size: 0.75rem;
-  color: var(--link);
+  color: var(--petrol);
   margin-right: 6px;
 }
 
@@ -812,7 +853,7 @@ textarea {
   font-weight: 400;
   font-size: 16px; /* prevents iOS zoom on focus */
   color: var(--ink);
-  background: var(--field);
+  background: var(--card);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 10px 12px;
@@ -901,7 +942,7 @@ select {
 .seg {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   border-radius: 999px;
   padding: 4px;
   gap: 4px;
@@ -942,11 +983,11 @@ select {
 .seg label:has(input:checked),
 .seg button.on {
   background: var(--ink);
-  color: #ffffff;
+  color: var(--on-dark);
 }
 
 .seg label:has(input:focus-visible) {
-  outline: 3px solid var(--sky);
+  outline: 3px solid var(--petrol);
 }
 
 @media (max-width: 400px) {
@@ -1000,11 +1041,11 @@ select {
 
 .choice:has(input:checked) {
   border-color: var(--ink);
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
 }
 
 .choice:has(input:focus-visible) {
-  outline: 3px solid var(--sky);
+  outline: 3px solid var(--petrol);
   outline-offset: 2px;
 }
 
@@ -1013,7 +1054,7 @@ fieldset.panel {
 }
 
 .step-legend {
-  font-family: var(--slab);
+  font-family: var(--display);
   font-weight: 700;
   font-size: 1.15rem;
   padding: 0;
@@ -1030,11 +1071,11 @@ fieldset.panel {
 }
 
 .step-no {
-  font-family: var(--script);
+  font-family: var(--display);
   font-weight: 400;
   font-size: 40px;
   line-height: 0.8;
-  color: var(--link);
+  color: var(--petrol);
 }
 
 .chosen {
@@ -1042,7 +1083,7 @@ fieldset.panel {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   border-color: transparent;
   padding: 10px 16px;
 }
@@ -1086,7 +1127,7 @@ fieldset.panel {
 }
 
 .lcard {
-  background: var(--surface);
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: 14px;
   overflow: hidden;
@@ -1104,7 +1145,7 @@ fieldset.panel {
   display: block;
   text-decoration: none;
   aspect-ratio: 4 / 3;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
 }
 
 .lcard-photo img {
@@ -1121,9 +1162,9 @@ fieldset.panel {
   justify-content: center;
   padding: 16px;
   text-align: center;
-  font-family: var(--slab);
+  font-family: var(--display);
   font-weight: 500;
-  color: var(--link);
+  color: var(--petrol);
 }
 
 .lcard-body {
@@ -1158,12 +1199,12 @@ fieldset.panel {
 }
 
 .lcard:has(.lcard-title a:focus-visible) {
-  outline: 3px solid var(--sky);
+  outline: 3px solid var(--petrol);
   outline-offset: 2px;
 }
 
 .lcard-price {
-  font-family: var(--slab);
+  font-family: var(--display);
   font-weight: 700;
 }
 
@@ -1183,11 +1224,11 @@ fieldset.panel {
 .lcard-dark {
   background: transparent;
   border-color: var(--dark-line);
-  color: #ffffff;
+  color: var(--card);
 }
 
 .lcard-dark .lcard-title a {
-  color: #ffffff;
+  color: var(--card);
 }
 
 .lcard-dark .lcard-meta {
@@ -1208,7 +1249,7 @@ fieldset.panel {
 }
 
 .lcard-dark .chip-ink {
-  background: #ffffff;
+  background: var(--card);
   color: var(--ink);
 }
 
@@ -1251,7 +1292,7 @@ fieldset.panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   border-radius: var(--radius-card);
   padding: 16px;
 }
@@ -1262,7 +1303,7 @@ fieldset.panel {
 }
 
 .search .seg {
-  background: #ffffff;
+  background: var(--card);
 }
 
 @media (min-width: 900px) {
@@ -1362,7 +1403,7 @@ fieldset.panel {
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   border-radius: var(--radius-card);
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   scrollbar-width: none;
 }
 
@@ -1411,14 +1452,14 @@ fieldset.panel {
 .gallery-empty {
   aspect-ratio: 16 / 7;
   border-radius: var(--radius-card);
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--slab);
+  font-family: var(--display);
   font-weight: 500;
   font-size: 1.2rem;
-  color: var(--link);
+  color: var(--petrol);
 }
 
 .detail-head {
@@ -1428,7 +1469,7 @@ fieldset.panel {
 }
 
 .detail-price {
-  font-family: var(--slab);
+  font-family: var(--display);
   font-weight: 700;
   font-size: 1.5rem;
 }
@@ -1466,7 +1507,7 @@ fieldset.panel {
 }
 
 .seller-name {
-  font-family: var(--slab);
+  font-family: var(--display);
   font-weight: 700;
   font-size: 1.15rem;
 }
@@ -1478,7 +1519,7 @@ fieldset.panel {
 }
 
 .btn-heart {
-  background: #ffffff;
+  background: var(--card);
   border-color: var(--ink);
   align-self: flex-start;
 }
@@ -1552,18 +1593,18 @@ fieldset.panel {
   min-height: var(--tap);
   padding: 0 16px;
   border-radius: 999px;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   color: var(--ink);
   font-weight: 600;
   text-decoration: none;
 }
 
 .jump .count {
-  background: #ffffff;
+  background: var(--card);
 }
 
 .jump .count-hot {
-  background: var(--suche);
+  background: var(--amber);
 }
 
 .past summary {
@@ -1572,7 +1613,7 @@ fieldset.panel {
   display: flex;
   align-items: center;
   font-weight: 600;
-  color: var(--link);
+  color: var(--petrol);
 }
 
 .past .list {
@@ -1594,7 +1635,7 @@ fieldset.panel {
   height: 56px;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
 }
 
 .conv-thumb img {
@@ -1657,7 +1698,7 @@ fieldset.panel {
   max-width: min(85%, 520px);
   padding: 10px 14px;
   border-radius: 16px;
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   align-self: flex-start;
   border-bottom-left-radius: 4px;
 }
@@ -1665,7 +1706,7 @@ fieldset.panel {
 .msg.mine {
   align-self: flex-end;
   background: var(--ink);
-  color: #ffffff;
+  color: var(--on-dark);
   border-bottom-left-radius: 16px;
   border-bottom-right-radius: 4px;
 }
@@ -1705,7 +1746,7 @@ fieldset.panel {
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--line);
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
 }
 
 .thumb img {
@@ -1725,7 +1766,7 @@ fieldset.panel {
   border-radius: 50%;
   font-size: 1.1rem;
   line-height: 1;
-  background: #ffffff;
+  background: var(--card);
   border: 1px solid var(--line-strong);
 }
 
@@ -1753,7 +1794,7 @@ fieldset.panel {
 }
 
 .photo-btn:focus-within {
-  outline: 3px solid var(--sky);
+  outline: 3px solid var(--petrol);
   outline-offset: 2px;
 }
 
@@ -1774,7 +1815,7 @@ fieldset.panel {
 /* --- The vehicle-document look (loan pages) --- */
 
 .doc {
-  background: var(--sky-wash);
+  background: var(--petrol-wash);
   border-radius: 12px;
   padding: 14px 16px;
   font-family: var(--mono);
@@ -1802,7 +1843,7 @@ fieldset.panel {
   right: 0;
   bottom: 0;
   z-index: 20;
-  background: var(--bg);
+  background: var(--card);
   border-top: 1px solid var(--line);
   padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom, 0px));
 }
@@ -1854,7 +1895,7 @@ form:has(input[name="endMode"][value="fixed"]:checked) .open-only {
 .sig canvas {
   width: 100%;
   height: 140px;
-  background: #ffffff;
+  background: var(--card);
   border: 1px dashed var(--line);
   border-radius: var(--radius);
   touch-action: none;
