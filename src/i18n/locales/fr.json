@@ -645,5 +645,16 @@
   "Öffentlich treffen.": "Se retrouver en public.",
   "Ohne Anmeldung": "Sans inscription",
   "Treffen und loslegen": "Se retrouver et c’est parti",
-  "Was liegt bei dir in der Garage rum?": "Qu’est-ce qui traîne dans votre garage ?"
+  "Was liegt bei dir in der Garage rum?": "Qu’est-ce qui traîne dans votre garage ?",
+  "{what} in {place}": "{what} à {place}",
+  "1 Foto": "1 photo",
+  "Anwenden": "Appliquer",
+  "Filter": "Filtres",
+  "Gesuch aufgeben": "Publier une recherche",
+  "Gib ein Gesuch auf. Wer etwas Passendes hat, findet dich dann.": "Publiez une recherche. Celui qui a ce qu’il vous faut vous trouvera.",
+  "Kategorie und Preis": "Catégorie et prix",
+  "Kein Foto": "Pas de photo",
+  "Mit Preis": "Avec prix",
+  "Nichts Passendes dabei?": "Rien qui vous convienne ?",
+  "Start": "Accueil"
 }

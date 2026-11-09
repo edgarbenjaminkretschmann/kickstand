@@ -45,6 +45,7 @@
     "src/scripts/listing-photos.ts"
   ],
   "{n} Fotos": [
+    "src/components/ListingRow.astro",
     "src/pages/anzeigen/[id]/index.astro"
   ],
   "{n} neu": [
@@ -67,6 +68,9 @@
   "{title}, Foto {n} von {count}": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
+  "{what} in {place}": [
+    "src/pages/anzeigen/index.astro"
+  ],
   "+ Foto aufnehmen oder hochladen": [
     "src/components/BikeForm.astro"
   ],
@@ -84,6 +88,9 @@
   ],
   "1 Anzeige": [
     "src/pages/anzeigen/index.astro"
+  ],
+  "1 Foto": [
+    "src/components/ListingRow.astro"
   ],
   "21 Orte in 35 Tagen": [
     "src/pages/touren.astro"
@@ -197,6 +204,9 @@
   ],
   "Antwort": [
     "src/pages/nachrichten/[id].astro"
+  ],
+  "Anwenden": [
+    "src/pages/anzeigen/index.astro"
   ],
   "Anzahl": [
     "src/components/LoanItemsFields.astro"
@@ -338,9 +348,6 @@
   ],
   "Biete und suche alles, was Motorradfahrer brauchen: ein Bike zum Leihen, einen Stellplatz, den passenden Schlüssel oder jemanden, der mitschraubt.": [
     "src/pages/index.astro"
-  ],
-  "Biete und suche unter Motorradfahrern: Motorräder zum Leihen, Garagen, Werkzeug, Teile, Hilfe und Touren.": [
-    "src/pages/anzeigen/index.astro"
   ],
   "Bietest du etwas an oder suchst du?": [
     "src/components/ListingTypeStep.astro"
@@ -791,6 +798,9 @@
   "Festpreis": [
     "src/lib/listing-format.ts"
   ],
+  "Filter": [
+    "src/pages/anzeigen/index.astro"
+  ],
   "Filter zurücksetzen": [
     "src/pages/anzeigen/index.astro"
   ],
@@ -919,8 +929,14 @@
   "gestern": [
     "src/lib/listing-format.ts"
   ],
+  "Gesuch aufgeben": [
+    "src/pages/anzeigen/index.astro"
+  ],
   "Gewählt: {name}": [
     "src/components/BikeForm.astro"
+  ],
+  "Gib ein Gesuch auf. Wer etwas Passendes hat, findet dich dann.": [
+    "src/pages/anzeigen/index.astro"
   ],
   "Google-Anmeldung fehlgeschlagen.": [
     "src/lib/auth/index.ts"
@@ -1055,12 +1071,18 @@
   "Kategorie": [
     "src/pages/anzeigen/index.astro"
   ],
+  "Kategorie und Preis": [
+    "src/pages/anzeigen/index.astro"
+  ],
   "Kategorien": [
     "src/layouts/Base.astro",
     "src/pages/index.astro"
   ],
   "Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.": [
     "src/components/LoanPeriodFields.astro"
+  ],
+  "Kein Foto": [
+    "src/components/ListingRow.astro"
   ],
   "keine angegeben": [
     "src/pages/app/loans/[id]/index.astro"
@@ -1115,7 +1137,8 @@
     "src/pages/registrieren.astro"
   ],
   "Kostenlos": [
-    "src/lib/listing-format.ts"
+    "src/lib/listing-format.ts",
+    "src/pages/anzeigen/index.astro"
   ],
   "Kostenlos · privat · in deiner Nähe": [
     "src/pages/index.astro"
@@ -1260,6 +1283,9 @@
   "Mit meiner Yamaha SZ 150 bin ich 18 Monate über Panay, Mindoro und rund um Manila gefahren, und sie ist kein einziges Mal liegen geblieben. Für die große Tour im Oktober 2019 habe ich unter Zeitdruck eine gebrauchte Rusi mit 200 cm³ gekauft. Der falsche Vergaser hat uns tausend Kilometer lang begleitet, bis ihn eine Werkstatt auf Siquijor gegen einen passenden getauscht hat.": [
     "src/pages/touren.astro"
   ],
+  "Mit Preis": [
+    "src/pages/anzeigen/index.astro"
+  ],
   "Mitfahrer / gemeinsame Tour": [
     "src/db/categories.ts"
   ],
@@ -1391,6 +1417,9 @@
   "Nicht gespeichert ({reason}). Wird beim nächsten Tippen erneut versucht.": [
     "src/pages/app/loans/new.astro"
   ],
+  "Nichts Passendes dabei?": [
+    "src/pages/anzeigen/index.astro"
+  ],
   "Nichts unter Druck kaufen. Es gibt immer noch eine andere Möglichkeit, man muss sie nur finden.": [
     "src/pages/touren.astro"
   ],
@@ -1479,10 +1508,8 @@
   ],
   "Ort nicht angegeben": [
     "src/components/ListingCard.astro",
+    "src/components/ListingRow.astro",
     "src/pages/anzeigen/[id]/index.astro"
-  ],
-  "Ort oder PLZ": [
-    "src/pages/anzeigen/index.astro"
   ],
   "Ort, Datum": [
     "src/components/LoanSignatures.astro"
@@ -1525,6 +1552,7 @@
   ],
   "Pfad": [
     "src/pages/anzeigen/[id]/index.astro",
+    "src/pages/anzeigen/index.astro",
     "src/pages/nachrichten/[id].astro"
   ],
   "Philippinen 2019": [
@@ -1546,7 +1574,8 @@
     "src/pages/touren.astro"
   ],
   "Preis": [
-    "src/components/ListingForm.astro"
+    "src/components/ListingForm.astro",
+    "src/pages/anzeigen/index.astro"
   ],
   "Preis auf Anfrage": [
     "src/lib/listing-format.ts"
@@ -1700,6 +1729,9 @@
   "Sprache": [
     "src/layouts/Base.astro"
   ],
+  "Start": [
+    "src/pages/anzeigen/index.astro"
+  ],
   "Status": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
@@ -1721,8 +1753,7 @@
     "src/pages/touren.astro"
   ],
   "Suchbegriff": [
-    "src/layouts/Base.astro",
-    "src/pages/anzeigen/index.astro"
+    "src/layouts/Base.astro"
   ],
   "Suche": [
     "src/components/ListingTypeStep.astro",
@@ -1733,8 +1764,7 @@
     "src/lib/labels.ts"
   ],
   "Suchen": [
-    "src/layouts/Base.astro",
-    "src/pages/anzeigen/index.astro"
+    "src/layouts/Base.astro"
   ],
   "Tank": [
     "src/pages/app/loans/[id]/index.astro",
@@ -1746,7 +1776,8 @@
     "src/pages/leihvertrag.astro"
   ],
   "Tausch": [
-    "src/lib/listing-format.ts"
+    "src/lib/listing-format.ts",
+    "src/pages/anzeigen/index.astro"
   ],
   "Teile & Zubehör": [
     "src/db/categories.ts"
@@ -1837,7 +1868,8 @@
   ],
   "VB": [
     "src/components/ListingForm.astro",
-    "src/lib/listing-format.ts"
+    "src/lib/listing-format.ts",
+    "src/pages/anzeigen/index.astro"
   ],
   "Vereinbarung": [
     "src/pages/app/loans/[id]/index.astro"
@@ -1858,6 +1890,7 @@
   ],
   "verliehen": [
     "src/components/ListingCard.astro",
+    "src/components/ListingRow.astro",
     "src/pages/anzeigen/[id]/index.astro",
     "src/pages/app/index.astro"
   ],
@@ -1927,7 +1960,6 @@
     "src/pages/index.astro"
   ],
   "Was suchst du? z. B. Hebebühne": [
-    "src/pages/anzeigen/index.astro",
     "src/pages/index.astro"
   ],
   "Weite Graslandschaft unter dunklen Wolken": [
@@ -2004,9 +2036,6 @@
   ],
   "z. B. Kratzer Tank links, Spiegel rechts lose": [
     "src/components/LoanHandoverFields.astro"
-  ],
-  "z. B. Leipzig oder 04": [
-    "src/pages/anzeigen/index.astro"
   ],
   "z. B. Montageständer zu verleihen": [
     "src/components/ListingForm.astro"

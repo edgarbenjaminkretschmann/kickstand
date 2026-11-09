@@ -645,5 +645,16 @@
   "Öffentlich treffen.": "Encontrem-se em público.",
   "Ohne Anmeldung": "Sem registo",
   "Treffen und loslegen": "Encontrem-se e arranquem",
-  "Was liegt bei dir in der Garage rum?": "O que está parado na tua garagem?"
+  "Was liegt bei dir in der Garage rum?": "O que está parado na tua garagem?",
+  "{what} in {place}": "{what} em {place}",
+  "1 Foto": "1 foto",
+  "Anwenden": "Aplicar",
+  "Filter": "Filtros",
+  "Gesuch aufgeben": "Publicar um pedido",
+  "Gib ein Gesuch auf. Wer etwas Passendes hat, findet dich dann.": "Publica um pedido. Quem tiver o que procuras vai encontrar-te.",
+  "Kategorie und Preis": "Categoria e preço",
+  "Kein Foto": "Sem foto",
+  "Mit Preis": "Com preço",
+  "Nichts Passendes dabei?": "Nada que sirva?",
+  "Start": "Início"
 }

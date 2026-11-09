@@ -1,0 +1,39 @@
+---
+// One search result as a list row: photo with count, type chip, place, title, teaser, price, age.
+import { i18n } from "../i18n";
+import type { ListingCard } from "../lib/data/listings";
+import { placeLabel, priceLabel, relativeDate } from "../lib/listing-format";
+import CategoryIcon from "./CategoryIcon.astro";
+import TypeChip from "./TypeChip.astro";
+
+interface Props {
+  listing: ListingCard;
+  headingLevel?: 2 | 3;
+}
+
+const { listing: l, headingLevel = 2 } = Astro.props;
+const { t, lang } = i18n(Astro.locals.lang);
+const H = `h${headingLevel}` as "h2" | "h3";
+const href = `/anzeigen/${l.id}`;
+const photos = l.photoCount === 0 ? t("Kein Foto") : l.photoCount === 1 ? t("1 Foto") : t("{n} Fotos", { n: l.photoCount });
+---
+
+<article class="lrow">
+  <div class:list={["lrow-photo", l.type === "suche" ? "wash-suche" : "wash-biete"]}>
+    {l.coverPhotoId ? <img src={`/media/listing/${l.coverPhotoId}`} alt="" loading="lazy" width="400" height="280" /> : <CategoryIcon slug={l.categorySlug} size={44} strokeWidth={1.5} />}
+    <span class="lrow-count">{photos}</span>
+  </div>
+  <div class="lrow-body">
+    <p class="lrow-top">
+      <TypeChip type={l.type} category={l.categorySlug} />
+      {l.lent && <span class="chip chip-ink">{t("verliehen")}</span>}
+      <span class="lrow-place">{placeLabel(l, lang) || t("Ort nicht angegeben")}</span>
+    </p>
+    <H class="lrow-title"><a href={href}>{l.title}</a></H>
+    {l.teaser && <p class="lrow-teaser">{l.teaser}</p>}
+    <p class="lrow-foot">
+      <span class="lrow-price">{priceLabel(l.priceKind, l.priceCents, lang)}</span>
+      <time datetime={l.createdAt.toISOString()}>{relativeDate(l.createdAt, new Date(), lang)}</time>
+    </p>
+  </div>
+</article>
