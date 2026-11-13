@@ -3,7 +3,7 @@
 import { i18n } from "../i18n";
 import type { ListingCard } from "../lib/data/listings";
 import { placeLabel, priceLabel, relativeDate } from "../lib/listing-format";
-import CategoryIcon from "./CategoryIcon.astro";
+import { stockPhoto } from "../lib/stock-photo";
 import TypeChip from "./TypeChip.astro";
 
 interface Props {
@@ -15,12 +15,12 @@ const { listing: l, headingLevel = 2 } = Astro.props;
 const { t, lang } = i18n(Astro.locals.lang);
 const H = `h${headingLevel}` as "h2" | "h3";
 const href = `/anzeigen/${l.id}`;
-const photos = l.photoCount === 0 ? t("Kein Foto") : l.photoCount === 1 ? t("1 Foto") : t("{n} Fotos", { n: l.photoCount });
+const photos = l.photoCount === 0 ? t("Symbolbild") : l.photoCount === 1 ? t("1 Foto") : t("{n} Fotos", { n: l.photoCount });
 ---
 
 <article class="lrow">
   <div class:list={["lrow-photo", l.type === "suche" ? "wash-suche" : "wash-biete"]}>
-    {l.coverPhotoId ? <img src={`/media/listing/${l.coverPhotoId}`} alt="" loading="lazy" width="400" height="280" /> : <CategoryIcon slug={l.categorySlug} size={44} strokeWidth={1.5} />}
+    {l.coverPhotoId ? <img src={`/media/listing/${l.coverPhotoId}`} alt="" loading="lazy" width="400" height="280" /> : <img src={stockPhoto(l.categorySlug, l.id)} alt="" loading="lazy" width="400" height="280" />}
     <span class="lrow-count">{photos}</span>
   </div>
   <div class="lrow-body">

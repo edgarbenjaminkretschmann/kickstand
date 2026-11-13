@@ -344,8 +344,30 @@ const CHECK = "M5 12l5 5L19 7";
     font-weight: 600;
     font-size: 15px;
     padding: 10px 14px;
-    border-radius: 16px 16px 4px 16px;
+    border-radius: 16px 16px 16px 4px;
     max-width: 200px;
+    /* Pops out of Benno's mouth: the origin sits on the mouth (SVG 100,95 of 200),
+       measured from the bubble's top-left corner. */
+    transform-origin: 40px 148px;
+    animation: bubble-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+  }
+  @keyframes bubble-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.05);
+    }
+    35% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bubble {
+      animation: none;
+    }
   }
   @media (max-width: 559px) {
     .hero {
@@ -357,6 +379,7 @@ const CHECK = "M5 12l5 5L19 7";
     .bubble {
       font-size: 14px;
       right: calc(50% - 170px);
+      transform-origin: 30px 82px;
     }
   }
 

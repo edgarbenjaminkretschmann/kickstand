@@ -5,7 +5,7 @@ import { actions } from "astro:actions";
 import { i18n } from "../i18n";
 import type { ListingCard } from "../lib/data/listings";
 import { placeLabel, priceLabel, relativeDate, STATUS_LABEL } from "../lib/listing-format";
-import CategoryIcon from "./CategoryIcon.astro";
+import { stockPhoto } from "../lib/stock-photo";
 import TypeChip from "./TypeChip.astro";
 
 interface Props {
@@ -30,7 +30,10 @@ const HEART = "M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 1
       l.coverPhotoId ? (
         <img src={`/media/listing/${l.coverPhotoId}`} alt="" loading="lazy" width="400" height="300" />
       ) : (
-        <CategoryIcon slug={l.categorySlug} size={48} strokeWidth={1.4} />
+        <>
+          <img src={stockPhoto(l.categorySlug, l.id)} alt="" loading="lazy" width="400" height="300" />
+          <span class="lcard-stock">{t("Symbolbild")}</span>
+        </>
       )
     }
     <span class="lcard-type"><TypeChip type={l.type} category={l.categorySlug} /></span>

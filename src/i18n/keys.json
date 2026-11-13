@@ -1092,9 +1092,6 @@
   "Kein festes Ende. Rückgabe auf Aufforderung innerhalb von 3 Tagen (§ 604 Abs. 3 BGB), spätestens am angegebenen Datum.": [
     "src/components/LoanPeriodFields.astro"
   ],
-  "Kein Foto": [
-    "src/components/ListingRow.astro"
-  ],
   "keine angegeben": [
     "src/pages/app/loans/[id]/index.astro"
   ],
@@ -1801,6 +1798,10 @@
   ],
   "Suchen": [
     "src/layouts/Base.astro"
+  ],
+  "Symbolbild": [
+    "src/components/ListingCard.astro",
+    "src/components/ListingRow.astro"
   ],
   "Tank": [
     "src/pages/app/loans/[id]/index.astro",

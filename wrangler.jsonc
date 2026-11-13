@@ -30,7 +30,9 @@
     // Hosts that 301-redirect to SITE_URL (path and query kept).
     "REDIRECT_HOSTS": "www.kickstand.top,kickstand.deutschacademy.com",
     // Shows the demo accounts on /login. "false" once real members use the site.
-    "SHOW_DEMO_LOGINS": "true"
+    "SHOW_DEMO_LOGINS": "true",
+    // PostHog project token (public, write-only; EU project 345772). Empty turns analytics off.
+    "POSTHOG_KEY": "phc_orDnbNAhmrhCEhQudHXkLvzXR4kmK6dvCGeo32XFcscb"
   },
   // All photos (listings, bikes, loan protocols). Private, no public URL: served only through /media/*,
   // which checks access first.
