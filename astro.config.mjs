@@ -40,7 +40,12 @@ export default defineConfig({
       ? node({ mode: "standalone" })
       : // "passthrough", not "compile": Kickstand does not use astro:assets (photos in public/images are already
         // optimised webp), and "compile" would bundle sharp and the /_image endpoint into the Worker.
-        cloudflare({ imageService: "passthrough", platformProxy: { enabled: false } }),
+        cloudflare({
+          imageService: "passthrough",
+          platformProxy: { enabled: false },
+          // Adds the weekly cron handler (Brevo key keep-alive) next to the fetch handler.
+          workerEntryPoint: { path: "src/worker.ts" },
+        }),
   // Sessions live in the database (Better Auth). Astro's own session store is unused, so no KV namespace.
   session: target === "cloudflare" ? { driver: "null" } : undefined,
   security: {

@@ -10,6 +10,8 @@
   // Static files from the build (dist/), as @astrojs/cloudflare expects. public/.assetsignore keeps _worker.js out.
   "assets": { "binding": "ASSETS", "directory": "./dist" },
   "observability": { "enabled": true },
+  // Weekly, Monday 06:00 UTC: keeps the Brevo API key from expiring after 90 idle days (src/worker.ts).
+  "triggers": { "crons": ["0 6 * * 1"] },
   // Turso sits in AWS eu-west-1 and one page runs several queries: run the Worker near the database.
   "placement": { "mode": "smart" },
   // Custom domains (zones kickstand.top and deutschacademy.com, same account). Wrangler creates the DNS

@@ -2089,7 +2089,7 @@
   "Willkommen bei Kickstand. Trag hier einmal deine Daten ein, dann geht jeder Leihvertrag schneller. Das geht auch später.": [
     "src/pages/profil.astro"
   ],
-  "Wir speichern nur, was für Anzeigen und Leihverträge nötig ist. Kein Tracking, keine Werbung.": [
+  "Wir speichern nur, was für Anzeigen und Leihverträge nötig ist. Keine Werbung, keine Cookies zur Verfolgung, nur anonyme Besuchszahlen.": [
     "src/pages/registrieren.astro"
   ],
   "Wird auf max. 1600 px verkleinert. Nur du siehst es. Für eine Anzeige lädst du dort eigene Fotos hoch.": [
