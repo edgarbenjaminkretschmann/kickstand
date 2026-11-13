@@ -1,21 +1,58 @@
 ---
+import { actions } from "astro:actions";
 import Base from "../layouts/Base.astro";
+import Field from "../components/Field.astro";
+import FormAlert from "../components/FormAlert.astro";
 import { i18n } from "../i18n";
+import { fieldErrors, formError } from "../lib/form";
+import { isMailEnabled } from "../lib/mail";
+import { submittedValues } from "../lib/submitted";
 
 const { t } = i18n(Astro.locals.lang);
+const mailEnabled = isMailEnabled();
+const result = Astro.getActionResult(actions.auth.requestReset);
+const sent = !!result && !result.error;
+const errors = fieldErrors(result);
+const message = formError(result);
+const prev = await submittedValues(Astro.request, !!result?.error);
+const sentTo = result && !result.error ? result.data.email : "";
 ---
 
 <Base title={t("Passwort vergessen")}>
   <div class="auth">
     <div class="page-head">
       <h1>{t("Passwort vergessen")}</h1>
+      {!sent && mailEnabled && <p>{t("Gib deine E-Mail an. Wir schicken dir einen Link, mit dem du ein neues Passwort wählst.")}</p>}
     </div>
     <div class="card">
-      <p>{t("Das Zurücksetzen per E-Mail kommt bald. Kickstand verschickt noch keine E-Mails.")}</p>
-      <p>{t("Bis dahin: Wenn dein Konto mit Google verbunden ist, melde dich einfach mit Google an. Sonst schreib uns kurz, dann helfen wir dir weiter.")}</p>
-      <div class="actions">
-        <a class="btn btn-primary" href="/login">{t("Zurück zur Anmeldung")}</a>
-      </div>
+      {
+        sent ? (
+          <>
+            <p>{t("Wenn es zu {email} ein Konto gibt, ist der Link jetzt unterwegs. Schau auch im Spam-Ordner nach. Der Link gilt eine Stunde.", { email: sentTo })}</p>
+            <p class="small">{t("Hast du dich mit Google registriert? Dann kannst du dich auch einfach mit Google anmelden.")}</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="/login">{t("Zurück zur Anmeldung")}</a>
+            </div>
+          </>
+        ) : mailEnabled ? (
+          <>
+            <FormAlert message={message} />
+            <form method="POST" action={actions.auth.requestReset} class="stack" novalidate>
+              <Field label={t("E-Mail")} name="email" type="email" autocomplete="email" required value={prev?.email} error={errors.email} />
+              <button type="submit" class="btn-primary btn-block">{t("Link schicken")}</button>
+              <p class="small"><a href="/login">{t("Zurück zur Anmeldung")}</a></p>
+            </form>
+          </>
+        ) : (
+          <>
+            <p>{t("Das Zurücksetzen per E-Mail ist gerade nicht verfügbar.")}</p>
+            <p>{t("Bis dahin: Wenn dein Konto mit Google verbunden ist, melde dich einfach mit Google an. Sonst schreib uns kurz, dann helfen wir dir weiter.")}</p>
+            <div class="actions">
+              <a class="btn btn-primary" href="/login">{t("Zurück zur Anmeldung")}</a>
+            </div>
+          </>
+        )
+      }
     </div>
   </div>
 </Base>

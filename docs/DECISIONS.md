@@ -27,7 +27,7 @@ Judgement calls made while building Phase 2 (`PROMPT-2.md`), so they can be revi
 - **Account linking:** a Google login with the same verified e-mail as an email + password account joins it (Google is a trusted provider).
 - **Google button only when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set.** It is a form POST to an action that returns the Google URL, so it works without JS.
 - **`/register` 301-redirects to `/registrieren`**, keeping the query string.
-- **"Passwort vergessen" is a stub page**: there is no e-mail sending yet, so it points to Google login or contacting us.
+- **"Passwort vergessen" mails a reset link via Brevo** (`src/lib/mail.ts`, plain HTTP API, no SDK). The link opens `/passwort-neu?token=…` directly (in the language the request came from), is valid for an hour and works once; a new password signs out every device. The form answers the same whether the e-mail exists or not. Without `BREVO_API_KEY` in production the page says resetting is unavailable; in dev the mail is printed to the console.
 - **Login rate limit:** 10 attempts per e-mail and 30 per IP in 10 minutes, in memory.
 
 ## Storage

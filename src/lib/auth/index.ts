@@ -9,7 +9,8 @@ import { db } from "../../db/client";
 import { Account, Session, User, Verification } from "../../db/schema";
 import { ensureProfile } from "../data/profiles";
 import { env, isProd } from "../env";
-import { tk } from "../../i18n";
+import { sendMail, simpleHtml } from "../mail";
+import { isLang, t, tk, type Lang } from "../../i18n";
 
 /** Google login is offered only when both credentials are set. */
 export function isGoogleEnabled(): boolean {
@@ -36,6 +37,12 @@ function createAuth() {
       minPasswordLength: 8,
       requireEmailVerification: false,
       autoSignIn: true,
+      // "Passwort vergessen": the link is valid for an hour, and a new password signs out every device.
+      resetPasswordTokenExpiresIn: 60 * 60,
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url, token }) => {
+        await sendResetMail(user, url, token);
+      },
     },
     socialProviders:
       googleClientId && googleClientSecret
@@ -60,6 +67,37 @@ function createAuth() {
       updateAge: 60 * 60 * 24,
     },
     telemetry: { enabled: false },
+  });
+}
+
+/**
+ * Sends the reset link. Better Auth's `url` carries our `redirectTo` as callbackURL ("/en/passwort-neu"),
+ * which tells the page and the mail language. The link goes straight to that page with the token.
+ */
+async function sendResetMail(user: { email: string; name: string }, url: string, token: string): Promise<void> {
+  const callback = new URL(url, "http://localhost").searchParams.get("callbackURL") || "/passwort-neu";
+  const path = callback.startsWith("/") ? callback : "/passwort-neu";
+  const first = path.split("/")[1];
+  const lang: Lang = isLang(first) ? first : "de";
+  const site = env("SITE_URL") ?? env("BETTER_AUTH_URL") ?? "http://localhost:4321";
+  const link = new URL(`${path}?token=${encodeURIComponent(token)}`, site).href;
+  const hello = t(lang, "Hallo {name},", { name: user.name });
+  const body = t(lang, "jemand (hoffentlich du) möchte das Passwort für dein Kickstand-Konto zurücksetzen. Über den Button wählst du ein neues. Der Link gilt eine Stunde.");
+  const ignore = t(lang, "Warst du das nicht? Dann ignoriere diese Mail einfach, dein Passwort bleibt, wie es ist.");
+  const button = t(lang, "Neues Passwort wählen");
+  await sendMail({
+    to: user.email,
+    toName: user.name,
+    subject: t(lang, "Dein neues Passwort für Kickstand"),
+    text: `${hello}
+
+${body}
+
+${button}: ${link}
+
+${ignore}
+`,
+    html: simpleHtml([hello, body], { label: button, url: link }, ignore),
   });
 }
 
@@ -121,6 +159,7 @@ const MESSAGES: Record<string, string> = {
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: tk("Diese E-Mail ist schon registriert."),
   PASSWORD_TOO_SHORT: tk("Das Passwort braucht mindestens 8 Zeichen."),
   INVALID_EMAIL: tk("Bitte eine gültige E-Mail angeben."),
+  INVALID_TOKEN: tk("Der Link ist abgelaufen oder wurde schon benutzt. Fordere einfach einen neuen an."),
 };
 
 /** A sign-in problem with a German message for the form. */
@@ -187,6 +226,30 @@ export async function startGoogleSignIn(ctx: Ctx, next: string): Promise<string>
     applyCookies(headers, ctx.cookies);
     if (!response.url) throw new AuthFailure(tk("Google-Anmeldung fehlgeschlagen."));
     return response.url;
+  } catch (e) {
+    translate(e);
+  }
+}
+
+/**
+ * Mails a reset link if an account with this e-mail exists. Says nothing either way, so the form cannot be
+ * used to find out who is a member. `resetPath` is the page the link opens, with the language prefix.
+ */
+export async function requestPasswordReset(ctx: Ctx, email: string, resetPath: string): Promise<void> {
+  try {
+    await getAuth().api.requestPasswordReset({
+      body: { email: email.toLowerCase(), redirectTo: resetPath },
+      headers: ctx.request.headers,
+    });
+  } catch (e) {
+    translate(e);
+  }
+}
+
+/** Sets the new password for a reset token. Signs out every session of that member. */
+export async function resetPassword(ctx: Ctx, token: string, newPassword: string): Promise<void> {
+  try {
+    await getAuth().api.resetPassword({ body: { token, newPassword }, headers: ctx.request.headers });
   } catch (e) {
     translate(e);
   }

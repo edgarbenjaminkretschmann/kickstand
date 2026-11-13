@@ -1,6 +1,6 @@
 // Cloudflare Workers config for Kickstand. `npm run deploy` builds and uploads; `npm run preview` runs it locally.
 // Secrets are not stored here: `wrangler secret put BETTER_AUTH_SECRET`, `DATABASE_AUTH_TOKEN`,
-// and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. For `npm run preview` they go into .dev.vars.
+// and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` and `BREVO_API_KEY`. For `npm run preview` they go into .dev.vars.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "kickstand",
@@ -32,7 +32,11 @@
     // Shows the demo accounts on /login. "false" once real members use the site.
     "SHOW_DEMO_LOGINS": "true",
     // PostHog project token (public, write-only; EU project 345772). Empty turns analytics off.
-    "POSTHOG_KEY": "phc_orDnbNAhmrhCEhQudHXkLvzXR4kmK6dvCGeo32XFcscb"
+    "POSTHOG_KEY": "phc_orDnbNAhmrhCEhQudHXkLvzXR4kmK6dvCGeo32XFcscb",
+    // Sender for password-reset mails (Brevo). The API key is the secret BREVO_API_KEY; without it the
+    // "Passwort vergessen" page says resetting is unavailable.
+    "MAIL_FROM": "hello@kickstand.top",
+    "MAIL_FROM_NAME": "Kickstand"
   },
   // All photos (listings, bikes, loan protocols). Private, no public URL: served only through /media/*,
   // which checks access first.

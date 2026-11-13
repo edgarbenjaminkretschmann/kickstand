@@ -1,10 +1,11 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { signInWithEmail, signOut, signUpWithEmail, startGoogleSignIn } from "../lib/auth";
+import { requestPasswordReset, resetPassword, signInWithEmail, signOut, signUpWithEmail, startGoogleSignIn } from "../lib/auth";
 import { allow, clientIp, RULES } from "../lib/rate-limit";
 import { safeNext } from "../lib/submitted";
 import { guard } from "./util";
 import { tk } from "../i18n";
+import { isMailEnabled } from "../lib/mail";
 
 const required = (msg: string) => ({ required_error: msg, invalid_type_error: msg });
 
@@ -53,6 +54,36 @@ export const authActions = {
       guard(async () => {
         const url = await startGoogleSignIn(context, safeNext(input.next));
         return { url };
+      }),
+  }),
+
+  /** "Passwort vergessen": mails a reset link. Always answers the same, whether the account exists or not. */
+  requestReset: defineAction({
+    accept: "form",
+    input: z.object({
+      email: z.string(required(tk("Bitte die E-Mail angeben."))).trim().email(tk("Bitte eine gültige E-Mail angeben.")),
+    }),
+    handler: (input, context) =>
+      guard(async () => {
+        if (!isMailEnabled()) throw new ActionError({ code: "BAD_REQUEST", message: tk("Das Zurücksetzen per E-Mail ist gerade nicht verfügbar.") });
+        await limitLogin(context.request, context.clientAddress, input.email);
+        const lang = context.locals.lang;
+        await requestPasswordReset(context, input.email, lang && lang !== "de" ? `/${lang}/passwort-neu` : "/passwort-neu");
+        return { email: input.email };
+      }),
+  }),
+
+  /** Sets a new password with the token from the reset mail. */
+  resetPassword: defineAction({
+    accept: "form",
+    input: z.object({
+      token: z.string(required(tk("Der Link ist unvollständig."))).min(1, tk("Der Link ist unvollständig.")),
+      password: z.string(required(tk("Bitte ein Passwort wählen."))).min(8, tk("Mindestens 8 Zeichen.")).max(128),
+    }),
+    handler: (input, context) =>
+      guard(async () => {
+        await resetPassword(context, input.token, input.password);
+        return { ok: true };
       }),
   }),
 

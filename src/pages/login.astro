@@ -26,6 +26,7 @@ if (result && !result.error) return Astro.redirect(next);
 const errors = fieldErrors(result);
 const googleFailed = Astro.url.searchParams.has("fehler") ? tk("Die Anmeldung mit Google hat nicht geklappt. Bitte nochmal versuchen.") : null;
 const message = formError(result) ?? formError(google) ?? googleFailed;
+const passwordReset = Astro.url.searchParams.get("passwort") === "neu";
 const prev = await submittedValues(Astro.request, !!result?.error);
 ---
 
@@ -36,6 +37,7 @@ const prev = await submittedValues(Astro.request, !!result?.error);
       <p>{t("Noch kein Konto?")} <a href={`/registrieren?next=${encodeURIComponent(next)}`}>{t("Registrieren")}</a></p>
     </div>
     <div class="card">
+      {passwordReset && !message && <p class="notice">{t("Dein Passwort ist geändert. Melde dich jetzt mit dem neuen an.")}</p>}
       <FormAlert message={message} />
       <GoogleButton next={next} />
       <form method="POST" action={`${actions.auth.login}&next=${encodeURIComponent(next)}`} class="stack" novalidate>

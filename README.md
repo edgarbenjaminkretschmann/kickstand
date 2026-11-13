@@ -225,6 +225,7 @@ Actions and pages never import Drizzle, the schema or Better Auth directly; they
 - **Dates** are stored as ISO strings and shown as `DD.MM.YYYY`. Date and time fields are text inputs (`TT.MM.JJJJ`, `HH:MM`) parsed on the server, because `<input type="date">` follows the browser locale.
 - **Drafts:** the contract wizard autosaves as a draft (debounced, and immediately when the tab is hidden). "Abschließen" sets the loan `active`; the return protocol sets it `returned`.
 - **Rate limits** (`src/lib/rate-limit.ts`): locally in memory, 10 login attempts per e-mail and 30 per IP in 10 minutes, 10 messages a minute and 120 an hour per member. On Workers see "Differences from the Node server".
+- **Mail:** only password reset, via Brevo (`src/lib/mail.ts`). Set the secret `BREVO_API_KEY`; `MAIL_FROM` must be a verified Brevo sender. Without a key, dev prints the mail to the console.
 - **Notifications:** none yet. `notifyNewMessage()` in `src/lib/notify.ts` is the hook for e-mail or push later.
 
 Astro's action body limit is raised to 80 MB (`astro.config.mjs`) so phones without JS can upload full-size photos; with JS, photos are shrunk before upload.

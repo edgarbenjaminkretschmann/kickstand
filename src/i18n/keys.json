@@ -513,7 +513,8 @@
   "Das PDF wird in deinem Browser erstellt. Dafür braucht diese Seite JavaScript.": [
     "src/pages/leihvertrag.astro"
   ],
-  "Das Zurücksetzen per E-Mail kommt bald. Kickstand verschickt noch keine E-Mails.": [
+  "Das Zurücksetzen per E-Mail ist gerade nicht verfügbar.": [
+    "src/actions/auth.ts",
     "src/pages/passwort-vergessen.astro"
   ],
   "Daten werden geladen …": [
@@ -543,6 +544,12 @@
   "Dein Anzeigename ist öffentlich. Alles andere bleibt privat und füllt nur deine Leihverträge vor.": [
     "src/pages/profil.astro"
   ],
+  "Dein neues Passwort für Kickstand": [
+    "src/lib/auth/index.ts"
+  ],
+  "Dein Passwort ist geändert. Melde dich jetzt mit dem neuen an.": [
+    "src/pages/login.astro"
+  ],
   "Deine Anzeige": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
@@ -567,6 +574,13 @@
   ],
   "Der Kilometerstand ist kleiner als bei der Übergabe.": [
     "src/actions/loans.ts"
+  ],
+  "Der Link ist abgelaufen oder wurde schon benutzt. Fordere einfach einen neuen an.": [
+    "src/lib/auth/index.ts"
+  ],
+  "Der Link ist unvollständig.": [
+    "src/actions/auth.ts",
+    "src/pages/passwort-neu.astro"
   ],
   "Der Marktplatz von Motorradfahrern für Motorradfahrer.": [
     "src/layouts/Base.astro"
@@ -649,6 +663,7 @@
   ],
   "E-Mail": [
     "src/pages/login.astro",
+    "src/pages/passwort-vergessen.astro",
     "src/pages/registrieren.astro"
   ],
   "E-Mail oder Passwort stimmt nicht.": [
@@ -945,6 +960,9 @@
   "Gewählt: {name}": [
     "src/components/BikeForm.astro"
   ],
+  "Gib deine E-Mail an. Wir schicken dir einen Link, mit dem du ein neues Passwort wählst.": [
+    "src/pages/passwort-vergessen.astro"
+  ],
   "Gib ein Gesuch auf. Wer etwas Passendes hat, findet dich dann.": [
     "src/pages/anzeigen/index.astro"
   ],
@@ -978,6 +996,9 @@
   "Hallo {name}": [
     "src/pages/app/index.astro"
   ],
+  "Hallo {name},": [
+    "src/lib/auth/index.ts"
+  ],
   "Hallo, ich kann dir helfen.": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
@@ -987,6 +1008,9 @@
   "Handelsbezeichnung": [
     "src/components/BikeForm.astro",
     "src/pages/leihvertrag.astro"
+  ],
+  "Hast du dich mit Google registriert? Dann kannst du dich auch einfach mit Google anmelden.": [
+    "src/pages/passwort-vergessen.astro"
   ],
   "Hauptnavigation": [
     "src/layouts/Base.astro"
@@ -1074,6 +1098,9 @@
   ],
   "Ja, löschen": [
     "src/pages/anzeigen/[id]/index.astro"
+  ],
+  "jemand (hoffentlich du) möchte das Passwort für dein Kickstand-Konto zurücksetzen. Über den Button wählst du ein neues. Der Link gilt eine Stunde.": [
+    "src/lib/auth/index.ts"
   ],
   "Karte der Tour vom Oktober 2019 mit allen Stationen auf den Philippinen": [
     "src/pages/touren.astro"
@@ -1235,6 +1262,9 @@
   "Link kopiert": [
     "src/pages/anzeigen/[id]/index.astro"
   ],
+  "Link schicken": [
+    "src/pages/passwort-vergessen.astro"
+  ],
   "Löschen": [
     "src/components/LoanSignatures.astro"
   ],
@@ -1283,6 +1313,7 @@
   ],
   "Mindestens 8 Zeichen.": [
     "src/actions/auth.ts",
+    "src/pages/passwort-neu.astro",
     "src/pages/registrieren.astro"
   ],
   "Mit dem Finger unterschreiben. Leer gelassene Unterschriften kann man nach dem Ausdrucken per Hand ergänzen.": [
@@ -1414,6 +1445,15 @@
     "src/pages/app/loans/[id]/return.astro",
     "src/pages/leihvertrag.astro"
   ],
+  "Neuen Link anfordern": [
+    "src/pages/passwort-neu.astro"
+  ],
+  "Neues Passwort": [
+    "src/pages/passwort-neu.astro"
+  ],
+  "Neues Passwort wählen": [
+    "src/lib/auth/index.ts"
+  ],
   "Neueste Anzeigen": [
     "src/pages/index.astro"
   ],
@@ -1540,6 +1580,9 @@
   "Passwort": [
     "src/pages/login.astro",
     "src/pages/registrieren.astro"
+  ],
+  "Passwort speichern": [
+    "src/pages/passwort-neu.astro"
   ],
   "Passwort vergessen": [
     "src/pages/passwort-vergessen.astro"
@@ -1989,6 +2032,9 @@
   "Vorhandene Schäden / Kratzer": [
     "src/components/LoanHandoverFields.astro"
   ],
+  "Warst du das nicht? Dann ignoriere diese Mail einfach, dein Passwort bleibt, wie es ist.": [
+    "src/lib/auth/index.ts"
+  ],
   "Warum Kickstand": [
     "src/pages/touren.astro"
   ],
@@ -2029,6 +2075,9 @@
   ],
   "Wenn du dir ein Motorrad leihst und der Verleiher den Vertrag aus eurer Unterhaltung startet, werden diese Angaben dort vorausgefüllt.": [
     "src/pages/profil.astro"
+  ],
+  "Wenn es zu {email} ein Konto gibt, ist der Link jetzt unterwegs. Schau auch im Spam-Ordner nach. Der Link gilt eine Stunde.": [
+    "src/pages/passwort-vergessen.astro"
   ],
   "Werkzeug": [
     "src/db/categories.ts",
